@@ -1,4 +1,4 @@
-import os
+import os, sys
 import requests
 import json
 import logging
@@ -74,3 +74,38 @@ class InferenceClient(object):
         if not entity_model_id:
             entity_model_id = self.entity_model_id
         return self._get(text, None, entity_model_id)
+
+
+def main():
+    account_id = os.getenv("MYRA_ACCOUNT_ID")
+    if not account_id:
+        print >> sys.stderr, "environment must have MYRA_ACCOUNT_ID"
+        sys.exit(1)
+    account_secret = os.getenv("MYRA_ACCOUNT_SECRET")
+    if not account_secret:
+        print >> sys.stderr, "environment must have MYRA_ACCOUNT_SECRET"
+        sys.exit(1)
+    if not len(sys.argv) == 2:
+        print >> sys.stderr, "usage: client.py <msg>"
+        sys.exit(1)
+    msg = sys.argv[1]
+    intent_model_id = os.getenv("MYRA_INTENT_MODEL_ID")
+    entity_model_id = os.getenv("MYRA_ENTITY_MODEL_ID")
+    if not intent_model_id and not entity_model_id:
+        print >> sys.stderr, "environment must have MYRA_ENTITY_MODEL_ID and/or MYRA_INTENT_MODEL_ID"
+        sys.exit(1)
+    ic = InferenceClient(
+        account_id=account_id,
+        account_secret=account_secret,
+        intent_model_id=intent_model_id,
+        entity_model_id=entity_model_id)
+    if intent_model_id:
+        intent = ic.getIntent(msg)
+        print "intent: %s" % (intent,)
+    if entity_model_id:
+        entity = ic.getEntities(msg)
+        print "entity: %s" % (entity,)
+
+
+if __name__ == "__main__":
+    main()
