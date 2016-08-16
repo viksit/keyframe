@@ -36,12 +36,12 @@ class InferenceClient(object):
             url += "&intent_model_id=%s" % (intent_model_id,)
         if entity_model_id:
             url += "&entity_model_id=%s" % (entity_model_id,)
-        log.debug("url: %s", url)
+        log.info("url: %s", url)
         r = self._session.get(url)
         if r.status_code != 200:
             raise InferenceClientError(
                 "status_code %s" % (r.status_code,))
-        log.debug("r: %s", r)
+        log.info("r.text: %s", r.text)
         return r.text
 
     def _getDict(self, text, intent_model_id, entity_model_id):
@@ -61,6 +61,14 @@ class InferenceClient(object):
         score = d.get("score")
         return (intent, score)
 
+    def _extractEntities(self, response_dict):
+        i = response_dict.get("result",{}).get("entity")
+        status_code = i.get("status",{}).get("status_code")
+        if not status_code or status_code != 200:
+            return None
+        d = i.get("data",{})
+        return d
+
     def getIntent(self, text, intent_model_id=None):
         if not intent_model_id:
             intent_model_id = self.intent_model_id
@@ -73,7 +81,8 @@ class InferenceClient(object):
         # and return that vs all of the data as now.
         if not entity_model_id:
             entity_model_id = self.entity_model_id
-        return self._get(text, None, entity_model_id)
+        d = self._getDict(text, None, entity_model_id)
+        return self._extractEntities(d)
 
 
 def main():
