@@ -84,6 +84,16 @@ class InferenceClient(object):
         d = self._getDict(text, None, entity_model_id)
         return self._extractEntities(d)
 
+    def get(self, text, intent_model_id=None, entity_model_id=None):
+        if not entity_model_id:
+            entity_model_id = self.entity_model_id
+        if not intent_model_id:
+            intent_model_id = self.intent_model_id
+        d = self._getDict(text, intent_model_id, entity_model_id)
+        (intent, score) = self._extractIntent(d)
+        entities = self._extractEntities(d)
+        return ((intent, score), entities)
+
 
 def main():
     account_id = os.getenv("MYRA_ACCOUNT_ID")
