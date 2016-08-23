@@ -11,15 +11,22 @@ class InferenceClientError(Exception):
 class InferenceClient(object):
     def __init__(
             self, account_id, account_secret,
-            intent_model_id=None, entity_model_id=None):
+            intent_model_id=None, entity_model_id=None,
+            myra_inference_server=None, myra_api_version=None):
         self.account_id = account_id
         self.account_secret = account_secret
         self.intent_model_id = intent_model_id
         self.entity_model_id = entity_model_id
-        self.hostname = os.getenv(
-            "MYRA_INFERENCE_SERVER", "api.myralabs.com")
-        self.api_version = os.getenv(
-            "MYRA_INFERENCE_VERSION", "v2")
+        if myra_inference_server:
+            self.hostname = myra_inference_server
+        else:
+            self.hostname = os.getenv(
+                "MYRA_INFERENCE_SERVER", "api.myralabs.com")
+        if myra_api_version:
+            self.api_version = myra_api_version
+        else:
+            self.api_version = os.getenv(
+                "MYRA_INFERENCE_VERSION", "v2")
         self._session = requests.Session()
         self._session.headers.update(self._getHeaders())
 
@@ -52,22 +59,21 @@ class InferenceClient(object):
     def _extractIntent(self, response_dict):
         '''d: dict representing returned json
         '''
-        i = response_dict.get("result",{}).get("intent",{})
+        i = response_dict.get("result",{}).get("intents",{})
         status_code = i.get("status",{}).get("status_code")
         if not status_code or status_code != 200:
             return None
-        d = i.get("data",{})
+        d = i.get("user_defined",{})
         intent = d.get("intent")
         score = d.get("score")
         return (intent, score)
 
     def _extractEntities(self, response_dict):
-        i = response_dict.get("result",{}).get("entity")
+        i = response_dict.get("result",{}).get("entities")
         status_code = i.get("status",{}).get("status_code")
         if not status_code or status_code != 200:
             return None
-        d = i.get("data",{})
-        return d
+        return i
 
     def getIntent(self, text, intent_model_id=None):
         if not intent_model_id:
