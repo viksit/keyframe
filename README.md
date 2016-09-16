@@ -1,26 +1,18 @@
 # python-myra
-Clients for access to Myra apis
-If you would like to try out getting better intents for your users messages, please do the following. We have a client library in python (open-sourced), and I have set up an account for you and built a model for intents.
+Python client to access Myra natural language APIs. Please retrieve your Account ID, Account Secret, and Intent Model ID or Entity ID from the Myra dashboard.
 
-------------
-~/work $ git clone git@github.com:myralabs/python-myra.git
+```
+~/ $ git clone git@github.com:myralabs/python-myra.git
+~/ $ cd python-myra/
 
-~/work $ cd python-myra/
+~/python-myra $ export MYRA_ACCOUNT_ID=xxx
+~/python-myra $ export MYRA_ACCOUNT_SECRET=xxx
+~/python-myra $ export MYRA_INTENT_MODEL_ID=xxx
+~/python-myra $ export MYRA_ENTITY_MODEL_ID=xxx
 
-~/work/python-myra $ 
+~/python-myra $ python myraclient/client.py "Hello"
+intent: ('myra.intent.greeting.hello', 0.9736359715461731)
 
-~/work/python-myra $ export MYRA_ACCOUNT_ID=xxx
-
-~/work/python-myra $ export MYRA_ACCOUNT_SECRET=xxx
-
-~/work/python-myra $ export MYRA_INTENT_MODEL_ID=xxx
-
-~/work/python-myra $ python myra/client.py "There is a backed up toilet in the ladies room on the 2nd floor of 8625 North side of building. It is the last stall on the left."
-
-intent: (u'Plumbing', 0.9399809241294861)
-
-~/work/python-myra $ 
-
-~/work/python-myra $ python myra/client.py "please provide key SL057 for desk locks. Thanks"
-
-intent: (u'Facilities', 0.9961974620819092)
+~/python-myra $ python myraclient/client.py "Goodbye"
+intent: ('myra.intent.greeting.bye', 0.9181773662567139)
+```
