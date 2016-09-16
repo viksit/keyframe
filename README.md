@@ -1,7 +1,7 @@
 # python-myra
 Python client to access Myra natural language APIs. Please retrieve your Account ID, Account Secret, and Intent Model ID or Entity ID from the Myra dashboard.
 
-```
+```sh
 ~/ $ git clone git@github.com:myralabs/python-myra.git
 ~/ $ cd python-myra/
 
