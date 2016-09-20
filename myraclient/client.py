@@ -1,3 +1,4 @@
+from __future__ import print_function
 import os, sys
 import requests
 import json
@@ -21,7 +22,7 @@ class InferenceClient(object):
             self.hostname = myra_inference_server
         else:
             self.hostname = os.getenv(
-                "MYRA_INFERENCE_SERVER", "api.myralabs.com")
+                "MYRA_INFERENCE_SERVER", "api.dev.myralabs.com")
         if myra_api_version:
             self.api_version = myra_api_version
         else:
@@ -104,20 +105,20 @@ class InferenceClient(object):
 def main():
     account_id = os.getenv("MYRA_ACCOUNT_ID")
     if not account_id:
-        print >> sys.stderr, "environment must have MYRA_ACCOUNT_ID"
+        print((sys.stderr, "environment must have MYRA_ACCOUNT_ID"))
         sys.exit(1)
     account_secret = os.getenv("MYRA_ACCOUNT_SECRET")
     if not account_secret:
-        print >> sys.stderr, "environment must have MYRA_ACCOUNT_SECRET"
+        print((sys.stderr, "environment must have MYRA_ACCOUNT_SECRET"))
         sys.exit(1)
     if not len(sys.argv) == 2:
-        print >> sys.stderr, "usage: client.py <msg>"
+        print((sys.stderr, "usage: client.py <msg>"))
         sys.exit(1)
     msg = sys.argv[1]
     intent_model_id = os.getenv("MYRA_INTENT_MODEL_ID")
     entity_model_id = os.getenv("MYRA_ENTITY_MODEL_ID")
     if not intent_model_id and not entity_model_id:
-        print >> sys.stderr, "environment must have MYRA_ENTITY_MODEL_ID and/or MYRA_INTENT_MODEL_ID"
+        print((sys.stderr, "environment must have MYRA_ENTITY_MODEL_ID and/or MYRA_INTENT_MODEL_ID"))
         sys.exit(1)
     ic = InferenceClient(
         account_id=account_id,
@@ -126,10 +127,10 @@ def main():
         entity_model_id=entity_model_id)
     if intent_model_id:
         intent = ic.getIntent(msg)
-        print "intent: %s" % (intent,)
+        print(("intent: %s" % (intent,)))
     if entity_model_id:
         entity = ic.getEntities(msg)
-        print "entity: %s" % (entity,)
+        print(("entity: %s" % (entity,)))
 
 
 if __name__ == "__main__":
