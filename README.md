@@ -1,4 +1,5 @@
-# Pyra
+# python-myra
+
 Python library to access Myra natural language APIs. 
 
 Please retrieve your Account ID, Account Secret, and Intent Model ID or Entity ID from the Myra dashboard.

@@ -6,6 +6,10 @@ import logging
 
 log = logging.getLogger(__name__)
 
+# def connect():
+#     return InferenceClient()
+
+
 class InferenceClientError(Exception):
     pass
 
