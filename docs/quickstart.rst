@@ -61,7 +61,7 @@ The first thing you need is to initialize the Myra API client and connect to the
 
 A `client` instance should only be created once in the lifecycle of an application.
 
-Next, we'll configure this client to utilize our demo intent and entity models. You'll find the IDs of the demo models in the dashboard::
+Next, we'll configure this client to utilize our demo intent and entity models. You'll find the IDs of the demo models in the dashboard, look for "demo_model" in Intent Models and "demo_model_entity" in Entity Models::
 
     # Set intent model
     api.set_intent_model("xxxx")
