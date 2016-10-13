@@ -13,6 +13,7 @@ except ImportError:
 from myra_client import utils
 
 # Logging and debug utilities
+
 http_client.HTTPConnection.debuglevel = 0
 logging.basicConfig()
 log = logging.getLogger(__name__)
@@ -27,8 +28,9 @@ def set_debug():
     log.setLevel(logging.DEBUG)
 
 # Package level functions
-def get_config():
-    return utils.MyraConfig()
+
+def get_config(config_file=None):
+    return utils.MyraConfig(config_file)
 
 def connect(config, debug=False):
 
@@ -49,6 +51,23 @@ def connect(config, debug=False):
 
 class InferenceClientError(Exception):
     pass
+
+class IntentResult(object):
+    def __init__(self, label, score):
+        self.label = label
+        self.score = score
+
+class EntityResult(object):
+    def __init__(self, entities):
+        self.entities = entities
+
+
+class InferenceResult(object):
+
+    def __init__(self, intent_label=None, intent_score=None, entities=None):
+        self.intent = IntentResult(intent_label, intent_score)
+        self.entities = EntityResult(entities)
+
 
 class InferenceClient(object):
     def __init__(
@@ -78,12 +97,6 @@ class InferenceClient(object):
         print(self._get_headers())
         self._session.headers.update(self._get_headers())
 
-    def set_intent_model(self, intent_model_id):
-        self.intent_model_id = intent_model_id
-
-    def set_entity_model(self, entity_model_id):
-        self.entity_model_id = entity_model_id
-
     def _get_headers(self):
         return {
             "X-ACCOUNT-ID": self.account_id,
@@ -112,8 +125,8 @@ class InferenceClient(object):
         return json.loads(js)
 
     def _extract_intent(self, response_dict):
-        '''d: dict representing returned json
-        '''
+        """d: dict representing returned json
+        """
         i = response_dict.get("result",{}).get("intents",{})
         status_code = i.get("status",{}).get("status_code")
         if not status_code or status_code != 200:
@@ -130,20 +143,27 @@ class InferenceClient(object):
             return None
         return i
 
+    # Public API
+
+    def set_intent_model(self, intent_model_id):
+        self.intent_model_id = intent_model_id
+
+    def set_entity_model(self, entity_model_id):
+        self.entity_model_id = entity_model_id
+
     def get_intent(self, text, intent_model_id=None):
         if not intent_model_id:
             intent_model_id = self.intent_model_id
         d = self._get_dict(text, intent_model_id, None)
         (intent, score) = self._extract_intent(d)
-        return (intent, score)
+        return IntentResult(intent, score)
 
     def get_entities(self, text, entity_model_id=None):
-        # TODO: Extract the right entities from the api data
-        # and return that vs all of the data as now.
         if not entity_model_id:
             entity_model_id = self.entity_model_id
         d = self._get_dict(text, None, entity_model_id)
-        return self._extract_entities(d)
+        e = self._extract_entities(d)
+        return EntityResult(e)
 
     def get(self, text, intent_model_id=None, entity_model_id=None):
         if not entity_model_id:
@@ -153,35 +173,43 @@ class InferenceClient(object):
         d = self._get_dict(text, intent_model_id, entity_model_id)
         (intent, score) = self._extract_intent(d)
         entities = self._extract_entities(d)
-        return ((intent, score), entities)
+        return InferenceResult(intent, score, entities)
 
 
 def main():
     account_id = os.getenv("MYRA_ACCOUNT_ID")
+
     if not account_id:
         print((sys.stderr, "environment must have MYRA_ACCOUNT_ID"))
         sys.exit(1)
     account_secret = os.getenv("MYRA_ACCOUNT_SECRET")
+
     if not account_secret:
         print((sys.stderr, "environment must have MYRA_ACCOUNT_SECRET"))
         sys.exit(1)
+
     if not len(sys.argv) == 2:
         print((sys.stderr, "usage: client.py <msg>"))
         sys.exit(1)
+
     msg = sys.argv[1]
     intent_model_id = os.getenv("MYRA_INTENT_MODEL_ID")
     entity_model_id = os.getenv("MYRA_ENTITY_MODEL_ID")
+
     if not intent_model_id and not entity_model_id:
         print((sys.stderr, "environment must have MYRA_ENTITY_MODEL_ID and/or MYRA_INTENT_MODEL_ID"))
         sys.exit(1)
+
     ic = InferenceClient(
         account_id=account_id,
         account_secret=account_secret,
         intent_model_id=intent_model_id,
         entity_model_id=entity_model_id)
+
     if intent_model_id:
         intent = ic.get_intent(msg)
         print(("intent: %s" % (intent,)))
+
     if entity_model_id:
         entity = ic.get_entities(msg)
         print(("entity: %s" % (entity,)))
