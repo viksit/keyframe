@@ -1,11 +1,11 @@
-Quickstart
+Python-Myra Quick Start
 ================================
 
-Myra's natural language APIs are the best way to build natural language understanding into your applications. To start with, you can identify user intents, and extract entities like names, cities, numbers and other user defined ones.
+Myra's natural language APIs are the best way to build natural language understanding into your applications. With our tools, you can identify user intent and extract entities like names, cities, numbers and others.
 
-This quickstart will begin with signing you up for Myra, and will end with you utilizing our built in systems to extract meaning out of natural language.
+This document will review setting up Myra's dashboards and using our built-in demo models to extract structured data from natural language.
 
-If you've already signed up and downloaded an API key, you can jump to,
+If you've already signed up and downloaded an API key, you can:
 
 - Install the SDK
 - Use the demo models
@@ -18,7 +18,7 @@ Sign up
 - Click the link to complete sign up and log into the dashboard.
 
 
-Create an API Key Pair
+Create an API key pair
 ----------------------
 
 In order to use the Myra API, you'll need to create an API Key. To get one, follow these steps,
@@ -69,9 +69,9 @@ Next, we'll configure this client to utilize our demo intent and entity models. 
     # Set entity model
     api.set_entity_model("yyyy")
 
-Now we're all set to start using the API. Let's start with a sample sentence to analyze,::
+Now we're all set to start using the API. Let's start with a sample sentence to analyze::
 
-    sentence = "whats a good coffee shop in San Francisco?"
+    sentence = "what's a good coffee shop in San Francisco?"
 
     # Get results
     result = api.get(sentence)
@@ -79,4 +79,4 @@ Now we're all set to start using the API. Let's start with a sample sentence to 
     print("Intent: ", result.intent.label, result.intent.score)
     print("Entities: ", result.entities.entities)
 
-Calling the `client.get()` method sends a request to Myra and returns an object of type `InferenceResult`, a python class that represents the result of this API call.
+Calling the `client.get()` method sends a request to Myra and returns an object of type `InferenceResult`, a Python class that represents the result of this API call.
