@@ -6,12 +6,15 @@
 Welcome to myra's documentation!
 ================================
 
+hi
 Contents:
 
 .. toctree::
    :maxdepth: 2
 
-
+   intro
+   intro
+   intro
 
 Indices and tables
 ==================
@@ -19,4 +22,3 @@ Indices and tables
 * :ref:`genindex`
 * :ref:`modindex`
 * :ref:`search`
-
