@@ -11,11 +11,8 @@ This documentation is divided into a few parts.
 
 An introduction to what myra is.
 A quickstart that gets you up and running with Myra in a couple of minutes
-A simple weather bot
-An advanced weather bot
+Zero to bot in 15 minutes
 
-
-User's Guide
 
 
 .. toctree::
