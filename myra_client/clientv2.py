@@ -115,13 +115,13 @@ class InferenceClient(object):
             print(r.__dict__)
             raise InferenceClientError(
                 "Error: status_code %s" % (r.status_code,))
-        log.debug("r.text: %s", r.text)
-        return r.text
+        log.debug("r.json: %s", r.json())
+        return r.json()
 
     def _get_dict(self, text, intent_model_id, entity_model_id):
         js = self._get(text, intent_model_id, entity_model_id)
         log.debug("js: %s", js)
-        return json.loads(js)
+        return js
 
     def _extract_intent(self, response_dict):
         """d: dict representing returned json

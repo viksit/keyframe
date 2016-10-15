@@ -4,6 +4,9 @@ from myra_client import clientv2
 from utils import Actions, CmdLineHandler
 
 
+# TODO
+# cancel that meeting with Rinki please that was next week at 10am >> cancel intent
+
 ############## Tutorial code ####################
 
 # Configuration for Myra's API
@@ -32,23 +35,50 @@ class CalendarBot(object):
         pass
 
     # Example of a simple handler with a threshold, and a fallback intent
-    @actions.intent("cancel", threshold=(0.7, "unknown"))
+    @actions.intent("cancel", threshold=(0.4, "unknown"))
     def cancel_handler(self):
-        return ("cancel", api_result.intent.score)
+        e =  api_result.entities.entities.get("builtin", {})
+        message = "Sure, I'll cancel the meeting for you"
+        if "PERSON" in e:
+            person = [i.get("text") for i in e.get("PERSON")]
+            person_text = ""
+            if len(person) > 1:
+                person_text = " and ".join(person)
+            else:
+                person_text = person[0]
+            message += " with %s" % person_text
+        if "time" in e and e.get("time") is not None:
+            tm = e.get("time")[0][0]
+            message += " at %s." % (tm)
+        return message
+
 
     # Example of a simple handler with an api_result
     @actions.intent("create")
     def create_handler(self):
-        return ("create", api_result.entities.entities)
+        e =  api_result.entities.entities.get("builtin", {})
+        message = "I can help create a meeting for you"
+        if "PERSON" in e:
+            person = [i.get("text") for i in e.get("PERSON")]
+            person_text = ""
+            if len(person) > 1:
+                person_text = " and ".join(person)
+            else:
+                person_text = person[0]
+            message += " with %s" % person_text
+        if "time" in e and e.get("time") is not None:
+            tm = e.get("time")[0][0]
+            message += " at %s." % (tm)
+        return message
 
     # Example of a simple handler without an api_result
     @actions.intent("help")
     def help_handler(self):
-        return "help"
+        return welcome_message
 
     @actions.intent("unknown")
     def unknown_handler(self):
-        return "unknown intent or low score"
+        return "unknown intent or low score %s, %s" % (api_result.intent.label, api_result.intent.score)
 
     def process(self, user_input):
         api_result = api.get(user_input)
