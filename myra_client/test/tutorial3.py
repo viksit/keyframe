@@ -8,6 +8,7 @@ from utils import Actions, CmdLineHandler
 - clean up the entity response
 - merge time from spacy and parse datetime
 - built in vs user defined
+- allow empty entity models
 
 
 """
@@ -37,7 +38,6 @@ class CalendarBot(object):
 
     def __init__(self):
         pass
-
 
     # Example of a simple handler with a threshold, and a fallback intent
     @actions.intent("cancel", threshold=(0.4, "unknown"))

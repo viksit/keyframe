@@ -39,7 +39,6 @@ class CalendarBot(object):
     def __init__(self):
         pass
 
-
     # Example of a simple handler with a threshold, and a fallback intent
     @actions.intent("cancel", threshold=(0.4, "unknown"))
     def cancel_handler(self):
@@ -96,3 +95,5 @@ if __name__ == "__main__":
     bot = CalendarBot()
     c = CmdLineHandler(bot)
     c.begin(bot.welcome_message)
+
+
