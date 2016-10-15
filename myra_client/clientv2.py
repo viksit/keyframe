@@ -94,7 +94,6 @@ class InferenceClient(object):
                 "MYRA_INFERENCE_VERSION", "v2")
 
         self._session = requests.Session()
-        print(self._get_headers())
         self._session.headers.update(self._get_headers())
 
     def _get_headers(self):
