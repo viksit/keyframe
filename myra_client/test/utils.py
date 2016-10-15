@@ -54,7 +54,9 @@ class Actions():
                 handler_function = self.intents.get(intent_str)
                 if intent_score < self.intent_thresholds.get(intent_str)[0]:
                     handler_function = self.intents.get(self.intent_thresholds.get(intent_str)[1])
-
+                # Make the api_result available within the scope of the intent handler.
+                # This dictionary update is NOT thread safe, and is shared by all functions
+                # in the given namespace.
                 handler_function.func_globals['api_result'] = api_result
                 return handler_function(self)
         else:
