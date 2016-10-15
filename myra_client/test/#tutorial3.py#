@@ -3,7 +3,15 @@ from os.path import expanduser, join
 from myra_client import clientv2
 from utils import Actions, CmdLineHandler
 
+"""
+# TODO
+- clean up the entity response
+- merge time from spacy and parse datetime
+- built in vs user defined
+- allow empty entity models
 
+
+"""
 ############## Tutorial code ####################
 
 # Configuration for Myra's API
