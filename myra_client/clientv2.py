@@ -120,7 +120,7 @@ class InferenceClient(object):
 
     def _get_dict(self, text, intent_model_id, entity_model_id):
         js = self._get(text, intent_model_id, entity_model_id)
-        log.debug("js: %s", js)
+        log.debug(">>> js: %s", js)
         return js
 
     def _extract_intent(self, response_dict):
@@ -136,9 +136,9 @@ class InferenceClient(object):
         return (intent, score)
 
     def _extract_entities(self, response_dict):
-        i = response_dict.get("result",{}).get("entities")
+        i = response_dict.get("result", {}).get("entities")
         status_code = i.get("status",{}).get("status_code")
-        if not status_code or status_code != 200:
+        if status_code and status_code != 200:
             return None
         return i
 
@@ -171,7 +171,9 @@ class InferenceClient(object):
             intent_model_id = self.intent_model_id
         d = self._get_dict(text, intent_model_id, entity_model_id)
         (intent, score) = self._extract_intent(d)
+
         entities = self._extract_entities(d)
+        print(">>>>>>", entities)
         return InferenceResult(intent, score, entities)
 
 

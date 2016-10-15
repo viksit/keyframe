@@ -3,15 +3,7 @@ from os.path import expanduser, join
 from myra_client import clientv2
 from utils import Actions, CmdLineHandler
 
-"""
-# TODO
-- clean up the entity response
-- merge time from spacy and parse datetime
-- built in vs user defined
-- allow empty entity models
 
-
-"""
 ############## Tutorial code ####################
 
 # Configuration for Myra's API
@@ -21,13 +13,14 @@ CONF_FILE = join(expanduser('~'), '.myra', 'settings.conf')
 config = clientv2.get_config(CONF_FILE)
 
 # Intent and entity models that we're using
-INTENT_MODEL_ID = "b4a5ce9b075e416bb1e8968eea735fa6"
-ENTITY_MODEL_ID = "4911dc1f0005408881e08a05dd998b0f"
+INTENT_MODEL_ID = "27c71fe414984927a32ff4d6684e0a73"
+# prod "b4a5ce9b075e416bb1e8968eea735fa6"
+#ENTITY_MODEL_ID = "4911dc1f0005408881e08a05dd998b0f"
 
 # Establish a global API connection
-api = clientv2.connect(config)
+api = clientv2.connect(config, debug=True)
 api.set_intent_model(INTENT_MODEL_ID)
-api.set_entity_model(ENTITY_MODEL_ID)
+#api.set_entity_model(ENTITY_MODEL_ID)
 
 # Create an actions object to register intent handlers
 actions = Actions()
@@ -40,6 +33,9 @@ class CalendarBot(object):
         pass
 
     # Example of a simple handler with a threshold, and a fallback intent
+    # api_result is an object that is available to all functions decorated by
+    # @action.intent.
+
     @actions.intent("cancel", threshold=(0.4, "unknown"))
     def cancel_handler(self):
         e =  api_result.entities.entities.get("builtin", {})
@@ -52,9 +48,13 @@ class CalendarBot(object):
             else:
                 person_text = person[0]
             message += " with %s" % person_text
-        if "time" in e and e.get("time") is not None:
-            tm = e.get("time")[0][0]
-            message += " at %s." % (tm)
+
+        if "DATE" in e:
+            tm = [i.get("date") for i in e.get("DATE")]
+            tm_text = ""
+            if len(tm) >= 1:
+                tm_text = tm[0]
+            message += " at %s." % (tm_text)
         return message
 
 
@@ -71,9 +71,13 @@ class CalendarBot(object):
             else:
                 person_text = person[0]
             message += " with %s" % person_text
-        if "time" in e and e.get("time") is not None:
-            tm = e.get("time")[0][0]
-            message += " at %s." % (tm)
+
+        if "DATE" in e:
+            tm = [i.get("date") for i in e.get("DATE")]
+            tm_text = ""
+            if len(tm) >= 1:
+                tm_text = tm[0]
+            message += " at %s." % (tm_text)
         return message
 
     # Example of a simple handler without an api_result
@@ -83,7 +87,8 @@ class CalendarBot(object):
 
     @actions.intent("unknown")
     def unknown_handler(self):
-        return "unknown intent or low score %s, %s" % (api_result.intent.label, api_result.intent.score)
+        return "unknown intent or low score %s, %s"\
+            % (api_result.intent.label, api_result.intent.score)
 
     def process(self, user_input):
         api_result = api.get(user_input)
