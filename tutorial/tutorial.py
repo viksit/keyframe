@@ -1,8 +1,8 @@
+from __future__ import print_function
 from os.path import expanduser, join
 
 
 from pymyra.api import client
-from pymyra.lib.keyframe import CmdLineHandler
 
 # Create the API config object from a configuration file
 # This gets the config from /Users/<username>/.myra/settings.conf
@@ -41,21 +41,56 @@ class Actions(object):
         return self.intent_map.get(intent.label)(**kwargs)
 
     def cancel_handler(self, **kwargs):
-        result = kwargs.get("result")
-        return "cancel meeting %s %s" % (result.intent.label, result.intent.score)
+        api_result = kwargs.get("result")
+        e = api_result.entities.entity_dict.get("builtin", {})
+        message = "Sure, I'll cancel the meeting for you"
+        if "PERSON" in e:
+            person = [i.get("text") for i in e.get("PERSON")]
+            person_text = ""
+            if len(person) > 1:
+                person_text = " and ".join(person)
+            else:
+                person_text = person[0]
+            message += " with %s" % person_text
+
+        if "DATE" in e:
+            tm = [i.get("date") for i in e.get("DATE")]
+            tm_text = ""
+            if len(tm) >= 1:
+                tm_text = tm[0]
+            message += " at %s." % (tm_text)
+        return message
 
     def create_handler(self, **kwargs):
-        result = kwargs.get("result")
-        return "create meeting  %s %s" % (result.intent.label, result.intent.score)
+        api_result = kwargs.get("result")
+        e = api_result.entities.entity_dict.get("builtin", {})
+        message = "I can help create a meeting for you"
+        if "PERSON" in e:
+            person = [i.get("text") for i in e.get("PERSON")]
+            person_text = ""
+            if len(person) > 1:
+                person_text = " and ".join(person)
+            else:
+                person_text = person[0]
+            message += " with %s" % person_text
+
+        if "DATE" in e:
+            tm = [i.get("date") for i in e.get("DATE")]
+            tm_text = ""
+            if len(tm) >= 1:
+                tm_text = tm[0]
+            message += " at %s." % (tm_text)
+        return message
 
     def help_handler(self, **kwargs):
-        result = kwargs.get("result")
-        return "This is some help  %s %s" % (result.intent.label, result.intent.score)
+        api_result = kwargs.get("result")
+        return "This is some help  %s %s" % (api_result.intent.label,
+                                             api_result.intent.score)
 
     def unknown_handler(self, **kwargs):
-        result = kwargs.get("result")
+        api_result = kwargs.get("result")
         return "I'm sorry I don't know how to handle this\ %s %s" % (
-            result.intent.label, result.intent.score)
+            api_result.intent.label, api_result.intent.score)
 
 
 class CalendarBot(object):
@@ -70,5 +105,5 @@ class CalendarBot(object):
 
 if __name__ == "__main__":
     bot = CalendarBot()
-    c = CmdLineHandler(bot)
+    c = client.CmdLineHandler(bot)
     c.begin()
