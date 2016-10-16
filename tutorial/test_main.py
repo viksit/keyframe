@@ -3,7 +3,7 @@ from pymyra.api import client
 
 sentence = "whats a good coffee shop in the mission?"
 
-CONF_FILE = join(expanduser('~'), '.myra', 'settings.conf')
+CONF_FILE = join(expanduser('~'), '.pymyra', 'settings.conf')
 
 # Create configuration
 config = client.get_config(CONF_FILE)

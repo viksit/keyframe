@@ -5,6 +5,8 @@ import json
 import logging
 from os.path import expanduser, join
 
+from ..lib import utils
+
 try:
     import http.client as http_client
 except ImportError:

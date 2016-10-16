@@ -35,6 +35,6 @@ setup(
     url = "https://github.com/myralabs/python-myra",
     cmdclass={"build_py": build_py},
     install_requires=install_requires,
-    packages=["pymyra"],
+    packages=find_packages(),
     data_files=[(conf_file_location, ["pymyra/settings.conf"])]
 )

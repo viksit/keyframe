@@ -1,4 +1,7 @@
 from __future__ import print_function
+from __future__ import absolute_import
+
+from . import api
 
 __author__ = 'Myra Labs, Inc.'
 __copyright__ = 'Copyright 2016 Myra Labs, Inc.'
