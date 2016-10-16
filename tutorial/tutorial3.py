@@ -1,23 +1,24 @@
 from __future__ import print_function
 from os.path import expanduser, join
-from myra_client import clientv2
-from utils import Actions, CmdLineHandler
 
+
+from pymyra.api import client
+from pymyra.lib.utils import *
 
 ############## Tutorial code ####################
 
 # Configuration for Myra's API
 # Create the API config object from a configuration file
 # This gets the config from /Users/<username>/.myra/settings.conf
-CONF_FILE = join(expanduser('~'), '.myra', 'settings.conf')
-config = clientv2.get_config(CONF_FILE)
+CONF_FILE = join(expanduser('~'), '.pymyra', 'settings.conf')
+config = client.get_config(CONF_FILE)
 
 # Intent and entity models that we're using
 INTENT_MODEL_ID = "27c71fe414984927a32ff4d6684e0a73"
 # prod "b4a5ce9b075e416bb1e8968eea735fa6"
 
 # Establish a global API connection
-api = clientv2.connect(config, debug=True)
+api = client.connect(config, debug=True)
 api.set_intent_model(INTENT_MODEL_ID)
 
 # Create an actions object to register intent handlers
@@ -54,7 +55,6 @@ class CalendarBot(object):
                 tm_text = tm[0]
             message += " at %s." % (tm_text)
         return message
-
 
     # Example of a simple handler with an api_result
     @actions.intent("create")
