@@ -46,9 +46,8 @@ config = client.get_config(CONF_FILE)
 api = client.connect(config)
 
 # Set intent model
-im = "xxxyyy"
-
 # Copy an ID from http://api.myralabs.com/v2/dashboard/#/intents
+im = "xxxyyy"
 api.set_intent_model(im)
 
 # Set entity model
