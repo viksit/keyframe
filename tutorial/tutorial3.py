@@ -2,7 +2,7 @@ from __future__ import print_function
 from os.path import expanduser, join
 
 from pymyra.api import client
-from pymyra.lib.utils import *
+from pymyra.lib.keyframe import *
 
 ############## Tutorial code ####################
 

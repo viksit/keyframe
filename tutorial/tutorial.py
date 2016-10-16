@@ -1,22 +1,23 @@
 from os.path import expanduser, join
-from myra_client import clientv2
-from utils import CmdLineHandler
 
+
+from pymyra.api import client
+from pymyra.lib.keyframe import CmdLineHandler
 
 # Create the API config object from a configuration file
 # This gets the config from /Users/<username>/.myra/settings.conf
 
-CONF_FILE = join(expanduser('~'), '.myra', 'settings.conf')
-config = clientv2.get_config(CONF_FILE)
+CONF_FILE = join(expanduser('~'), '.pymyra', 'settings.conf')
+config = client.get_config(CONF_FILE)
 
 # TODO(viksit) move this to an actual ID that someone will replace
-INTENT_MODEL_ID = "b4a5ce9b075e416bb1e8968eea735fa6"
-ENTITY_MODEL_ID = "4911dc1f0005408881e08a05dd998b0f"
+INTENT_MODEL_ID = "27c71fe414984927a32ff4d6684e0a73"
+#ENTITY_MODEL_ID = "4911dc1f0005408881e08a05dd998b0f"
 
 # Establish a global API connection
-api = clientv2.connect(config)
+api = client.connect(config)
 api.set_intent_model(INTENT_MODEL_ID)
-api.set_entity_model(ENTITY_MODEL_ID)
+#api.set_entity_model(ENTITY_MODEL_ID)
 
 
 class Actions(object):
