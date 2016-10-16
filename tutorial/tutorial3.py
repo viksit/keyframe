@@ -3,6 +3,8 @@ from os.path import expanduser, join
 
 from pymyra.api import client
 from pymyra.lib.keyframe import *
+from pymyra.lib.channel_client import *
+from pymyra.lib.messages import *
 
 ############## Tutorial code ####################
 
@@ -23,20 +25,21 @@ api.set_intent_model(INTENT_MODEL_ID)
 # Create an actions object to register intent handlers
 actions = Actions()
 
-class CalendarBot(object):
 
-    welcome_message = "Welcome to calendar bot! I can help you create and cancel meetings. Try 'set up a meeting with Jane' or 'cancel my last meeting' to get started."
+class CalendarBot(BaseBot):
 
-    def __init__(self):
-        pass
+    welcomeMessage = "Welcome to calendar bot! I can help you create and cancel meetings. Try 'set up a meeting with Jane' or 'cancel my last meeting' to get started."
+
+    def __init__(self, *args, **kwargs):
+        super(CalendarBot, self).__init__(*args, **kwargs)
 
     # Example of a simple handler with a threshold, and a fallback intent
-    # api_result is an object that is available to all functions decorated by
+    # apiResult is an object that is available to all functions decorated by
     # @action.intent.
 
     @actions.intent("cancel", threshold=(0.4, "unknown"))
-    def cancel_handler(self):
-        e =  api_result.entities.entity_dict.get("builtin", {})
+    def cancelHandler(self):
+        e =  apiResult.entities.entity_dict.get("builtin", {})
         message = "Sure, I'll cancel the meeting for you"
         if "PERSON" in e:
             person = [i.get("text") for i in e.get("PERSON")]
@@ -55,10 +58,10 @@ class CalendarBot(object):
             message += " at %s." % (tm_text)
         return message
 
-    # Example of a simple handler with an api_result
+    # Example of a simple handler with an apiResult
     @actions.intent("create")
-    def create_handler(self):
-        e = api_result.entities.entity_dict.get("builtin", {})
+    def createHandler(self):
+        e = apiResult.entities.entity_dict.get("builtin", {})
         message = "I can help create a meeting for you"
         if "PERSON" in e:
             person = [i.get("text") for i in e.get("PERSON")]
@@ -77,23 +80,33 @@ class CalendarBot(object):
             message += " at %s." % (tm_text)
         return message
 
-    # Example of a simple handler without an api_result
+    # Example of a simple handler without an apiResult
     @actions.intent("help")
-    def help_handler(self):
+    def helpHandler(self):
         return "Help message for this bot"
 
     @actions.intent("unknown")
-    def unknown_handler(self):
+    def unknownHandler(self):
         return "unknown intent or low score %s, %s"\
-            % (api_result.intent.label, api_result.intent.score)
+            % (apiResult.intent.label, apiResult.intent.score)
 
-    def process(self, user_input):
-        api_result = api.get(user_input)
-        message = actions.handle(api_result)
-        print(">> ", message)
+    def process(self, userInput):
+        message = actions.handle(userInput=userInput,
+                                 myraAPI=self.api)
+        cr = messages.createTextResponse(canonicalMsg, text, responseType)
+        self.channelClient.sendResponse(cr)
+
+
+class CalendarCmdlineHandler(BotCmdlineHandler):
+
+    def init(self):
+        channelClient = ChannelClient()
+        self.bot = CalendarBot(api=api,
+                               actions=actions,
+                               channel=channelClient)
 
 
 if __name__ == "__main__":
-    bot = CalendarBot()
+    bot = CalendarBot(api=api, actions=actions)
     c = CmdLineHandler(bot)
-    c.begin(bot.welcome_message)
+    c.begin(bot.welcomeMessage)
