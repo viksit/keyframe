@@ -90,13 +90,12 @@ class CalendarBot(BaseBot):
         return "unknown intent or low score %s, %s"\
             % (apiResult.intent.label, apiResult.intent.score)
 
-    def process(self, userInput):
+    def process(self, canonicalMsg):
         print("U input: ", type(userInput), userInput)
-        message = actions.handle(userInput=userInput,
+        message = actions.handle(canonicalMsg=canonicalMsg,
                                  myraAPI=self.api)
-        #cr = messages.createTextResponse(canonicalMsg, text, responseType)
-        #self.channelClient.sendResponse(cr)
-        print("** >> ", message)
+        cr = messages.createTextResponse(canonicalMsg, message, responseType)
+        self.channelClient.sendResponse(cr)
 
 class CalendarCmdlineHandler(BotCmdLineHandler):
 
