@@ -91,7 +91,6 @@ class CalendarBot(BaseBot):
             % (apiResult.intent.label, apiResult.intent.score)
 
     def process(self, canonicalMsg):
-        print("U input: ", type(userInput), userInput)
         message = actions.handle(canonicalMsg=canonicalMsg,
                                  myraAPI=self.api)
         cr = messages.createTextResponse(canonicalMsg, message, responseType)
