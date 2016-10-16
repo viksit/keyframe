@@ -11,8 +11,6 @@ except ImportError:
     # Python 2
     import httplib as http_client
 
-from ..lib import utils
-
 # Logging and debug utilities
 
 http_client.HTTPConnection.debuglevel = 0

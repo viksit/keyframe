@@ -1,15 +1,15 @@
 from os.path import expanduser, join
-from myra_client import clientv2
+from pymyra.api import client
 
 sentence = "whats a good coffee shop in the mission?"
 
 CONF_FILE = join(expanduser('~'), '.myra', 'settings.conf')
 
 # Create configuration
-config = clientv2.get_config(CONF_FILE)
+config = client.get_config(CONF_FILE)
 
 # Connect API
-api = clientv2.connect(config)
+api = client.connect(config)
 
 # Set intent model
 im = config.get("model.intent1").get("model_id")
