@@ -1,21 +1,30 @@
-# python-myra
+```
+from os.path import expanduser, join
+from myra_client import clientv2
 
-Python library to access Myra natural language APIs. 
+sentence = "whats a good coffee shop in the mission?"
 
-Please retrieve your Account ID, Account Secret, and Intent Model ID or Entity ID from the Myra dashboard.
+# Set up configuration file path
+CONF_FILE = join(expanduser('~'), '.myra', 'settings.conf')
 
-```sh
-~/ $ git clone git@github.com:myralabs/python-myra.git
-~/ $ cd python-myra/
+# Create configuration
+config = clientv2.get_config(CONF_FILE)
 
-~/python-myra $ export MYRA_ACCOUNT_ID=xxx
-~/python-myra $ export MYRA_ACCOUNT_SECRET=xxx
-~/python-myra $ export MYRA_INTENT_MODEL_ID=xxx
-~/python-myra $ export MYRA_ENTITY_MODEL_ID=xxx
+# Connect API
+api = clientv2.connect(config)
 
-~/python-myra $ python myraclient/client.py "Hello"
-intent: ('myra.intent.greeting.hello', 0.9736359715461731)
+# Set intent model ID
+im = "xxxxyyy"
+api.set_intent_model(im)
 
-~/python-myra $ python myraclient/client.py "Goodbye"
-intent: ('myra.intent.greeting.bye', 0.9181773662567139)
+# Set entity model ID
+em = "yyyxxxxx"
+api.set_entity_model(em)
+
+# Get results
+result = api.get(sentence)
+
+# Output
+print("Intent: ", result.intent.label, result.intent.score)
+print("Entities; ", result.entities.entity_dict)
 ```

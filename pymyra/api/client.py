@@ -3,6 +3,7 @@ import os, sys
 import requests
 import json
 import logging
+from os.path import expanduser, join
 
 try:
     import http.client as http_client
@@ -10,7 +11,7 @@ except ImportError:
     # Python 2
     import httplib as http_client
 
-from myra_client import utils
+from ..lib import utils
 
 # Logging and debug utilities
 
@@ -59,8 +60,7 @@ class IntentResult(object):
 
 class EntityResult(object):
     def __init__(self, entities):
-        self.entities = entities
-
+        self.entity_dict = entities
 
 class InferenceResult(object):
 
@@ -173,48 +173,4 @@ class InferenceClient(object):
         (intent, score) = self._extract_intent(d)
 
         entities = self._extract_entities(d)
-        print(">>>>>>", entities)
         return InferenceResult(intent, score, entities)
-
-
-def main():
-    account_id = os.getenv("MYRA_ACCOUNT_ID")
-
-    if not account_id:
-        print((sys.stderr, "environment must have MYRA_ACCOUNT_ID"))
-        sys.exit(1)
-    account_secret = os.getenv("MYRA_ACCOUNT_SECRET")
-
-    if not account_secret:
-        print((sys.stderr, "environment must have MYRA_ACCOUNT_SECRET"))
-        sys.exit(1)
-
-    if not len(sys.argv) == 2:
-        print((sys.stderr, "usage: client.py <msg>"))
-        sys.exit(1)
-
-    msg = sys.argv[1]
-    intent_model_id = os.getenv("MYRA_INTENT_MODEL_ID")
-    entity_model_id = os.getenv("MYRA_ENTITY_MODEL_ID")
-
-    if not intent_model_id and not entity_model_id:
-        print((sys.stderr, "environment must have MYRA_ENTITY_MODEL_ID and/or MYRA_INTENT_MODEL_ID"))
-        sys.exit(1)
-
-    ic = InferenceClient(
-        account_id=account_id,
-        account_secret=account_secret,
-        intent_model_id=intent_model_id,
-        entity_model_id=entity_model_id)
-
-    if intent_model_id:
-        intent = ic.get_intent(msg)
-        print(("intent: %s" % (intent,)))
-
-    if entity_model_id:
-        entity = ic.get_entities(msg)
-        print(("entity: %s" % (entity,)))
-
-
-if __name__ == "__main__":
-    main()

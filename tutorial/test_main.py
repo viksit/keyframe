@@ -23,4 +23,4 @@ api.set_entity_model(em)
 result = api.get(sentence)
 
 print("Intent: ", result.intent.label, result.intent.score)
-print("Entities; ", result.entities.entities)
+print("Entities; ", result.entities.entity_dict)

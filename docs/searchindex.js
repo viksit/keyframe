@@ -1,1 +1,0 @@
-Search.setIndex({envversion:49,filenames:["index","intro"],objects:{},objnames:{},objtypes:{},terms:{content:[0,1],index:[0,1],modul:[0,1],page:[0,1],search:[0,1]},titles:["Welcome to myra&#8217;s documentation!","intro Welcome to myra&#8217;s documentation!"],titleterms:{document:[0,1],indice:[0,1],intro:1,myra:[0,1],tabl:[0,1],welcom:[0,1]}})
