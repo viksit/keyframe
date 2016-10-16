@@ -95,15 +95,18 @@ class Actions(object):
 
 class CalendarBot(object):
 
+    welcome_message = "Welcome to calendar bot! I can help you create and cancel meetings. Try 'set up a meeting with Jane' or 'cancel my last meeting' to get started."
+
     def __init__(self):
         self.actions = Actions()
 
     def process(self, user_input):
         result = api.get(user_input)
         message = self.actions.handle(result=result)
-        print(">> ", message)
+        print("calendar_bot>> ", message)
 
 if __name__ == "__main__":
     bot = CalendarBot()
     c = client.CmdLineHandler(bot)
-    c.begin()
+    c.begin(startMessage=bot.welcome_message,
+            botName="calendar_bot")

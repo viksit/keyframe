@@ -24,9 +24,9 @@ class CmdLineHandler(object):
         self.bot = bot
 
     # Begin your command line loop
-    def begin(self, startMessage=None):
+    def begin(self, startMessage=None, botName=""):
         if startMessage:
-            print(">> ", startMessage)
+            print("%s>> " % botName, startMessage)
         while True:
             try:
                 userInput = raw_input("> ")
