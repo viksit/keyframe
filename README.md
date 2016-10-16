@@ -2,7 +2,6 @@
 
 The Python SDK for the Myra Conversational AI REST API.
 
-
 ## Install
 
 Using `pip`:

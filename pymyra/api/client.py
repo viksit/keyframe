@@ -4,17 +4,36 @@ import requests
 import json
 import logging
 from os.path import expanduser, join
-
-from ..lib import utils
-
+import ConfigParser
 try:
     import http.client as http_client
 except ImportError:
     # Python 2
     import httplib as http_client
 
-# Logging and debug utilities
+# Configuration management
+class MyraConfig(object):
+    def __init__(self, config_file = None):
+        self.config_file = config_file
+        if not self.config_file:
+            self.config_file = "./settings.conf"
+        self.config = ConfigParser.ConfigParser()
+        self.config.read(self.config_file)
 
+    def get(self, section):
+        res = {}
+        options = self.config.options(section)
+        for option in options:
+            try:
+                res[option] = self.config.get(section, option)
+                if res[option] == -1:
+                    pass # Skip
+            except:
+                print("exception on %s!" % option)
+                res[option] = None
+        return res
+
+# Logging and debug utilities
 http_client.HTTPConnection.debuglevel = 0
 logging.basicConfig()
 log = logging.getLogger(__name__)
@@ -31,11 +50,11 @@ def set_debug():
 # Package level functions
 
 def get_config(config_file=None):
-    return utils.MyraConfig(config_file)
+    return MyraConfig(config_file)
 
 def connect(config, debug=False):
 
-    assert type(config) == utils.MyraConfig
+    assert type(config) == MyraConfig
     if debug:
         set_debug()
 
@@ -67,7 +86,6 @@ class InferenceResult(object):
     def __init__(self, intent_label=None, intent_score=None, entities=None):
         self.intent = IntentResult(intent_label, intent_score)
         self.entities = EntityResult(entities)
-
 
 class InferenceClient(object):
     def __init__(

@@ -1,7 +1,6 @@
 from __future__ import print_function
 from os.path import expanduser, join
 
-
 from pymyra.api import client
 from pymyra.lib.utils import *
 
@@ -59,7 +58,7 @@ class CalendarBot(object):
     # Example of a simple handler with an api_result
     @actions.intent("create")
     def create_handler(self):
-        e = api_result.entities.get("builtin", {})
+        e = api_result.entities.entity_dict.get("builtin", {})
         message = "I can help create a meeting for you"
         if "PERSON" in e:
             person = [i.get("text") for i in e.get("PERSON")]
