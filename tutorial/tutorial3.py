@@ -19,7 +19,7 @@ INTENT_MODEL_ID = "27c71fe414984927a32ff4d6684e0a73"
 # prod "b4a5ce9b075e416bb1e8968eea735fa6"
 
 # Establish a global API connection
-api = client.connect(config, debug=True)
+api = client.connect(config, debug=False)
 api.set_intent_model(INTENT_MODEL_ID)
 
 # Create an actions object to register intent handlers
@@ -91,13 +91,14 @@ class CalendarBot(BaseBot):
             % (apiResult.intent.label, apiResult.intent.score)
 
     def process(self, userInput):
+        print("U input: ", type(userInput), userInput)
         message = actions.handle(userInput=userInput,
                                  myraAPI=self.api)
-        cr = messages.createTextResponse(canonicalMsg, text, responseType)
-        self.channelClient.sendResponse(cr)
+        #cr = messages.createTextResponse(canonicalMsg, text, responseType)
+        #self.channelClient.sendResponse(cr)
+        print("** >> ", message)
 
-
-class CalendarCmdlineHandler(BotCmdlineHandler):
+class CalendarCmdlineHandler(BotCmdLineHandler):
 
     def init(self):
         channelClient = ChannelClient()
@@ -105,8 +106,9 @@ class CalendarCmdlineHandler(BotCmdlineHandler):
                                actions=actions,
                                channel=channelClient)
 
-
 if __name__ == "__main__":
-    bot = CalendarBot(api=api, actions=actions)
-    c = CmdLineHandler(bot)
-    c.begin(bot.welcomeMessage)
+    #bot = CalendarBot(api=api, actions=actions)
+    #c = CmdLineHandler(bot)
+    #c.begin(bot.welcomeMessage)
+    c = CalendarCmdlineHandler()
+    c.begin()

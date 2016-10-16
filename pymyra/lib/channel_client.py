@@ -7,7 +7,7 @@ import logging
 import codecs
 
 import messages
-import bot_arch.fb
+import fb
 
 log = logging.getLogger(__name__)
 

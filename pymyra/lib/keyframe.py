@@ -9,32 +9,32 @@ import messages
 # Utilities for the Myra API tutorial
 #####################################
 
-class CmdLineHandler(object):
-    """ Simple terminal REPL for bots
-    """
+# class CmdLineHandler(object):
+#     """ Simple terminal REPL for bots
+#     """
 
-    def __init__(self, bot):
-        self.bot = bot
+#     def __init__(self, bot):
+#         self.bot = bot
 
-    # Begin your command line loop
-    def begin(self, startMessage=None):
-        if startMessage:
-            print(">> ", startMessage)
-        while True:
-            try:
-                userInput = raw_input("> ")
-                if not userInput:
-                    continue
-                self.processMessage(userInput)
-            except (KeyboardInterrupt, EOFError, SystemExit):
-                break
+#     # Begin your command line loop
+#     def begin(self, startMessage=None):
+#         if startMessage:
+#             print(">> ", startMessage)
+#         while True:
+#             try:
+#                 userInput = raw_input("> ")
+#                 if not userInput:
+#                     continue
+#                 self.processMessage(userInput)
+#             except (KeyboardInterrupt, EOFError, SystemExit):
+#                 break
 
-    # Handle incoming messages and return the response
-    def processMessage(self, userInput):
-        return self.bot.process(userInput)
+#     # Handle incoming messages and return the response
+#     def processMessage(self, userInput):
+#         return self.bot.process(userInput)
 #################################################################
 
-class CmdlineHandler(object):
+class CmdLineHandler(object):
     def __init__(self, userId=None):
         self.userId = userId
         if not self.userId:
