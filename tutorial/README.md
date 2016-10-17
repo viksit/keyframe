@@ -1,10 +1,10 @@
-# Zero to bot in 10 minutes
+# Myra tutorial -- Zero to bot in 10 minutes
 
 ## Overview
 
-Myra’s APIs are the best way to build natural language understanding into your applications. They provide tools to identify user intent and extract key data like names, cities, numbers, and custom-defined categories.
+Myra’s APIs are the best way to build natural language understanding into your applications. They provide tools to identify user intent and extract key data like names, cities, numbers, and custom-defined values.
 
-In this tutorial, we'll build a straightforward and state-of-the-art conversational bot that will produce results like this:
+Now, we'll build a simple and state-of-the-art conversational bot that will do this:
 
 ```bash
 
@@ -63,9 +63,9 @@ calendar_bot>>  I can help create a meeting for you with Jane and Joe at Sat, 22
 
 ## Step 4: Learn how CalendarBot is built
 
-CalendarBot is built to understand questions about creating and cancelling calendar entries. Later, we'll add the ability to modify entries. (CalendarBot doesn't actually connect to a calendaring service, sorry!)
+CalendarBot understands questions about creating and cancelling calendar entries. Later, we'll add the ability to modify entries. (CalendarBot doesn't actually connect to a calendaring service, sorry!)
 
-CalendarBot is connected to pre-trained models that will act to determine the user's intent -- the 'thing' they are trying to accomplish -- and entities -- the information in the sentence you need to carry out the user's task. We've included the training data for these models in `tutorial/data/botv1`.
+CalendarBot is connected to pre-trained models that determine the user's intent -- the 'thing' they are trying to accomplish -- and the user's entities -- information in the sentence you need to carry out the user's task. We've included the training data for these models in `tutorial/data/botv1`.
 
 ### The model
 
@@ -80,7 +80,7 @@ meeting with the team 10/24 in Guitar Hero|create
 cancel all my meetings with Christine and Tom|cancel
 clear my saturday|cancel
 ```
-The file has 12 utterances for `create` and 11 for `cancel`. We recommend at least 8 utterances in training. Later, we'll walk through adding a new intent to the model and to the bot.
+The file has 12 utterances for `create` and 11 for `cancel`. We recommend at least 8 utterances for training files, and 3 for test files. Curious how it works? In Step 5, we'll walk through adding a new intent to the model and to the bot.
 
 ### The bot
 `pymyra.api` contains the `client` module which we use to connect to the Myra API.
@@ -103,7 +103,6 @@ api.set_intent_model(INTENT_MODEL_ID)
 In the `__main__` block, we initialize bootstrap code to set up a command line interaction.
 
 ```python
-
 if __name__ == "__main__":
     # Initialize the calendar bot class
     bot = CalendarBot()
@@ -113,7 +112,6 @@ if __name__ == "__main__":
     c = client.CmdLineHandler(bot)
     c.begin(startMessage=bot.welcome_message,
       botName="calendar_bot")
-
 ```
 Let's step through how we implement `CalendarBot`.
 
@@ -126,7 +124,7 @@ print("calendar_bot>> ", message)
 ```
 The last part of this file is the `Actions` class. This contains a simple mapping of intents to action handlers. For instance, if the bot detects that the user is asking to create a meeting, it'll invoke the `create_handler()` function.
 
-Next, we just define each handler function. Here's the code for the `cancel_handler` function:
+Next, we define each handler function. Here's the code for the `cancel_handler`:
 
 ```python
  def cancel_handler(self, **kwargs):
