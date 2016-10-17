@@ -20,15 +20,13 @@ This will also install a sample configuration file into the following path `$HOM
 
 ## Overview
 
-`pymyra` provides access to the Myra RESTful APIs. It currently supports `python 2.7`.
+`pymyra` provides access to the Myra RESTful APIs. It currently supports `Python 2.7`.
 
 To continue, create an account on http://api.myralabs.com, and from the `Explore API` tab, replace `account_id` and `account_secret` in the configuration file at `$HOME/.pymyra/settings.conf` with your credentials.
 
 See the `tutorials` directory for a step by step tutorial and examples.
 
 ## Minimal Example
-
-Here's a minimal example.
 
 ```
 from os.path import expanduser, join
