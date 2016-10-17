@@ -65,7 +65,7 @@ calendar_bot>>  I can help create a meeting for you with Jane and Joe at Sat, 22
 
 CalendarBot is built to understand questions about creating and cancelling calendar entries. Later, we'll add the ability to modify entries. (CalendarBot doesn't actually connect to a calendaring service, sorry!)
 
-CalendarBot is connected to pre-trained models that will act to determine the user's intent -- the 'thing' they are trying to accomplish -- and entities -- the information in the sentence you need to carry out the user's task. We've included the training data for these models in `tutorial/data/botv1` -- check it out now. 
+CalendarBot is connected to pre-trained models that will act to determine the user's intent -- the 'thing' they are trying to accomplish -- and entities -- the information in the sentence you need to carry out the user's task. We've included the training data for these models in `tutorial/data/botv1`.
 
 ### The model
 
@@ -154,11 +154,22 @@ Next, we just define each handler function. Here's the code for the `cancel_hand
 The function gets the result of the Myra API, and fetches the detected entities into `e`. If it finds a mention of a person and a time, it will respond appropriately.
 
 ## Step 5: Extend CalendarBot to handle meeting modifications
+Now, let's add the ability to modify meetings to the Myra API and then to the bot. 
 
-- Train a new model on Myra using `data/botv2`.
-- Change the intent model ID with the new ID
+### Train the model
+In `tutorial/data/botv2`, we've included sample utterances for the intent `modify`:
+```
+change the time of the meeting with deepak|modify
+do the meeting with Jane at 1pm instead|modify
+switch the 1:1 to 9am on tuesday|modify
+```
+The model was pretrained for the create and modify intents; now, we'll upload and train the model ourselves. To do so, go to the "Intent Models" section of the Myra dashboard. 
+* Create a new model named `tutorial_botv2` and click the green plus icon.
+* Upload `calendar_train2.txt` into the Train section and `calendar_test2.txt` into the Test section, and hit Save and Train.
+* Wait a few minutes. Once the status says 'Ready', copy the intent model's ID over to `INTENT_MODEL_ID` in `tutorial.py`. 
 
-- Create a new entry in `self.intent_map` in the `Actions` class
+### Add to the bot
+Create a new entry in `self.intent_map` in the `Actions` class:
 ```python
 {
 ..,
@@ -166,9 +177,7 @@ The function gets the result of the Myra API, and fetches the detected entities 
 "modify": self.modify_handler
 }
 ```
-
-- Define a new function called `modify_handler` in the `Actions` class.
-
+Next, define a new function called `modify_handler` in the `Actions` class.
 ```python
  def modify_handler(self, **kwargs):
         api_result = kwargs.get("result")
@@ -193,12 +202,13 @@ The function gets the result of the Myra API, and fetches the detected entities 
 
 ```
 
-Run `tutorial.py` again and try with the following sentence:
+Run `tutorial.py` again, and ask the bot: "change my meeting with Scott to Tuesday", or whatever you want!
+
 
 ```
-# Example here
+# update me
 ```
 
 ## Next steps
 
-TBD: [Greg]
+You've made it! You now have a simple bot capable of understanding complex sentences related to creating, modifying, and canceling calendar entries. Next, try creating a new intent model for your own topics.
