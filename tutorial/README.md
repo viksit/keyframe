@@ -156,7 +156,7 @@ The function gets the result of the Myra API, and fetches the detected entities 
 ## Step 5: Extend CalendarBot to handle meeting modifications
 Now, let's add the ability to modify meetings to the Myra API and then to the bot. 
 
-### Train the model
+### Train the model to recognize modify
 In `tutorial/data/botv2`, we've included sample utterances for the intent `modify`:
 ```
 change the time of the meeting with deepak|modify
@@ -168,7 +168,7 @@ The model was pretrained for the create and modify intents; now, we'll upload an
 * Upload `calendar_train2.txt` into the Train section and `calendar_test2.txt` into the Test section, and hit Save and Train.
 * Wait a few minutes. Once the status says 'Ready', copy the intent model's ID over to `INTENT_MODEL_ID` in `tutorial.py`. 
 
-### Add to the bot
+### Add modify to the bot
 Create a new entry in `self.intent_map` in the `Actions` class:
 ```python
 {
