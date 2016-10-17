@@ -24,6 +24,7 @@ except ImportError:
 install_requires = [
     "requests>=2.11.1"
 ]
+
 conf_file_location = join(expanduser("~"), ".pymyra")
 
 setup(
@@ -33,6 +34,15 @@ setup(
     author = "The Myra Team",
     author_email = "info@myralabs.com",
     url = "https://github.com/myralabs/python-myra",
+    license="MIT",
+    classifiers=[
+        "Development Status :: 3 - Alpha",
+        "Intended Audience :: Developers",
+        "Topic :: Software Development :: Build Tools",
+        "License :: OSI Approved :: MIT License",
+        "Programming Language :: Python :: 2.7",
+    ],
+    keywords="artificial intelligence nlp api myra machine learning",
     cmdclass={"build_py": build_py},
     install_requires=install_requires,
     packages=find_packages(),
