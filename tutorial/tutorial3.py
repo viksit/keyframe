@@ -2,9 +2,11 @@ from __future__ import print_function
 from os.path import expanduser, join
 
 from pymyra.api import client
+
 from pymyra.lib.keyframe import *
-from pymyra.lib.channel_client import *
-from pymyra.lib.messages import *
+from pymyra.lib import channel_client
+from pymyra.lib import messages
+from pymyra.lib import config
 
 ############## Tutorial code ####################
 
@@ -12,14 +14,14 @@ from pymyra.lib.messages import *
 # Create the API config object from a configuration file
 # This gets the config from /Users/<username>/.myra/settings.conf
 CONF_FILE = join(expanduser('~'), '.pymyra', 'settings.conf')
-config = client.get_config(CONF_FILE)
+cfg = client.get_config(CONF_FILE)
 
 # Intent and entity models that we're using
 INTENT_MODEL_ID = "27c71fe414984927a32ff4d6684e0a73"
 # prod "b4a5ce9b075e416bb1e8968eea735fa6"
 
 # Establish a global API connection
-api = client.connect(config, debug=False)
+api = client.connect(cfg, debug=False)
 api.set_intent_model(INTENT_MODEL_ID)
 
 # Create an actions object to register intent handlers
@@ -39,8 +41,10 @@ class CalendarBot(BaseBot):
 
     @actions.intent("cancel", threshold=(0.4, "unknown"))
     def cancelHandler(self):
-        e =  apiResult.entities.entity_dict.get("builtin", {})
+        print(apiResult.entities.entity_dict)
+        e = apiResult.entities.entity_dict.get("builtin", {})
         message = "Sure, I'll cancel the meeting for you"
+        print(e)
         if "PERSON" in e:
             person = [i.get("text") for i in e.get("PERSON")]
             person_text = ""
@@ -93,20 +97,26 @@ class CalendarBot(BaseBot):
     def process(self, canonicalMsg):
         message = actions.handle(canonicalMsg=canonicalMsg,
                                  myraAPI=self.api)
-        cr = messages.createTextResponse(canonicalMsg, message, responseType)
-        self.channelClient.sendResponse(cr)
+        print("---------->", message)
+        #cr = messages.createTextResponse(canonicalMsg, message, responseType)
+        #self.channelClient.sendResponse(cr)
+        self.createAndSendTextResponse(
+            canonicalMsg,
+            message,
+            messages.ResponseElement.RESPONSE_TYPE_DEBUG)
 
 class CalendarCmdlineHandler(BotCmdLineHandler):
 
     def init(self):
-        channelClient = ChannelClient()
+        cf = config.Config()
+        channelClient = channel_client.getChannelClient(
+            channel=messages.CHANNEL_CMDLINE,
+            requestType=None,
+            config=cf)
         self.bot = CalendarBot(api=api,
                                actions=actions,
                                channel=channelClient)
 
 if __name__ == "__main__":
-    #bot = CalendarBot(api=api, actions=actions)
-    #c = CmdLineHandler(bot)
-    #c.begin(bot.welcomeMessage)
     c = CalendarCmdlineHandler()
     c.begin()

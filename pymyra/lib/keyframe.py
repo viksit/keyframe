@@ -1,38 +1,16 @@
 from __future__ import print_function
 import inspect
+import logging
 
 import messages
+import channel_client
+import fb
+
+log = logging.getLogger(__name__)
+
+
 
 ################# Library code #####################
-
-#####################################
-# Utilities for the Myra API tutorial
-#####################################
-
-# class CmdLineHandler(object):
-#     """ Simple terminal REPL for bots
-#     """
-
-#     def __init__(self, bot):
-#         self.bot = bot
-
-#     # Begin your command line loop
-#     def begin(self, startMessage=None):
-#         if startMessage:
-#             print(">> ", startMessage)
-#         while True:
-#             try:
-#                 userInput = raw_input("> ")
-#                 if not userInput:
-#                     continue
-#                 self.processMessage(userInput)
-#             except (KeyboardInterrupt, EOFError, SystemExit):
-#                 break
-
-#     # Handle incoming messages and return the response
-#     def processMessage(self, userInput):
-#         return self.bot.process(userInput)
-#################################################################
 
 class CmdLineHandler(object):
     def __init__(self, userId=None):
@@ -154,6 +132,13 @@ class Actions(object):
 
 class BaseBot(object):
 
+    # Constants
+    REQUEST_STATE_NEW = "req-new"
+    REQUEST_STATE_PROCESSED = "req-processed"
+
+    # User profile keys
+    UP_NAME = "up_name"
+
     def __init__(self, *args, **kwargs): # api, channel, ctxstore, config, actions, debug=False):
         self.api = kwargs.get("api")
         self.channel = kwargs.get("channel")
@@ -161,15 +146,27 @@ class BaseBot(object):
         self.config = kwargs.get("config")
         self.debug = kwargs.get("debug")
         self.actions = kwargs.get("actions")
+        # Add debug
+        self.init()
 
     def init(self):
         # Override to initialize stuff in derived bots
         pass
 
 
+    def createAndSendTextResponse(self, canonicalMsg, text, responseType=None):
+        log.info("createAndSendTextResponse(%s)", locals())
+        cr = messages.createTextResponse(canonicalMsg, text, responseType)
+        log.info("cr: %s", cr)
+        self.channelClient.sendResponse(cr)
 
+    def errorResponse(self, canonicalMsg):
+        self.createAndSendTextResponse(
+            canonicalMsg, "Internal Error",
+            messages.ResponseElement.RESPONSE_TYPE_RESPONSE)
 
-
+    def process(self):
+        pass
 
 
 
