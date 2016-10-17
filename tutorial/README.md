@@ -149,19 +149,19 @@ Next, we define each handler function. Here's the code for the `cancel_handler`:
         return message
 ```
 
-The function gets the result of the Myra API, and fetches the detected entities into `e`. If it finds a mention of a person and a time, it will respond appropriately.
+The function gets the result of the Myra API, and fetches the detected entities into `e`. If it finds a mention of a person and a time, it will include those in the response message.
 
-## Step 5: Extend CalendarBot to handle meeting modifications
+## Step 5: Train and extend CalendarBot to handle something new
 Now, let's add the ability to modify meetings to the Myra API and then to the bot. 
 
-### Train the model to recognize modify
-In `tutorial/data/botv2`, we've included sample utterances for the intent `modify`:
+### Train the model to recognize the modify intent
+In `tutorial/data/botv2`, we've included new utterances for the intent `modify`. Check them out now:
 ```
 change the time of the meeting with deepak|modify
 do the meeting with Jane at 1pm instead|modify
 switch the 1:1 to 9am on tuesday|modify
 ```
-The model was pretrained for the create and modify intents; now, we'll upload and train the model ourselves. To do so, go to the "Intent Models" section of the Myra dashboard. 
+The model was pretrained for the `create` and `cancel` intents; now, we'll upload and train the model ourselves to add the `modify` intent. To do so, go to the "Intent Models" section of the Myra dashboard. 
 * Create a new model named `tutorial_botv2` and click the green plus icon.
 * Upload `calendar_train2.txt` into the Train section and `calendar_test2.txt` into the Test section, and hit Save and Train.
 * Wait a few minutes. Once the status says 'Ready', copy the intent model's ID over to `INTENT_MODEL_ID` in `tutorial.py`. 
@@ -170,7 +170,6 @@ The model was pretrained for the create and modify intents; now, we'll upload an
 Create a new entry in `self.intent_map` in the `Actions` class:
 ```python
 {
-..,
 ..,
 "modify": self.modify_handler
 }
@@ -200,7 +199,7 @@ Next, define a new function called `modify_handler` in the `Actions` class.
 
 ```
 
-Run `tutorial.py` again, and ask the bot: "change my meeting with Scott to Tuesday", or whatever you want!
+Run `tutorial.py` again, and ask the bot: "change my meeting with Scott to Tuesday", or whatever you want! Now, you have a bot that you've taught to understand complex input related to creating, modifying, and cancelling meetings. 
 
 
 ```
