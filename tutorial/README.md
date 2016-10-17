@@ -71,7 +71,7 @@ CalendarBot is connected to pre-trained models that determine the user's intent 
 
 The files are divided into two portions called `train` and `test`. The Myra model will learn based off the sentences in `train` and use the sentences in `test` to evaluate the model's performance on new, unseen data. 
 
-calendar_train1.txt:
+*calendar_train1.txt:*
 ```
 utterance|intent
 meeting with Kevin and John next tuesday 5pm|create
@@ -157,7 +157,7 @@ Now, let's add the ability to modify meetings to the Myra API and then to the bo
 ### Train the model to recognize the modify intent
 In `tutorial/data/botv2`, we've included new utterances for the intent `modify`. Check them out now:
 
-calendar_train2.txt:
+*calendar_train2.txt:*
 ```
 change the time of the meeting with deepak|modify
 do the meeting with Jane at 1pm instead|modify
