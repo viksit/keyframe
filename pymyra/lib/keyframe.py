@@ -102,16 +102,15 @@ class Actions(object):
         """ Support keyword intent, model intent and regex intent
         handling
         """
-        userInput = kwargs.get("userInput")
+        canonicalMsg = kwargs.get("canonicalMsg")
         myraAPI = kwargs.get("myraAPI")
-
         # TODO(viksit): Functionality
         # Check if any given string in keyword intents is in the input
         # If it is, run that function on the input.
         # You can match : equals, contains?
 
         # If we got this far, then we need to run the model
-        apiResult = myraAPI.get(userInput)
+        apiResult = myraAPI.get(canonicalMsg.text)
         intentStr = apiResult.intent.label
         intent_score = apiResult.intent.score
 
@@ -124,7 +123,7 @@ class Actions(object):
                 # NOTE: This dictionary update is NOT thread safe, and is shared by all functions
                 # in the given namespace.
                 handlerFunction.func_globals['apiResult'] = apiResult
-                handlerFunction.func_globals['userInput'] = userInput
+                handlerFunction.func_globals['canonicalMsg'] = canonicalMsg
                 return handlerFunction(self)
         else:
             raise ValueError("Intent '{}'' has not been registered".format(intentStr))
@@ -141,7 +140,7 @@ class BaseBot(object):
 
     def __init__(self, *args, **kwargs): # api, channel, ctxstore, config, actions, debug=False):
         self.api = kwargs.get("api")
-        self.channel = kwargs.get("channel")
+        self.channelClient = kwargs.get("channelClient")
         self.ctxstore = kwargs.get("ctxstore")
         self.config = kwargs.get("config")
         self.debug = kwargs.get("debug")

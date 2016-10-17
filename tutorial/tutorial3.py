@@ -97,25 +97,24 @@ class CalendarBot(BaseBot):
     def process(self, canonicalMsg):
         message = actions.handle(canonicalMsg=canonicalMsg,
                                  myraAPI=self.api)
-        print("---------->", message)
-        #cr = messages.createTextResponse(canonicalMsg, message, responseType)
-        #self.channelClient.sendResponse(cr)
         self.createAndSendTextResponse(
             canonicalMsg,
             message,
-            messages.ResponseElement.RESPONSE_TYPE_DEBUG)
+            messages.ResponseElement.RESPONSE_TYPE_RESPONSE)
 
 class CalendarCmdlineHandler(BotCmdLineHandler):
 
     def init(self):
+
         cf = config.Config()
         channelClient = channel_client.getChannelClient(
             channel=messages.CHANNEL_CMDLINE,
             requestType=None,
             config=cf)
+
         self.bot = CalendarBot(api=api,
                                actions=actions,
-                               channel=channelClient)
+                               channelClient=channelClient)
 
 if __name__ == "__main__":
     c = CalendarCmdlineHandler()
