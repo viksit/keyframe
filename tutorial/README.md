@@ -65,14 +65,25 @@ calendar_bot>>  I can help create a meeting for you with Jane and Joe at Sat, 22
 
 CalendarBot is built to understand questions about creating and cancelling calendar entries. Later, we'll add the ability to modify entries. (CalendarBot doesn't actually connect to a calendaring service, sorry!)
 
-This tutorial ships with two sets of data files in the `tutorial/data` directory - `botv1` and `botv2`. Each directory contains two files - a training set and a testing set. A demo model for calendar queries has already been created for you by default using the `botv1/` dataset, and it's ID is `...`. [TODO: Greg]. This is what tutorial.py uses when you start.
+CalendarBot is connected to pre-trained models that will act to determine the user's intent -- the 'thing' they are trying to accomplish -- and entities -- the information in the sentence you need to carry out the user's task. We've included the training data for these models in `tutorial/data/botv1` -- check it out now. 
 
-Over the course of this tutorial, we'll walk you through extending the calendar bot to support one more piece of functionality - that of being able to modify existing calendar entries, by creating a model on Myra using the data in `botv2`, and extending tutorial.py in the right places.
+### The model
 
+The files are divided into two portions called `train` and `test`. The Myra model will learn based off the sentences in `train` and use the sentences in `test` to evaluate the model's performance on new, unseen data. 
 
-Let's do a quick walkthrough of the code in `tutorial.py`.
+`calendar_test1.txt`
+```
+utterance|intent
+meeting with Kevin and John next tuesday 5pm|create
+let's meet up next week sometime|create
+meeting with the team 10/24 in Guitar Hero|create
+cancel all my meetings with Christine and Tom|cancel
+clear my saturday|cancel
+```
+The file has 12 utterances for `create` and 11 for `cancel`. We recommend at least 8 utterances in training. Later, we'll walk through adding a new intent to the model and to the bot.
 
-`pymyra.api` contains the `client` module which we use to connect to the Myra API as described in the README which ships with the library.
+### The bot
+`pymyra.api` contains the `client` module which we use to connect to the Myra API.
 
 ```python
 from pymyra.api import client
@@ -89,9 +100,7 @@ INTENT_MODEL_ID = "27c71fe414984927a32ff4d6684e0a73"
 api = client.connect(config)
 api.set_intent_model(INTENT_MODEL_ID)
 ```
-
-
-If you now examine the `__main__` block, we initialize some bootstrap code which allows us to set up a command line interaction with our soon to be active bot.
+In the `__main__` block, we initialize bootstrap code to set up a command line interaction.
 
 ```python
 
@@ -106,22 +115,18 @@ if __name__ == "__main__":
       botName="calendar_bot")
 
 ```
-
 Let's step through how we implement `CalendarBot`.
 
-The bot has a `process()` function which takes in a user input (in this case from the terminal), invokes the Myra API on it via `api.get(user_input)`, and then passes this to the action handler function. The result from this call is then printed out on the terminal.
+The `process()` function takes in a user input, invokes the Myra API on it via `api.get(user_input)`, and then passes this to the action handler function. The result from this call is then printed out on the terminal.
 
 ```python
-
 result = api.get(user_input)
 message = self.actions.handle(result=result)
 print("calendar_bot>> ", message)
-
 ```
-
 The last part of this file is the `Actions` class. This contains a simple mapping of intents to action handlers. For instance, if the bot detects that the user is asking to create a meeting, it'll invoke the `create_handler()` function.
 
-What's left then is to simply define each handler function. Here's the code for the `cancel_handler` function.
+Next, we just define each handler function. Here's the code for the `cancel_handler` function:
 
 ```python
  def cancel_handler(self, **kwargs):
@@ -146,12 +151,9 @@ What's left then is to simply define each handler function. Here's the code for 
         return message
 ```
 
-The function gets the result of the Myra API, and fetches the detected entities into `e`. If it finds a mention of a person and a time, it responds with a simple static message constructed appropriately.
-
-
+The function gets the result of the Myra API, and fetches the detected entities into `e`. If it finds a mention of a person and a time, it will respond appropriately.
 
 ## Step 5: Extend CalendarBot to handle meeting modifications
-
 
 - Train a new model on Myra using `data/botv2`.
 - Change the intent model ID with the new ID
@@ -191,7 +193,7 @@ The function gets the result of the Myra API, and fetches the detected entities 
 
 ```
 
-Run `tutorial.py` again and try with the following sentence,
+Run `tutorial.py` again and try with the following sentence:
 
 ```
 # Example here
