@@ -4,7 +4,7 @@
 
 Myra’s APIs are the best way to build natural language understanding into your applications. They provide tools to identify user intent and extract key data like names, cities, numbers, and custom-defined values.
 
-Now, we'll build a simple and state-of-the-art conversational bot that will do this:
+We'll build a simple and state-of-the-art conversational bot that will do this:
 
 ```bash
 
