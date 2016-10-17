@@ -10,21 +10,16 @@ from pymyra.api import client
 CONF_FILE = join(expanduser('~'), '.pymyra', 'settings.conf')
 config = client.get_config(CONF_FILE)
 
-# TODO(viksit) move this to an actual ID that someone will replace
-INTENT_MODEL_ID = "27c71fe414984927a32ff4d6684e0a73"
-#ENTITY_MODEL_ID = "4911dc1f0005408881e08a05dd998b0f"
+INTENT_MODEL_ID = "xxxxxxxxx"
 
 # Establish a global API connection
 api = client.connect(config)
 api.set_intent_model(INTENT_MODEL_ID)
-#api.set_entity_model(ENTITY_MODEL_ID)
 
 
 class Actions(object):
 
     def __init__(self):
-        # Ultimately, given a model, we ought to be able to
-        # get a list of intents from an API
         self.intent_map = {
             "cancel": self.cancel_handler,
             "create": self.create_handler,
