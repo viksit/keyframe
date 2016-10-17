@@ -80,7 +80,7 @@ meeting with the team 10/24 in Guitar Hero|create
 cancel all my meetings with Christine and Tom|cancel
 clear my saturday|cancel
 ```
-The file has 12 utterances for `create` and 11 for `cancel`. We recommend at least 8 utterances for training files, and 3 for test files. Curious how it works? In Step 5, we'll walk through adding a new intent to the model and to the bot.
+The file has 12 utterances for `create` and 11 for `cancel`. We recommend at least 7-10 utterances for training files, and 3-5 for test files. Curious how it works? In Step 5, we'll walk through adding a new intent to the model and to the bot.
 
 ### The bot
 `pymyra.api` contains the `client` module which we use to connect to the Myra API.
@@ -210,4 +210,4 @@ Run `tutorial.py` again, and ask the bot: "change my meeting with Scott to Tuesd
 
 ## Next steps
 
-You've made it! You now have a simple bot capable of understanding complex sentences related to creating, modifying, and canceling calendar entries. Next, try creating a new intent model for your own topics.
+You've made it! You now have a simple bot capable of understanding complex sentences related to creating, modifying, and canceling calendar entries. Next, try creating a new intent model for your own topics by adding sample utterances into the calendar data files.
