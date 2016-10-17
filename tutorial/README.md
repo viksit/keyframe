@@ -36,15 +36,16 @@ This will also install a sample configuration file into the following path `$HOM
 
 ## Step 2: Configure the SDK with your API credentials
 
-- Go to http://api.myralabs.com/register and complete the form.
-- You'll receive a confirmation email with an activation link.
-- Click the link to complete sign up and log into the dashboard.
-- Click the `Explore API` tab, replace `account_id` and `account_secret` in the configuration file at `$HOME/.pymyra/settings.conf` with your cre
+- Register at http://api.myralabs.com/register
+- When your account is opened, you'll receive an email with a link to the dashboard. 
+- Log in to the dashboard and note the `account_id` and `account_secret`. Add those values into the appropriate places in the configuration file at`$HOME/.pymyra/settings.conf`.
 
 
 ## Step 3: Interact with CalendarBot
 
-In the `python-myra` source directory, go to `tutorials/` and run `tutorial.py`. The bot will initiate a conversation with you on a prompt labeled `calendar_bot>>`. Type in free form natural language responses on the prompt labeled with `>`.
+In the `python-myra` source directory, go to `tutorial/` and run `python tutorial.py`.
+
+Meet CalendarBot! Ask it a question about creating or cancelling meetings.
 
 ```bash
 
@@ -62,7 +63,7 @@ calendar_bot>>  I can help create a meeting for you with Jane and Joe at Sat, 22
 
 ## Step 4: Learn how CalendarBot is built
 
-The bundled calendar bot can do two things - help you create a calendar entry, and cancel a given calendar entry. The tutorial doesn't actually connect to a calendaring service - that's left as an exercise for the reader.
+CalendarBot is built to understand questions about creating and cancelling calendar entries. Later, we'll add the ability to modify entries. (CalendarBot doesn't actually connect to a calendaring service, sorry!)
 
 This tutorial ships with two sets of data files in the `tutorial/data` directory - `botv1` and `botv2`. Each directory contains two files - a training set and a testing set. A demo model for calendar queries has already been created for you by default using the `botv1/` dataset, and it's ID is `...`. [TODO: Greg]. This is what tutorial.py uses when you start.
 
