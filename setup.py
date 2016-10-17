@@ -9,7 +9,7 @@ from sys import exit, version_info
 from setuptools import setup, find_packages, Command
 from os.path import expanduser, join
 
-from myra_client import __version__
+from pymyra import __version__
 
 try:
     from setuptools import setup
