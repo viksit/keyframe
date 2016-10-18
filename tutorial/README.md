@@ -32,13 +32,11 @@ cd pymyra
 pip install .
 ```
 
-This will also install a sample configuration file into the following path `$HOME/.pymyra/settings.conf`.
-
 ## Step 2: Configure the SDK with your API credentials
 
 - Register at http://api.myralabs.com/register
 - When your account is opened, you'll receive an email with a link to the dashboard. 
-- Log in to the dashboard and note the `account_id` and `account_secret`. Add those values into the appropriate places in the configuration file at`$HOME/.pymyra/settings.conf`.
+- Log in to the dashboard and note the `account_id` and `account_secret`. Add those values into the appropriate places in the config dictionary in `tutorial.py`.
 
 
 ## Step 3: Interact with CalendarBot
