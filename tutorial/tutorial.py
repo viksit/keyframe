@@ -1,17 +1,15 @@
 from __future__ import print_function
 from os.path import expanduser, join
 
-
 from pymyra.api import client
 
-# Create the API config object from a configuration file
-# This gets the config from /Users/<username>/.myra/settings.conf
-
-CONF_FILE = join(expanduser('~'), '.pymyra', 'settings.conf')
-config = client.get_config(CONF_FILE)
+# Create the API config object from a configuration object
+config = {
+  "account_id": "",
+  "account_secret": ""
+}
 
 INTENT_MODEL_ID = "xxxxxxxxx"
-
 # Establish a global API connection
 api = client.connect(config)
 api.set_intent_model(INTENT_MODEL_ID)
