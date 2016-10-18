@@ -25,7 +25,6 @@ install_requires = [
     "requests>=2.11.1"
 ]
 
-conf_file_location = join(expanduser("~"), ".pymyra")
 
 setup(
     name = "pymyra",
@@ -33,7 +32,7 @@ setup(
     description = "Myra SDK for Python 2.x.",
     author = "The Myra Team",
     author_email = "info@myralabs.com",
-    url = "https://github.com/myralabs/python-myra",
+    url = "https://github.com/myralabs/pymyra",
     license="MIT",
     classifiers=[
         "Development Status :: 3 - Alpha",
@@ -46,5 +45,5 @@ setup(
     cmdclass={"build_py": build_py},
     install_requires=install_requires,
     packages=find_packages(),
-    data_files=[(conf_file_location, ["pymyra/settings.conf"])]
+    data_files=[("$HOME/.pymyra", ["pymyra/settings.conf"])]
 )

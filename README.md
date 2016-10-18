@@ -6,13 +6,13 @@ The Python SDK for the Myra Conversational AI REST API.
 
 Using `pip`:
 ```bash
-pip install python-myra
+pip install pymyra
 ```
 
 From source:
 ```bash
-git clone https://github.com/myralabs/python-myra
-cd python-myra
+git clone https://github.com/myralabs/pymyra
+cd pymyra
 pip install .
 ```
 
