@@ -22,13 +22,13 @@ We'll build a simple and state-of-the-art conversational bot that will do this:
 
 Using `pip`:
 ```bash
-pip install python-myra
+pip install pymyra
 ```
 
 Or from source:
 ```bash
-git clone https://github.com/myralabs/python-myra
-cd python-myra
+git clone https://github.com/myralabs/pymyra
+cd pymyra
 pip install .
 ```
 
@@ -43,7 +43,7 @@ This will also install a sample configuration file into the following path `$HOM
 
 ## Step 3: Interact with CalendarBot
 
-In the `python-myra` source directory, go to `tutorial/` and run `python tutorial.py`.
+In the `pymyra` source directory, go to `tutorial/` and run `python tutorial.py`.
 
 Meet CalendarBot! Ask it a question about creating or cancelling meetings.
 
@@ -71,16 +71,26 @@ CalendarBot is connected to pre-trained models that determine the user's intent 
 
 The files are divided into two portions called `train` and `test`. The Myra model will learn based off the sentences in `train` and use the sentences in `test` to evaluate the model's performance on new, unseen data. 
 
-*calendar_train1.txt:*
+*botv1_train.tsv:*
 ```
-utterance|intent
-meeting with Kevin and John next tuesday 5pm|create
-let's meet up next week sometime|create
-meeting with the team 10/24 in Guitar Hero|create
-cancel all my meetings with Christine and Tom|cancel
-clear my saturday|cancel
+utterance	intent
+meeting with Kevin and John next tuesday 5pm	create
+hang next week	create
+let's meet up next week sometime	create
+meeting with the team 10/24 in Guitar Hero	create
+let's get everybody together	create
+...
 ```
-The file has 12 utterances for `create` and 11 for `cancel`. We recommend at least 7-10 utterances for training files, and 3-5 for test files. Curious how it works? In Step 5, we'll walk through adding a new intent to the model and to the bot.
+*botv1_test.tsv:*
+```
+utterance	intent
+meet with steve and andy on weds	create
+get together next friday	create
+dinner on oct 25	create
+set a meeting with everyone at 5pm	create
+...
+```
+The train file has 12 utterances for `create` and 11 for `cancel`. We recommend at least 7-10 utterances for training files, and 3-5 for test files. Curious how it works? In Step 5, we'll walk through adding a new intent to the model and to the bot.
 
 ### The bot
 `pymyra.api` contains the `client` module which we use to connect to the Myra API.
@@ -94,7 +104,7 @@ from pymyra.api import client
 CONF_FILE = join(expanduser('~'), '.pymyra', 'settings.conf')
 config = client.get_config(CONF_FILE)
 
-INTENT_MODEL_ID = "27c71fe414984927a32ff4d6684e0a73"
+INTENT_MODEL_ID = "xxxxx"
 
 # Establish a global API connection
 api = client.connect(config)
@@ -157,16 +167,17 @@ Now, let's add the ability to modify meetings to the Myra API and then to the bo
 ### Train the model to recognize the modify intent
 In `tutorial/data/botv2`, we've included new utterances for the intent `modify`. Check them out now:
 
-*calendar_train2.txt:*
+*botv2_train.tsv:*
 ```
-change the time of the meeting with deepak|modify
-do the meeting with Jane at 1pm instead|modify
-switch the 1:1 to 9am on tuesday|modify
+...
+change the time of the meeting with deepak	modify
+do the meeting with Jane at 1pm instead	modify
+switch the 1:1 to 9am on tuesday	modify
 ```
 The model was pretrained for the `create` and `cancel` intents; now, we'll upload and train the model ourselves to add the `modify` intent. To do so, go to the "Intent Models" section of the Myra dashboard. 
 * Create a new model named `tutorial_botv2` and click the green plus icon.
-* Upload `calendar_train2.txt` into the Train section and `calendar_test2.txt` into the Test section, and hit Save and Train.
-* Wait a few minutes. Once the status says 'Ready', copy the intent model's ID over to `INTENT_MODEL_ID` in `tutorial.py`. 
+* Upload `botv2_train.tsv` into the Train section and `botv2_test.tsv` into the Test section, and hit Save and Train.
+* The model will take a few minutes to train. Once the status says 'Ready', copy the intent model's ID over to `INTENT_MODEL_ID` in `tutorial.py`. 
 
 ### Add modify to the bot
 Create a new entry in `self.intent_map` in the `Actions` class:
