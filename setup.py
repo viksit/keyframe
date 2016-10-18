@@ -45,5 +45,5 @@ setup(
     cmdclass={"build_py": build_py},
     install_requires=install_requires,
     packages=find_packages(),
-    data_files=[("$HOME/.pymyra", ["pymyra/settings.conf"])]
+    data_files=[(os.path.expanduser("~") + "/.pymyra", ["pymyra/settings.conf"])]
 )
