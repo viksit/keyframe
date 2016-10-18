@@ -85,16 +85,15 @@ def get_config(config_file=None):
 
 def connect(config, debug=False):
 
-    assert type(config) == MyraConfig
     if debug:
         set_debug()
 
-    api_config = config.get("api")
-    hostname = api_config.get("hostname")
-    version = api_config.get("version")
-    user_config = config.get("user")
-    account_id = user_config.get("account_id")
-    account_secret = user_config.get("account_secret")
+    hostname = config.get("hostname", os.getenv(
+        "MYRA_API_SERVER", "api.myralabs.com"))
+    version = config.get("version", os.getenv(
+        "MYRA_API_VERSION", "v2"))
+    account_id = config.get("account_id")
+    account_secret = config.get("account_secret")
     return InferenceClient(account_id = account_id,
                            account_secret = account_secret,
                            myra_api_server = hostname,
