@@ -16,8 +16,6 @@ cd pymyra
 pip install .
 ```
 
-This will also install a sample configuration file into the following path `$HOME/.pymyra/settings.conf`.
-
 ## Overview
 
 `pymyra` provides access to the Myra RESTful APIs. It currently supports `Python 2.7`.
