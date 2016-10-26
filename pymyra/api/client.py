@@ -11,35 +11,6 @@ except ImportError:
     # Python 2
     import httplib as http_client
 
-
-#####################################
-# Utilities for the Myra API tutorial
-#####################################
-
-class CmdLineHandler(object):
-    """ Simple terminal REPL for bots
-    """
-
-    def __init__(self, bot):
-        self.bot = bot
-
-    # Begin your command line loop
-    def begin(self, startMessage=None, botName=""):
-        if startMessage:
-            print("%s>> " % botName, startMessage)
-        while True:
-            try:
-                userInput = raw_input("> ")
-                if not userInput:
-                    continue
-                self.processMessage(userInput)
-            except (KeyboardInterrupt, EOFError, SystemExit):
-                break
-
-    # Handle incoming messages and return the response
-    def processMessage(self, userInput):
-        return self.bot.process(userInput)
-
 # Configuration management
 class MyraConfig(object):
     def __init__(self, config_file = None):
@@ -62,8 +33,6 @@ class MyraConfig(object):
                 res[option] = None
         return res
 
-
-
 # Logging and debug utilities
 http_client.HTTPConnection.debuglevel = 0
 logging.basicConfig()
@@ -85,15 +54,16 @@ def get_config(config_file=None):
 
 def connect(config, debug=False):
 
+    assert type(config) == MyraConfig
     if debug:
         set_debug()
 
-    hostname = config.get("hostname", os.getenv(
-        "MYRA_API_SERVER", "api.myralabs.com"))
-    version = config.get("version", os.getenv(
-        "MYRA_API_VERSION", "v2"))
-    account_id = config.get("account_id")
-    account_secret = config.get("account_secret")
+    api_config = config.get("api")
+    hostname = api_config.get("hostname")
+    version = api_config.get("version")
+    user_config = config.get("user")
+    account_id = user_config.get("account_id")
+    account_secret = user_config.get("account_secret")
     return InferenceClient(account_id = account_id,
                            account_secret = account_secret,
                            myra_api_server = hostname,

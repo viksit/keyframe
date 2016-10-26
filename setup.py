@@ -9,7 +9,7 @@ from sys import exit, version_info
 from setuptools import setup, find_packages, Command
 from os.path import expanduser, join
 
-from pymyra import __version__
+from myra_client import __version__
 
 try:
     from setuptools import setup
@@ -24,7 +24,7 @@ except ImportError:
 install_requires = [
     "requests>=2.11.1"
 ]
-
+conf_file_location = join(expanduser("~"), ".pymyra")
 
 setup(
     name = "pymyra",
@@ -32,18 +32,9 @@ setup(
     description = "Myra SDK for Python 2.x.",
     author = "The Myra Team",
     author_email = "info@myralabs.com",
-    url = "https://github.com/myralabs/pymyra",
-    license="MIT",
-    classifiers=[
-        "Development Status :: 3 - Alpha",
-        "Intended Audience :: Developers",
-        "Topic :: Software Development :: Build Tools",
-        "License :: OSI Approved :: MIT License",
-        "Programming Language :: Python :: 2.7",
-    ],
-    keywords="artificial intelligence nlp api myra machine learning",
+    url = "https://github.com/myralabs/python-myra",
     cmdclass={"build_py": build_py},
     install_requires=install_requires,
     packages=find_packages(),
-    data_files=[(os.path.expanduser("~") + "/.pymyra", ["pymyra/settings.conf"])]
+    data_files=[(conf_file_location, ["pymyra/settings.conf"])]
 )
