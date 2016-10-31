@@ -10,6 +10,7 @@ from keyframe import config
 
 ############## Tutorial code ####################
 
+# Create an API object to inject into our bot
 cfg = {
     "account_id": "1so4xiiNq29ElrbiONSsrS",
     "account_secret": "a33efcebdc44f243aac4bfcf7bbcc24c29c90587"
@@ -20,6 +21,10 @@ INTENT_MODEL_ID = "0dfb5f1fe1c54466bd31503cc4dd82e4"
 # Establish a global API connection
 api = client.connect(cfg)
 api.set_intent_model(INTENT_MODEL_ID)
+
+
+# Create the bot itself
+
 
 # Create an actions object to register intent handlers
 actions = Actions()
