@@ -3,10 +3,10 @@ from os.path import expanduser, join
 
 from pymyra.api import client
 
-from pymyra.lib.keyframe import *
-from pymyra.lib import channel_client
-from pymyra.lib import messages
-from pymyra.lib import config
+from keyframe.main import *
+from keyframe import channel_client
+from keyframe import messages
+from keyframe import config
 
 ############## Tutorial code ####################
 
