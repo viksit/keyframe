@@ -9,7 +9,6 @@ import fb
 log = logging.getLogger(__name__)
 
 
-
 ################# Library code #####################
 
 class CmdLineHandler(object):
@@ -165,7 +164,11 @@ class BaseBot(object):
             messages.ResponseElement.RESPONSE_TYPE_RESPONSE)
 
     def process(self):
-        pass
+        message = actions.handle(
+            canonicalMsg=canonicalMsg,
+            myraAPI=self.api
+        )
+
 
 
 
