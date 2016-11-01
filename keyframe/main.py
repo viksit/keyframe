@@ -72,7 +72,6 @@ class BotCmdLineHandler(CmdLineHandler):
 class ActionObject(object):
 
     def __init__(self):
-        print("create id")
         self.__clsid__ = getUUID()
 
         # TODO(viksit): dont make this manually assignable?
@@ -187,7 +186,7 @@ class BaseBotv2(object):
 
 
 # Older
-
+######################################################
 class Actions(object):
     """ Intent-Action mapping function decorators
     """
