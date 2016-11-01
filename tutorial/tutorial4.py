@@ -62,7 +62,7 @@ bot = BaseBotv2(api=api)
 class BotUtils(object):
 
     @classmethod
-    def _returnResponse(self, entities, message):
+    def _returnResponse(entities, message):
 
         e = entities
         if "PERSON" in e:
@@ -100,16 +100,16 @@ class CreateActionObject(ActionObject):
     if a slot is unfilled, then it runs through the slot fill.
     """
 
-    @bot.slot(["person", "optional", "PERSON"])
-    class PersonSlotClass(object):
-        def prompt(self):
-            print("who do you want to set up the meeting with?")
+    # @bot.slot(["person", "optional", "PERSON"])
+    # class PersonSlotClass(object):
+    #     def prompt(self):
+    #         print("who do you want to set up the meeting with?")
 
-        def get(self):
-            print("get input here from canonicalmsg")
+    #     def get(self):
+    #         print("get input here from canonicalmsg")
 
-        def validate(self):
-            print("validate this slot")
+    #     def validate(self):
+    #         print("validate this slot")
 
     def process(self):
         # Process the response
