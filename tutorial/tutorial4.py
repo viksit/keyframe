@@ -59,29 +59,26 @@ tomorrow
 
 bot = BaseBotv2(api=api)
 
-class BotUtils(object):
+def _returnResponse(entities, message):
 
-    @classmethod
-    def _returnResponse(entities, message):
+    e = entities
+    if "PERSON" in e:
+        person = [i.get("text") for i in e.get("PERSON")]
+        person_text = ""
+        if len(person) > 1:
+            person_text = " and ".join(person)
+        else:
+            person_text = person[0]
+        message += " with %s" % person_text
 
-        e = entities
-        if "PERSON" in e:
-            person = [i.get("text") for i in e.get("PERSON")]
-            person_text = ""
-            if len(person) > 1:
-                person_text = " and ".join(person)
-            else:
-                person_text = person[0]
-            message += " with %s" % person_text
+    if "DATE" in e:
+        tm = [i.get("date") for i in e.get("DATE")]
+        tm_text = ""
+        if len(tm) >= 1:
+            tm_text = tm[0]
+        message += " at %s." % (tm_text)
 
-        if "DATE" in e:
-            tm = [i.get("date") for i in e.get("DATE")]
-            tm_text = ""
-            if len(tm) >= 1:
-                tm_text = tm[0]
-            message += " at %s." % (tm_text)
-
-        return message
+    return message
 
 # Actions
 """
@@ -115,7 +112,7 @@ class CreateActionObject(ActionObject):
         # Process the response
         e = self.apiResult.entities.entity_dict.get("builtin", {})
         message = "Sure, I'll create the meeting for you"
-        resp = BotUtils._returnResponse(e, message)
+        resp = _returnResponse(e, message)
 
         # Send it back on this channel
         responseType = self.messages.ResponseElement.RESPONSE_TYPE_RESPONSE
@@ -132,7 +129,7 @@ class CancelActionObject(ActionObject):
         # Process the response
         e = self.apiResult.entities.entity_dict.get("builtin", {})
         message = "Sure, I'll cancel the meeting for you"
-        resp = BotUtils._returnResponse(e, message)
+        resp = _returnResponse(e, message)
 
         # Send it back on this channel
         responseType = self.messages.ResponseElement.RESPONSE_TYPE_RESPONSE
