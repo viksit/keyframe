@@ -3,7 +3,8 @@ from os.path import expanduser, join
 
 from pymyra.api import client
 
-from keyframe.main import BaseBot, Actions, BotCmdLineHandler
+from keyframe.main import BaseBot, Actions, BotCmdLineHandler,\
+    ActionObject, BaseBotv2
 from keyframe import channel_client
 from keyframe import messages
 from keyframe import config
@@ -23,20 +24,21 @@ api = client.connect(apicfg)
 api.set_intent_model(INTENT_MODEL_ID)
 
 
-# Create the bot itself
+# What do you want to do?
+# build a calendar bot
 
-# Create an actions object to register intent handlers
-# TODO(viksit): rename this to "Bot"
+# what should this bot do?
+# create a meeting, cancel a meeting and modify a meeting.
+# it should connect to google calendar and then do something with it.
 
-actions = Actions()
 
-# Base bot class
-class CalendarBot(BaseBot):
+# TODO(viksit): support classes and function decorators so that quick start can be easy.
 
-    welcomeMessage = "Welcome to calendar bot! I can help you create and cancel meetings. Try 'set up a meeting with Jane' or 'cancel my last meeting' to get started."
+bot = BaseBotv2(api=api)
 
-    def __init__(self, *args, **kwargs):
-        super(CalendarBot, self).__init__(*args, **kwargs)
+# @bot.slot(..)
+@bot.intent("create")
+class CreateActionObject(ActionObject):
 
     def _returnResponse(self, entities, message):
 
@@ -59,54 +61,70 @@ class CalendarBot(BaseBot):
 
         return message
 
-    # Example of a simple handler with a threshold, and a fallback intent
-    # apiResult is an object that is available to all functions decorated by
-    # @action.intent.
+    def process(self):
+        # Process the response
+        e = self.apiResult.entities.entity_dict.get("builtin", {})
+        message = "Sure, I'll create the meeting for you"
+        resp = self._returnResponse(e, message)
 
-    @actions.intent("cancel", threshold=(0.4, "unknown"))
-    def cancelHandler(self):
-        e = apiResult.entities.entity_dict.get("builtin", {})
-        msg = "Sure, I'll cancel the meeting for you"
-        return self._returnResponse(e, msg)
+        # Send it back on this channel
+        responseType = self.messages.ResponseElement.RESPONSE_TYPE_RESPONSE
+        cr = self.messages.createTextResponse(self.canonicalMsg,
+                                         resp,
+                                         responseType)
+        self.channelClient.sendResponse(cr)
 
-    # Example of a simple handler with an apiResult
-    @actions.intent("create")
-    def createHandler(self):
-        e = apiResult.entities.entity_dict.get("builtin", {})
-        msg = "I can help create a meeting for you"
-        return self._returnResponse(e, msg)
 
-    # Example of a simple handler without an apiResult
-    @actions.intent("help")
-    def helpHandler(self):
-        return "Help message for this bot"
+@bot.intent("cancel")
+class CancelActionObject(ActionObject):
 
-    @actions.intent("unknown")
-    def unknownHandler(self):
-        return "unknown intent or low score %s, %s"\
-            % (apiResult.intent.label, apiResult.intent.score)
+    def _returnResponse(self, entities, message):
 
-    def process(self, canonicalMsg):
-        message = actions.handle(canonicalMsg=canonicalMsg,
-                                 myraAPI=self.api)
-        self.createAndSendTextResponse(
-            canonicalMsg,
-            message,
-            messages.ResponseElement.RESPONSE_TYPE_RESPONSE)
+        e = entities
+        if "PERSON" in e:
+            person = [i.get("text") for i in e.get("PERSON")]
+            person_text = ""
+            if len(person) > 1:
+                person_text = " and ".join(person)
+            else:
+                person_text = person[0]
+            message += " with %s" % person_text
+
+        if "DATE" in e:
+            tm = [i.get("date") for i in e.get("DATE")]
+            tm_text = ""
+            if len(tm) >= 1:
+                tm_text = tm[0]
+            message += " at %s." % (tm_text)
+
+        return message
+
+    def process(self):
+        # Process the response
+        e = self.apiResult.entities.entity_dict.get("builtin", {})
+        message = "Sure, I'll cancel the meeting for you"
+        resp = self._returnResponse(e, message)
+
+        # Send it back on this channel
+        responseType = self.messages.ResponseElement.RESPONSE_TYPE_RESPONSE
+        cr = self.messages.createTextResponse(self.canonicalMsg,
+                                         resp,
+                                         responseType)
+        self.channelClient.sendResponse(cr)
+
 
 class CalendarCmdlineHandler(BotCmdLineHandler):
 
     def init(self):
-
+        # channel configuration
         cf = config.Config()
         channelClient = channel_client.getChannelClient(
             channel=messages.CHANNEL_CMDLINE,
             requestType=None,
             config=cf)
 
-        self.bot = CalendarBot(api=api,
-                               actions=actions,
-                               channelClient=channelClient)
+        self.bot = bot
+        bot.setChannelClient(channelClient)
 
 if __name__ == "__main__":
     c = CalendarCmdlineHandler()

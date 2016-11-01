@@ -5,8 +5,11 @@ import logging
 import messages
 import channel_client
 import fb
-
+import uuid
 log = logging.getLogger(__name__)
+
+def getUUID():
+   return str(uuid.uuid4()).replace("-", "")
 
 
 ################# Library code #####################
@@ -64,6 +67,126 @@ class BotCmdLineHandler(CmdLineHandler):
             text=userInput)
         self.bot.process(canonicalMsg)
 
+
+# Class based decorators
+class ActionObject(object):
+
+    def __init__(self):
+        print("create id")
+        self.__clsid__ = getUUID()
+
+        # TODO(viksit): dont make this manually assignable?
+        # Dynamically injected
+        self.apiResult = None
+        self.canonicalMsg = None
+
+    def process(self):
+        pass
+
+
+class BaseBotv2(object):
+
+    def __init__(self, *args, **kwargs):
+
+        self.api = kwargs.get("api")
+        self.channelClient = kwargs.get("channelClient")
+        self.ctxstore = kwargs.get("ctxstore")
+        self.config = kwargs.get("config")
+        self.debug = kwargs.get("debug")
+
+        self.intents = {}
+        self.intentThresholds = {}
+        self.keywordIntents = {}
+        self.regexIntents = {}
+
+        # Add debug
+        self.init()
+
+    def init(self):
+        # Override to initialize stuff in derived bots
+        pass
+
+    def setChannelClient(self, cc):
+        self.channelClient = cc
+
+    def createAndSendTextResponse(self, canonicalMsg, text, responseType=None):
+        log.info("createAndSendTextResponse(%s)", locals())
+        cr = messages.createTextResponse(canonicalMsg, text, responseType)
+        log.info("cr: %s", cr)
+        self.channelClient.sendResponse(cr)
+
+    def errorResponse(self, canonicalMsg):
+        self.createAndSendTextResponse(
+            canonicalMsg, "Internal Error",
+            messages.ResponseElement.RESPONSE_TYPE_RESPONSE)
+
+    def process(self, canonicalMsg):
+        return self.handle(
+            canonicalMsg=canonicalMsg,
+            myraAPI=self.api)
+
+    # Decorators
+    # keyword intent, regex intent
+    def intent(self, intentStr, **args):
+        def myfun(cls):
+            wrapped = cls(**args)
+            self.intents[intentStr] = wrapped
+
+            # TODO(viksit): is this needed anymore?
+            class Wrapper(object):
+                def __init__(self, *args):
+                    self.wrapped = cls(*args)
+                    self.intents[intentStr] = self.wrapped
+
+                def __getattr__(self, name):
+                    return getattr(self.wrapped, name)
+            # return class
+            return Wrapper
+
+        # return decorator
+        return myfun
+
+    def handle(self, **kwargs):
+        """ Support keyword intent, model intent and regex intent
+        handling
+        """
+        canonicalMsg = kwargs.get("canonicalMsg")
+        myraAPI = kwargs.get("myraAPI")
+
+        # TODO(viksit): Functionality
+        # Check if any given string in keyword intents is in the input
+        # If it is, run that function on the input.
+        # You can match : equals, contains?
+
+        # If we got this far, then we need to run the model
+        apiResult = myraAPI.get(canonicalMsg.text)
+        intentStr = apiResult.intent.label
+        intent_score = apiResult.intent.score
+
+        if intentStr in self.intents:
+            handlerClass = self.intents.get(intentStr)
+
+            # if intent_score < self.intentThresholds.get(intentStr)[0]:
+            #    handlerClass = self.intents.get(self.intentThresholds.get(intentStr)[1])
+
+            # Make the apiResult available within the scope of the intent handler.
+            # NOTE: This dictionary update is NOT thread safe, and is shared by all functions
+            # in the given namespace.
+
+            handlerClass.apiResult = apiResult
+            handlerClass.canonicalMsg = canonicalMsg
+            handlerClass.messages = messages
+            handlerClass.channelClient = self.channelClient
+
+            print(intentStr, handlerClass)
+            return handlerClass.process()
+        else:
+            raise ValueError("Intent '{}'' has not been registered".format(intentStr))
+
+
+
+
+# Older
 
 class Actions(object):
     """ Intent-Action mapping function decorators
@@ -164,11 +287,7 @@ class BaseBot(object):
             messages.ResponseElement.RESPONSE_TYPE_RESPONSE)
 
     def process(self):
-        message = actions.handle(
-            canonicalMsg=canonicalMsg,
-            myraAPI=self.api
-        )
-
+        pass
 
 
 
