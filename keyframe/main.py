@@ -195,6 +195,7 @@ class BaseBotv2(object):
         self.init()
 
         self.state = "new"
+        self.onetime = False
 
     def init(self):
         # Override to initialize stuff in derived bots
@@ -254,19 +255,14 @@ class BaseBotv2(object):
         return myfun
 
 
-    def fill(self, slotClasses, canonicalMsg, apiResult):
 
-
-        # First we should fill all possible slots from the sentence
-        # For those that aren't filled, we run through this logic.
-
+    def fillFrom(self, canonicalMsg, slotClasses, apiResult):
         for slotClass in slotClasses:
-            print("fill slot %s from within sentence" % slotClass.name)
             slotClass.canonicalMsg = canonicalMsg
             slotClass.apiResult = apiResult
             if not slotClass.filled:
+                print("trying to fill slot %s from within sentence" % slotClass.name)
                 e = apiResult.entities.entity_dict.get("builtin", {})
-                print("entities: ", e)
                 if slotClass.entityType in e:
                     # TODO(viksit): this needs to change to have "text" in all entities.
                     k = "text"
@@ -283,25 +279,41 @@ class BaseBotv2(object):
                         print("\tslot wasn't filled in this sentence")
                         # nothing was found
                         # we'll query the user for it.
-                        pass
+                else:
+                    print("\tslot wasn't filled in this sentence")
+
+    """
+    Evaluate the given sentence to see which slots you can fill from it.
+    Mark the ones that are filled
+    The ones that remain unfilled are the ones that we come back to each time.
+    """
+    def fill(self, slotClasses, canonicalMsg, apiResult):
+
+
+        print("Availble slots: ")
+        for slotClass in slotClasses:
+            print("\t slot, filled", slotClass.name, slotClass.filled)
+
+        # First we should fill all possible slots from the sentence
+        # For those that aren't filled, we run through this logic.
+
+        print("self onetime: ", self.onetime)
+        if not self.onetime:
+            self.fillFrom(canonicalMsg, slotClasses, apiResult)
+            self.onetime = True
 
         # Now, whats left unfilled are slots that weren't completed by the user
         # in the first go. Ask the user for input here.
 
         for slotClass in slotClasses:
-            print("fill slot %s by asking user" % slotClass.name)
-            slotClass.canonicalMsg = canonicalMsg
-            slotClass.apiResult = apiResult
-
             # TODO(viksit): add validation step here as well.
             if not slotClass.filled:
+                slotClass.canonicalMsg = canonicalMsg
+                slotClass.apiResult = apiResult
+                print("trying to fill slot %s via user" % slotClass.name)
+                print("state: ", self.state)
                 if self.state == "new":
-                    ####
-                    # TODO(viksit): This should be in the get function within slot class.
-                    # So you can override this if needed.
-                    ####
-                    # TODO(viksit): move this to a slotclass.process() method
-                    # Since this should happen from within each slot
+                    # We are going to ask user for an input
                     responseType = messages.ResponseElement.RESPONSE_TYPE_RESPONSE
                     cr = messages.createTextResponse(
                         canonicalMsg,
@@ -314,38 +326,17 @@ class BaseBotv2(object):
 
                 # Finalize the slot
                 elif self.state == "process_slot":
-                    # Our serialization and hashmaps are all user keyed
-                    # when the next request comes in, and if the bot is in processslot
-                    # we basically call slotclass.get() on the canonical msg
-                    # otherwise, we put the bot into process slot.
-                    # from the incoming sentence, we should make sure that
-                    # we only parse entities of known types.
-                    # not "name = my name is viksit"
+                    # We will evaluate the user's input
 
-                    e = apiResult.entities.entity_dict.get("builtin", {})
-                    if slotClass.entityType in e:
-                        # TODO(viksit): this needs to change to have "text" in all entities.
-                        k = "text"
-                        if slotClass.entityType == "DATE":
-                            k = "date"
-                        tmp = [i.get(k) for i in e.get(slotClass.entityType)]
-
-                        if len(tmp) > 0:
-                            slotClass.value = tmp[0]
-                            slotClass.filled = True
-                            print("\t slot was filled in by user input sentence")
-                            continue
-                        else:
-                            # nothing was found
-                            # we'll query the user for it.
-                            print("\t slot was still not filled in by user input sentence")
-                            pass
-
+                    self.fillFrom(canonicalMsg, slotClasses, apiResult)
                     slotClass.validate()
                     self.state = "new"
                     botState["slotClasses"] = slotClasses
                     # continue to the next slot
 
+
+        for slotClass in slotClasses:
+            print(">>>>>>>>>>>>>>> slots; ", slotClass.name, slotClass.filled)
         # End slot filling
         # Now, all slots for this should be filled.
         # check
@@ -355,6 +346,7 @@ class BaseBotv2(object):
                 allFilled = False
                 break
         self.state = "new"
+        print("all filled is : ", allFilled)
         return allFilled
 
 
@@ -413,11 +405,16 @@ class BaseBotv2(object):
             # continue the slot filling
             print("state is process_slot")
             slotClasses = botState.get("slotClasses")
+
+            print("we're in user fill mode")
             allFilled = self.fill(slotClasses, canonicalMsg, apiResult)
             # once the slots are filled, we need to get into the intent process
-            if not allFilled:
+            if allFilled is False:
+                print("allFilled is false, so lets go back to the fill function")
+                #allFilled = self.fill(slotClasses, canonicalMsg, apiResult)
                 return
 
+            # All slots are now filled
             intentStr = slotClasses[0].intent
             # state is now back to "new"
 
@@ -433,6 +430,7 @@ class BaseBotv2(object):
         slotClasses = self.intentSlots.get(intentStr)
         allFilled = self.fill(slotClasses, canonicalMsg, apiResult)
         if not allFilled:
+            print("all slots were not filled")
             return
 
         # Get the actionObject
@@ -450,9 +448,11 @@ class BaseBotv2(object):
         # Currently this doesn't actually return something.
 
         print("state: %s" % self.state)
-        # Reset the slot classes
+
+        # Reset the slot state
         for slotClass in slotClasses:
             slotClass.reset()
+        self.onetime = False
 
         return actionObject.process()
 

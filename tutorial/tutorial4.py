@@ -59,29 +59,6 @@ tomorrow
 
 bot = BaseBotv2(api=api)
 
-def _returnResponse(entities, message):
-
-    e = entities
-    if "PERSON" in e:
-        person = [i.get("text") for i in e.get("PERSON")]
-        person_text = ""
-        if len(person) > 1:
-            person_text = " and ".join(person)
-        else:
-            person_text = person[0]
-        message += " with %s" % person_text
-
-    if "DATE" in e:
-        tm = [i.get("date") for i in e.get("DATE")]
-        tm_text = ""
-        if len(tm) >= 1:
-            tm_text = tm[0]
-        message += " at %s." % (tm_text)
-
-    return message
-
-
-
 # Actions
 @bot.intent("create")
 class CreateIntentActionObject(ActionObject):
@@ -92,23 +69,32 @@ class CreateIntentActionObject(ActionObject):
         def prompt(self):
             return "who do you want to set up the meeting with?"
 
-        def get(self):
-          pass
-
-        def validate(self):
-            pass
-
     @bot.slot("create", ["time", "optional", "DATE"])
     class PersonSlot(Slot):
 
         def prompt(self):
             return "and when?"
 
-        def get(self):
-            pass
 
-        def validate(self):
-            pass
+    @bot.slot("create", ["city", "optional", "GPE"])
+    class CitySlot(Slot):
+
+        def prompt(self):
+            return "which city do you want to meet in?"
+
+
+    @bot.slot("create", ["bank", "optional", "ORG"])
+    class CitySlot(Slot):
+
+        def prompt(self):
+            return "which bank do you want to meet at?"
+
+
+    @bot.slot("create", ["company", "optional", "ORG"])
+    class CompanySlot(Slot):
+
+        def prompt(self):
+            return "which co are you from?"
 
     # Intent functions
     def process(self):
