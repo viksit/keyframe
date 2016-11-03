@@ -254,8 +254,6 @@ class BaseBotv2(object):
         # return decorator
         return myfun
 
-
-
     def fillFrom(self, canonicalMsg, slotClasses, apiResult):
         for slotClass in slotClasses:
             slotClass.canonicalMsg = canonicalMsg
@@ -328,6 +326,9 @@ class BaseBotv2(object):
                 # Finalize the slot
                 elif self.state == "process_slot":
                     # We will evaluate the user's input
+
+                    # TODO(viksit): this fillFrom function should refactor to slotClass.fill()
+                    # This function could then be overwritten by a keyframe user
 
                     self.fillFrom(canonicalMsg, slotClasses, apiResult)
                     slotClass.validate()
@@ -404,14 +405,14 @@ class BaseBotv2(object):
         if self.state == "process_slot":
             # avoid using the intent itself.
             # continue the slot filling
-            print("state is process_slot")
+            #print("state is process_slot")
             slotClasses = botState.get("slotClasses")
 
-            print("we're in user fill mode")
+            #print("we're in user fill mode")
             allFilled = self.fill(slotClasses, canonicalMsg, apiResult)
             # once the slots are filled, we need to get into the intent process
             if allFilled is False:
-                print("allFilled is false, so lets go back to the fill function")
+                #print("allFilled is false, so lets go back to the fill function")
                 #allFilled = self.fill(slotClasses, canonicalMsg, apiResult)
                 return
 
@@ -440,6 +441,7 @@ class BaseBotv2(object):
         # Make slots available to actionObject
         # Make the apiResult available within the scope of the intent handler.
         import copy
+        # TODO(viksit): make slots a dict so it can be easily used by other people.
         actionObject.slots = copy.deepcopy(slotClasses)
         actionObject.apiResult = apiResult
         actionObject.canonicalMsg = canonicalMsg
