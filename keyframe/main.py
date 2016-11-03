@@ -261,7 +261,7 @@ class BaseBotv2(object):
             slotClass.canonicalMsg = canonicalMsg
             slotClass.apiResult = apiResult
             if not slotClass.filled:
-                print("trying to fill slot %s from within sentence" % slotClass.name)
+                #print("trying to fill slot %s from within sentence" % slotClass.name)
                 e = apiResult.entities.entity_dict.get("builtin", {})
                 if slotClass.entityType in e:
                     # TODO(viksit): this needs to change to have "text" in all entities.
@@ -273,12 +273,13 @@ class BaseBotv2(object):
                     if len(tmp) > 0:
                         slotClass.value = tmp[0]
                         slotClass.filled = True
-                        print("\tslot was filled in this sentence")
+                        #print("\tslot was filled in this sentence")
                         continue
                     else:
-                        print("\tslot wasn't filled in this sentence")
+                        #print("\tslot wasn't filled in this sentence")
                         # nothing was found
                         # we'll query the user for it.
+                        pass
                 else:
                     print("\tslot wasn't filled in this sentence")
 
@@ -290,14 +291,14 @@ class BaseBotv2(object):
     def fill(self, slotClasses, canonicalMsg, apiResult):
 
 
-        print("Availble slots: ")
-        for slotClass in slotClasses:
-            print("\t slot, filled", slotClass.name, slotClass.filled)
+        #print("Availble slots: ")
+        #for slotClass in slotClasses:
+        #    print("\t slot, filled", slotClass.name, slotClass.filled)
 
         # First we should fill all possible slots from the sentence
         # For those that aren't filled, we run through this logic.
 
-        print("self onetime: ", self.onetime)
+        #print("self onetime: ", self.onetime)
         if not self.onetime:
             self.fillFrom(canonicalMsg, slotClasses, apiResult)
             self.onetime = True
@@ -310,8 +311,8 @@ class BaseBotv2(object):
             if not slotClass.filled:
                 slotClass.canonicalMsg = canonicalMsg
                 slotClass.apiResult = apiResult
-                print("trying to fill slot %s via user" % slotClass.name)
-                print("state: ", self.state)
+                #print("trying to fill slot %s via user" % slotClass.name)
+                #print("state: ", self.state)
                 if self.state == "new":
                     # We are going to ask user for an input
                     responseType = messages.ResponseElement.RESPONSE_TYPE_RESPONSE
@@ -335,8 +336,8 @@ class BaseBotv2(object):
                     # continue to the next slot
 
 
-        for slotClass in slotClasses:
-            print(">>>>>>>>>>>>>>> slots; ", slotClass.name, slotClass.filled)
+        #for slotClass in slotClasses:
+        #    print(">>>>>>>>>>>>>>> slots; ", slotClass.name, slotClass.filled)
         # End slot filling
         # Now, all slots for this should be filled.
         # check
@@ -346,7 +347,7 @@ class BaseBotv2(object):
                 allFilled = False
                 break
         self.state = "new"
-        print("all filled is : ", allFilled)
+        #print("all filled is : ", allFilled)
         return allFilled
 
 

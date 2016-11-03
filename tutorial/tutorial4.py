@@ -90,12 +90,6 @@ class CreateIntentActionObject(ActionObject):
             return "which bank do you want to meet at?"
 
 
-    @bot.slot("create", ["company", "optional", "ORG"])
-    class CompanySlot(Slot):
-
-        def prompt(self):
-            return "which co are you from?"
-
     # Intent functions
     def process(self):
 
