@@ -4,7 +4,7 @@ from os.path import expanduser, join
 from pymyra.api import client
 
 from keyframe.main import BaseBot, Actions, BotCmdLineHandler,\
-    ActionObject, BaseBotv2
+    ActionObject, BaseBotv2, Slot
 from keyframe import channel_client
 from keyframe import messages
 from keyframe import config
@@ -80,39 +80,47 @@ def _returnResponse(entities, message):
 
     return message
 
+
+
 # Actions
-"""
-@actions.slot(["horoscope_sign", "required", "whats your sign?"], [(..)]) # order is implicit
-#option 2@actions.slot(["horoscope_sign", "required", myslotclass1())
-# option1 @actions.slot(["horoscope_sign", "required"])
-"""
-
 @bot.intent("create")
-class CreateActionObject(ActionObject):
+class CreateIntentActionObject(ActionObject):
 
-    """
-    registers a class to handle slots.
-    each intent contains slots. these can be filled.
-    every time process runs, it sees what the local state is.
-    if a slot is unfilled, then it runs through the slot fill.
-    """
+    @bot.slot("create", ["person", "optional", "PERSON"])
+    class PersonSlot(Slot):
 
-    # @bot.slot(["person", "optional", "PERSON"])
-    # class PersonSlotClass(object):
-    #     def prompt(self):
-    #         print("who do you want to set up the meeting with?")
+        def prompt(self):
+            return "who do you want to set up the meeting with?"
 
-    #     def get(self):
-    #         print("get input here from canonicalmsg")
+        def get(self):
+          pass
 
-    #     def validate(self):
-    #         print("validate this slot")
+        def validate(self):
+            pass
 
+    @bot.slot("create", ["time", "optional", "DATE"])
+    class PersonSlot(Slot):
+
+        def prompt(self):
+            return "and when?"
+
+        def get(self):
+            pass
+
+        def validate(self):
+            pass
+
+    # Intent functions
     def process(self):
+
+        # At this point, any slots should be filled up.
+        for slot in self.slots:
+            print("(process) slot: ", slot.entityType, slot.filled, slot.value)
+
         # Process the response
-        e = self.apiResult.entities.entity_dict.get("builtin", {})
         message = "Sure, I'll create the meeting for you"
-        resp = _returnResponse(e, message)
+        #resp = _returnResponse(e, message)
+        resp = message
 
         # Send it back on this channel
         responseType = self.messages.ResponseElement.RESPONSE_TYPE_RESPONSE
@@ -123,14 +131,14 @@ class CreateActionObject(ActionObject):
 
 
 @bot.intent("cancel")
-class CancelActionObject(ActionObject):
+class CancelIntentActionObject(ActionObject):
 
     def process(self):
         # Process the response
-        e = self.apiResult.entities.entity_dict.get("builtin", {})
+        #e = self.apiResult.entities.entity_dict.get("builtin", {})
         message = "Sure, I'll cancel the meeting for you"
-        resp = _returnResponse(e, message)
-
+        #resp = _returnResponse(e, message)
+        resp = message
         # Send it back on this channel
         responseType = self.messages.ResponseElement.RESPONSE_TYPE_RESPONSE
         cr = self.messages.createTextResponse(self.canonicalMsg,

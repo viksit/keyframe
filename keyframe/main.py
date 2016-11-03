@@ -6,6 +6,8 @@ import messages
 import channel_client
 import fb
 import uuid
+from collections import defaultdict
+
 log = logging.getLogger(__name__)
 
 def getUUID():
@@ -82,6 +84,97 @@ class ActionObject(object):
     def process(self):
         pass
 
+class BotState(object):
+    """Serializable object for keeping bot state across requests.
+    """
+    def __init__(self):
+        self._waiting = None  # Json-compatible structure that allows
+                              # ActionObjects to be re-created.
+        self._lastResult = None  # CanonicalResult
+        self.changed = False
+        self.debug = False
+
+    def __repr__(self):
+        return "%s" % (self.toJSONObject())
+
+    def setDebug(self, debug):
+        self.debug = debug
+
+    def getWaiting(self):
+        """Get an action object waiting for input, remove it
+        from waiting, and return it (like a pop except this is not a stack).
+        """
+        tmp = self._waiting
+        self._waiting = None
+        self.changed = True
+        return tmp
+
+    def putWaiting(self, actionObjectJson):
+        """Input
+        actionObjectJson: (object) A json-compatible python data structure
+        """
+        self._waiting = actionObjectJson
+        self.changed = True
+
+    def getLastResult(self):
+        return self._lastResult
+
+    def putLastResult(self, canonicalResult):
+        self._lastResult = canonicalResult
+        self.changed = True
+
+    def toJSONObject(self):
+        """Return a json-compatible data structure with all of the
+        data required to reconstruct this instance.
+        """
+        return {
+            "class":self.__class__.__name__,
+            "waiting":self._waiting,
+            "last_result": self._lastResult
+        }
+
+    @classmethod
+    def fromJSONObject(cls, jsonObject):
+        """Input
+        jsonObject: object as returned by toJSONObject()
+        """
+        assert jsonObject.get("class") == cls.__name__, \
+            "bad class. data class: %s, my class: %s" % (
+                jsonObject.get("class"), cls.__name__)
+        botState = cls()
+        botState._waiting = jsonObject.get("waiting")
+        botState._lastResult = jsonObject.get("last_result")
+        return botState
+
+
+class Slot(object):
+
+    def __init__(self):
+        pass
+
+    def init(self, **kwargs):
+        self.name = kwargs.get("name")
+        self.entityType = kwargs.get("entityType")
+        self.required = kwargs.get("required")
+        self.intent = kwargs.get("intent")
+        self.filled = False
+        self.value = None
+        self.validated = False
+
+    def get(self):
+        pass
+
+    def prompt(self):
+        pass
+
+    def validate(self):
+        pass
+
+    def reset(self):
+        # Only change the modifiable stuff
+        self.value = None
+        self.validated = False
+        self.filled = False
 
 class BaseBotv2(object):
 
@@ -93,13 +186,15 @@ class BaseBotv2(object):
         self.config = kwargs.get("config")
         self.debug = kwargs.get("debug")
 
-        self.intents = {}
+        self.intentActions = {}
         self.intentThresholds = {}
         self.keywordIntents = {}
         self.regexIntents = {}
-
+        self.intentSlots = defaultdict(lambda: [])
         # Add debug
         self.init()
+
+        self.state = "new"
 
     def init(self):
         # Override to initialize stuff in derived bots
@@ -129,13 +224,13 @@ class BaseBotv2(object):
     def intent(self, intentStr, **args):
         def myfun(cls):
             wrapped = cls(**args)
-            self.intents[intentStr] = wrapped
+            self.intentActions[intentStr] = wrapped
 
             # TODO(viksit): is this needed anymore?
             class Wrapper(object):
                 def __init__(self, *args):
                     self.wrapped = cls(*args)
-                    self.intents[intentStr] = self.wrapped
+                    self.intentActions[intentStr] = self.wrapped
 
                 def __getattr__(self, name):
                     return getattr(self.wrapped, name)
@@ -145,6 +240,124 @@ class BaseBotv2(object):
         # return decorator
         return myfun
 
+    # why shouldn't this be just regular keyword args?
+    def slot(self, intentStr, slotList, **args):
+        def myfun(cls):
+            wrapped = cls()
+            wrapped.init(intent=intentStr,
+                         name=slotList[0],
+                         required=slotList[1],
+                         entityType=slotList[2])
+            # TODO(viksit): error handling
+            self.intentSlots[intentStr].append(wrapped)
+        # return decorator
+        return myfun
+
+
+    def fill(self, slotClasses, canonicalMsg, apiResult):
+
+
+        # First we should fill all possible slots from the sentence
+        # For those that aren't filled, we run through this logic.
+
+        for slotClass in slotClasses:
+            print("fill slot %s from within sentence" % slotClass.name)
+            slotClass.canonicalMsg = canonicalMsg
+            slotClass.apiResult = apiResult
+            if not slotClass.filled:
+                e = apiResult.entities.entity_dict.get("builtin", {})
+                print("entities: ", e)
+                if slotClass.entityType in e:
+                    # TODO(viksit): this needs to change to have "text" in all entities.
+                    k = "text"
+                    if slotClass.entityType == "DATE":
+                        k = "date"
+                    tmp = [i.get(k) for i in e.get(slotClass.entityType)]
+
+                    if len(tmp) > 0:
+                        slotClass.value = tmp[0]
+                        slotClass.filled = True
+                        print("\tslot was filled in this sentence")
+                        continue
+                    else:
+                        print("\tslot wasn't filled in this sentence")
+                        # nothing was found
+                        # we'll query the user for it.
+                        pass
+
+        # Now, whats left unfilled are slots that weren't completed by the user
+        # in the first go. Ask the user for input here.
+
+        for slotClass in slotClasses:
+            print("fill slot %s by asking user" % slotClass.name)
+            slotClass.canonicalMsg = canonicalMsg
+            slotClass.apiResult = apiResult
+
+            # TODO(viksit): add validation step here as well.
+            if not slotClass.filled:
+                if self.state == "new":
+                    ####
+                    # TODO(viksit): This should be in the get function within slot class.
+                    # So you can override this if needed.
+                    ####
+                    # TODO(viksit): move this to a slotclass.process() method
+                    # Since this should happen from within each slot
+                    responseType = messages.ResponseElement.RESPONSE_TYPE_RESPONSE
+                    cr = messages.createTextResponse(
+                        canonicalMsg,
+                        slotClass.prompt(),
+                        responseType)
+                    self.channelClient.sendResponse(cr)
+                    self.state = "process_slot"
+                    botState["slotClasses"] = slotClasses
+                    return False
+
+                # Finalize the slot
+                elif self.state == "process_slot":
+                    # Our serialization and hashmaps are all user keyed
+                    # when the next request comes in, and if the bot is in processslot
+                    # we basically call slotclass.get() on the canonical msg
+                    # otherwise, we put the bot into process slot.
+                    # from the incoming sentence, we should make sure that
+                    # we only parse entities of known types.
+                    # not "name = my name is viksit"
+
+                    e = apiResult.entities.entity_dict.get("builtin", {})
+                    if slotClass.entityType in e:
+                        # TODO(viksit): this needs to change to have "text" in all entities.
+                        k = "text"
+                        if slotClass.entityType == "DATE":
+                            k = "date"
+                        tmp = [i.get(k) for i in e.get(slotClass.entityType)]
+
+                        if len(tmp) > 0:
+                            slotClass.value = tmp[0]
+                            slotClass.filled = True
+                            print("\t slot was filled in by user input sentence")
+                            continue
+                        else:
+                            # nothing was found
+                            # we'll query the user for it.
+                            print("\t slot was still not filled in by user input sentence")
+                            pass
+
+                    slotClass.validate()
+                    self.state = "new"
+                    botState["slotClasses"] = slotClasses
+                    # continue to the next slot
+
+        # End slot filling
+        # Now, all slots for this should be filled.
+        # check
+        allFilled = True
+        for slotClass in slotClasses:
+            if not slotClass.filled:
+                allFilled = False
+                break
+        self.state = "new"
+        return allFilled
+
+
     def handle(self, **kwargs):
         """ Support keyword intent, model intent and regex intent
         handling
@@ -152,37 +365,99 @@ class BaseBotv2(object):
         canonicalMsg = kwargs.get("canonicalMsg")
         myraAPI = kwargs.get("myraAPI")
 
-        # TODO(viksit): Functionality
-        # Check if any given string in keyword intents is in the input
-        # If it is, run that function on the input.
-        # You can match : equals, contains?
-
+        # TODO(viksit): add regex and keyword intents for the less advanced uses.
         # If we got this far, then we need to run the model
+
+        # local testing
+        # ******************
         apiResult = myraAPI.get(canonicalMsg.text)
         intentStr = apiResult.intent.label
         intent_score = apiResult.intent.score
 
-        if intentStr in self.intents:
-            handlerClass = self.intents.get(intentStr)
 
-            # if intent_score < self.intentThresholds.get(intentStr)[0]:
-            #    handlerClass = self.intents.get(self.intentThresholds.get(intentStr)[1])
+        """
+        when an utterance comes in, we send it to our API to get an intent response back.
+        once the intent is known, we determine whether it contains any slots.
+        we then give this to the slot processor (its a list of slot items)
+        the slot processor is the first thing that is run after we get the intent.
+        once the slots are filled we should make them available as a dictionary locally.
 
-            # Make the apiResult available within the scope of the intent handler.
-            # NOTE: This dictionary update is NOT thread safe, and is shared by all functions
-            # in the given namespace.
+        actionObject.slots = {
+          "person": {
+            "filled": false/true,
+            "value": "foo",
+            "entity_type": ENTITY_TYPE,
+            "required": true/false,
+            "validated": true/false
+          }, ..
+        }
 
-            handlerClass.apiResult = apiResult
-            handlerClass.canonicalMsg = canonicalMsg
-            handlerClass.messages = messages
-            handlerClass.channelClient = self.channelClient
 
-            print(intentStr, handlerClass)
-            return handlerClass.process()
-        else:
+        before we handle the intent, slots need to be filled.
+
+        for slotclass in slotlist:
+          channel.send(slotclass.prompt())
+          slotValue = slotclass.get()
+          v = slotclass.validate(slotValue)
+          if v:
+            continue
+          else:
+            ask again (max tries of 3)
+
+        once we assert that all slots are filled, we run the process and give it slot information.
+
+        """
+
+        if self.state == "process_slot":
+            # avoid using the intent itself.
+            # continue the slot filling
+            print("state is process_slot")
+            slotClasses = botState.get("slotClasses")
+            allFilled = self.fill(slotClasses, canonicalMsg, apiResult)
+            # once the slots are filled, we need to get into the intent process
+            if not allFilled:
+                return
+
+            intentStr = slotClasses[0].intent
+            # state is now back to "new"
+
+        if intentStr not in self.intentActions:
             raise ValueError("Intent '{}'' has not been registered".format(intentStr))
 
+        # We have a valid intent.
+        # Does it have slots?
+        if intentStr not in self.intentSlots:
+            return
 
+        # TODO(viksit): serialize the intent-slot data structure
+        slotClasses = self.intentSlots.get(intentStr)
+        allFilled = self.fill(slotClasses, canonicalMsg, apiResult)
+        if not allFilled:
+            return
+
+        # Get the actionObject
+        actionObject = self.intentActions.get(intentStr)
+
+        # Make slots available to actionObject
+        # Make the apiResult available within the scope of the intent handler.
+        import copy
+        actionObject.slots = copy.deepcopy(slotClasses)
+        actionObject.apiResult = apiResult
+        actionObject.canonicalMsg = canonicalMsg
+        actionObject.messages = messages
+        actionObject.channelClient = self.channelClient
+        # Once the actionObject is returned, lets clean out any state we have
+        # Currently this doesn't actually return something.
+
+        print("state: %s" % self.state)
+        # Reset the slot classes
+        for slotClass in slotClasses:
+            slotClass.reset()
+
+        return actionObject.process()
+
+
+botState = {}
 
 
 # Older
