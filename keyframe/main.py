@@ -338,19 +338,19 @@ class BaseBotv2(object):
                # continue to the next slot
 
 
-        #for slotClass in slotClasses:
-        #    print(">>>>>>>>>>>>>>> slots; ", slotClass.name, slotClass.filled)
-        # End slot filling
-        # Now, all slots for this should be filled.
-        # check
-        allFilled = True
-        for slotClass in slotClasses:
-            if not slotClass.filled:
-                allFilled = False
-                break
-        self.state = "new"
-        #print("all filled is : ", allFilled)
-        return allFilled
+         #for slotClass in slotClasses:
+         #    print(">>>>>>>>>>>>>>> slots; ", slotClass.name, slotClass.filled)
+         # End slot filling
+         # Now, all slots for this should be filled.
+         # check
+         allFilled = True
+         for slotClass in slotClasses:
+             if not slotClass.filled:
+                 allFilled = False
+                 break
+         self.state = "new"
+         #print("all filled is : ", allFilled)
+         return allFilled
 
 
     def handle(self, **kwargs):
@@ -643,16 +643,3 @@ keyframe test
 
 """
 
-
-
-
-
-
-
-
-
-
-
-
-
-"""
