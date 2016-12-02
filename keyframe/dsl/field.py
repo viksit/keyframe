@@ -3,8 +3,8 @@ from dateutil import parser
 from six import itervalues
 from six.moves import map
 
-from .utils import DslBase, _make_dsl_class, ObjectBase, AttrDict, AttrList
-from .exceptions import ValidationException
+from utils import DslBase, _make_dsl_class, ObjectBase, AttrDict, AttrList
+from exc import ValidationException
 
 __all__ = [
     'construct_field', 'Field', 'Object', 'Nested', 'Date', 'Float', 'Double',
@@ -277,4 +277,3 @@ for f in FIELDS:
     fclass = _make_dsl_class(Field, f)
     globals()[fclass.__name__] = fclass
     __all__.append(fclass.__name__)
-

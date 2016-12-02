@@ -3,7 +3,7 @@ from __future__ import unicode_literals
 from six import iteritems, add_metaclass
 from six.moves import map
 
-from .exceptions import UnknownDslObject, ValidationException
+from exc import UnknownDslObject, ValidationException
 
 SKIP_VALUES = ('', None)
 
@@ -410,5 +410,3 @@ def merge(data, new_data):
             merge(data[key], value)
         else:
             data[key] = value
-
-
