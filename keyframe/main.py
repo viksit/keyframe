@@ -288,54 +288,53 @@ class BaseBotv2(object):
     """
     def fill(self, slotClasses, canonicalMsg, apiResult):
 
-      # TODO(viksit): need to have a way to not use NER in processing.
 
-      #print("Availble slots: ")
-      #for slotClass in slotClasses:
-      #    print("\t slot, filled", slotClass.name, slotClass.filled)
+        #print("Availble slots: ")
+        #for slotClass in slotClasses:
+        #    print("\t slot, filled", slotClass.name, slotClass.filled)
 
-      # First we should fill all possible slots from the sentence
-      # For those that aren't filled, we run through this logic.
+        # First we should fill all possible slots from the sentence
+        # For those that aren't filled, we run through this logic.
 
-      #print("self onetime: ", self.onetime)
-      if not self.onetime:
-         self.fillFrom(canonicalMsg, slotClasses, apiResult)
-         self.onetime = True
+        #print("self onetime: ", self.onetime)
+        if not self.onetime:
+            self.fillFrom(canonicalMsg, slotClasses, apiResult)
+            self.onetime = True
 
-      # Now, whats left unfilled are slots that weren't completed by the user
-      # in the first go. Ask the user for input here.
+        # Now, whats left unfilled are slots that weren't completed by the user
+        # in the first go. Ask the user for input here.
 
-      for slotClass in slotClasses:
-         # TODO(viksit): add validation step here as well.
-         if not slotClass.filled:
-            slotClass.canonicalMsg = canonicalMsg
-            slotClass.apiResult = apiResult
-            #print("trying to fill slot %s via user" % slotClass.name)
-            #print("state: ", self.state)
-            if self.state == "new":
-               # We are going to ask user for an input
-               responseType = messages.ResponseElement.RESPONSE_TYPE_RESPONSE
-               cr = messages.createTextResponse(
-                  canonicalMsg,
-                  slotClass.prompt(),
-                  responseType)
-               self.channelClient.sendResponse(cr)
-               self.state = "process_slot"
-               botState["slotClasses"] = slotClasses
-               return False
+        for slotClass in slotClasses:
+            # TODO(viksit): add validation step here as well.
+            if not slotClass.filled:
+                slotClass.canonicalMsg = canonicalMsg
+                slotClass.apiResult = apiResult
+                #print("trying to fill slot %s via user" % slotClass.name)
+                #print("state: ", self.state)
+                if self.state == "new":
+                    # We are going to ask user for an input
+                    responseType = messages.ResponseElement.RESPONSE_TYPE_RESPONSE
+                    cr = messages.createTextResponse(
+                        canonicalMsg,
+                        slotClass.prompt(),
+                        responseType)
+                    self.channelClient.sendResponse(cr)
+                    self.state = "process_slot"
+                    botState["slotClasses"] = slotClasses
+                    return False
 
-            # Finalize the slot
-            elif self.state == "process_slot":
-               # We will evaluate the user's input
+                # Finalize the slot
+                elif self.state == "process_slot":
+                    # We will evaluate the user's input
 
-               # TODO(viksit): this fillFrom function should refactor to slotClass.fill()
-               # This function could then be overwritten by a keyframe user
+                    # TODO(viksit): this fillFrom function should refactor to slotClass.fill()
+                    # This function could then be overwritten by a keyframe user
 
-               self.fillFrom(canonicalMsg, slotClasses, apiResult)
-               slotClass.validate()
-               self.state = "new"
-               botState["slotClasses"] = slotClasses
-               # continue to the next slot
+                    self.fillFrom(canonicalMsg, slotClasses, apiResult)
+                    slotClass.validate()
+                    self.state = "new"
+                    botState["slotClasses"] = slotClasses
+                    # continue to the next slot
 
 
          #for slotClass in slotClasses:
@@ -573,9 +572,6 @@ class BaseBot(object):
 
 ############ End library code ###########################
 
-
-
-
 """
 ```
 
@@ -642,4 +638,3 @@ keyframe test
 
 
 """
-
