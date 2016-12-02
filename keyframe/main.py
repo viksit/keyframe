@@ -17,6 +17,7 @@ def getUUID():
 ################# Library code #####################
 
 class CmdLineHandler(object):
+
     def __init__(self, userId=None):
         self.userId = userId
         if not self.userId:
@@ -28,6 +29,7 @@ class CmdLineHandler(object):
         pass
 
     def begin(self):
+
         while True:
             try:
                 userInput = raw_input("> ")
@@ -57,6 +59,7 @@ class CmdLineHandler(object):
 
 class BotCmdLineHandler(CmdLineHandler):
 
+
     def init(self):
         self.bot = None  # Create your bot here by overriding init in your class.
         raise NotImplementedError()
@@ -75,7 +78,6 @@ class ActionObject(object):
 
     def __init__(self):
         self.__clsid__ = getUUID()
-
         # TODO(viksit): dont make this manually assignable?
         # Dynamically injected
         self.apiResult = None
@@ -85,11 +87,13 @@ class ActionObject(object):
         pass
 
 class BotState(object):
+
     """Serializable object for keeping bot state across requests.
     """
+
     def __init__(self):
-        self._waiting = None  # Json-compatible structure that allows
-                              # ActionObjects to be re-created.
+        self._waiting = None
+        # Json-compatible structure that allows
         self._lastResult = None  # CanonicalResult
         self.changed = False
         self.debug = False
@@ -337,19 +341,19 @@ class BaseBotv2(object):
                     # continue to the next slot
 
 
-         #for slotClass in slotClasses:
-         #    print(">>>>>>>>>>>>>>> slots; ", slotClass.name, slotClass.filled)
-         # End slot filling
-         # Now, all slots for this should be filled.
-         # check
-         allFilled = True
-         for slotClass in slotClasses:
-             if not slotClass.filled:
-                 allFilled = False
-                 break
-         self.state = "new"
-         #print("all filled is : ", allFilled)
-         return allFilled
+        #for slotClass in slotClasses:
+        #    print(">>>>>>>>>>>>>>> slots; ", slotClass.name, slotClass.filled)
+        # End slot filling
+        # Now, all slots for this should be filled.
+        # check
+        allFilled = True
+        for slotClass in slotClasses:
+            if not slotClass.filled:
+                allFilled = False
+                break
+        self.state = "new"
+        #print("all filled is : ", allFilled)
+        return allFilled
 
 
     def handle(self, **kwargs):
