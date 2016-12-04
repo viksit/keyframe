@@ -105,8 +105,8 @@ class AttrDict(object):
 
     def __repr__(self):
         r = repr(self._d_)
-        if len(r) > 60:
-            r = r[:60] + '...}'
+        # if len(r) > 60:
+        #     r = r[:60] + '...}'
         return r
 
     def __getstate__(self):
@@ -165,6 +165,7 @@ class DslMeta(type):
     For typical use see `QueryMeta` and `Query` in `elasticsearch_dsl.query`.
     """
     _types = {}
+
     def __init__(cls, name, bases, attrs):
         super(DslMeta, cls).__init__(name, bases, attrs)
         # skip for DslBase
@@ -333,6 +334,7 @@ class DslBase(object):
 
 class ObjectBase(AttrDict):
     def __init__(self, **kwargs):
+
         m = self._doc_type.mapping
         for k in m:
             if k in kwargs and m[k]._coerce:

@@ -1,0 +1,13 @@
+import os
+
+class Config(object):
+    INTENT_SCORE_THRESHOLD = 0.7
+
+    DYNAMODB_AWS_REGION = "us-west-2"
+    KV_STORE_S3_BUCKET = "ml-users"
+
+    AWS_ACCESS_KEY_ID = "AKIAJL6J66PRRBMABHFQ"
+    AWS_SECRET_ACCESS_KEY = "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"
+
+    # Test page access token.
+    FB_PAGE_ACCESS_TOKEN = "EAANkHwib2HcBAAZAEVORAemInZAOAlIn6BzP4nmfUKxCe562rRQnZBxCHgZAaaxYskZBciitSipgUfQccKu5oCc1ZCGK6JxeXm0j5rBhI7ZBYl86gqAvEHn7aAeZA3C3x1BlczEqLwnVpKc0KXh7NwKBE85Jk1ONG36mzMetRbj93"

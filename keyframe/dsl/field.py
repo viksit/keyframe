@@ -7,47 +7,47 @@ from utils import DslBase, _make_dsl_class, ObjectBase, AttrDict, AttrList
 from exc import ValidationException
 
 __all__ = [
-    'construct_field', 'Field', 'Object', 'Nested', 'Date', 'Float', 'Double',
-    'Byte', 'Short', 'Integer', 'Long', 'Boolean', 'Ip', 'Attachment',
-    'GeoPoint', 'GeoShape', 'InnerObjectWrapper', 'Keyword', 'Text'
+    "construct_field", "Field", "Object", "Nested", "Date", "Float", "Double",
+    "Byte", "Short", "Integer", "Long", "Boolean", "Ip", "Attachment",
+    "GeoPoint", "GeoShape", "InnerObjectWrapper", "Keyword", "Text", "APIIntent"
 ]
 
 def construct_field(name_or_field, **params):
     # {"type": "text", "analyzer": "snowball"}
     if isinstance(name_or_field, dict):
         if params:
-            raise ValueError('construct_field() cannot accept parameters when passing in a dict.')
+            raise ValueError("construct_field() cannot accept parameters when passing in a dict.")
         params = name_or_field.copy()
-        if 'type' not in params:
+        if "type" not in params:
             # inner object can be implicitly defined
-            if 'properties' in params:
-                name = 'object'
+            if "properties" in params:
+                name = "object"
             else:
-                raise ValueError('construct_field() needs to have a "type" key.')
+                raise ValueError("construct_field() needs to have a 'type' key.")
         else:
-            name = params.pop('type')
+            name = params.pop("type")
         return Field.get_dsl_class(name)(**params)
 
     # Text()
     if isinstance(name_or_field, Field):
         if params:
-            raise ValueError('construct_field() cannot accept parameters when passing in a construct_field object.')
+            raise ValueError("construct_field() cannot accept parameters when passing in a construct_field object.")
         return name_or_field
 
     # "text", analyzer="snowball"
     return Field.get_dsl_class(name_or_field)(**params)
 
 class Field(DslBase):
-    _type_name = 'field'
+    _type_name = "field"
     _type_shortcut = staticmethod(construct_field)
     # all fields can be multifields
-    _param_defs = {'fields': {'type': 'field', 'hash': True}}
+    _param_defs = {"fields": {"type": "field", "hash": True}}
     name = None
     _coerce = False
 
     def __init__(self, *args, **kwargs):
-        self._multi = kwargs.pop('multi', False)
-        self._required = kwargs.pop('required', False)
+        self._multi = kwargs.pop("multi", False)
+        self._required = kwargs.pop("required", False)
         super(Field, self).__init__(*args, **kwargs)
 
     def _serialize(self, data):
@@ -85,11 +85,11 @@ class Field(DslBase):
     def to_dict(self):
         d = super(Field, self).to_dict()
         name, value = d.popitem()
-        value['type'] = name
+        value["type"] = name
         return value
 
 class CustomField(Field):
-    name = 'custom'
+    name = "custom"
     _coerce = True
 
     def to_dict(self):
@@ -97,23 +97,23 @@ class CustomField(Field):
             return self.builtin_type.to_dict()
 
         d = super(CustomField, self).to_dict()
-        d['type'] = self.builtin_type
+        d["type"] = self.builtin_type
         return d
 
 class InnerObjectWrapper(ObjectBase):
     def __init__(self, mapping, **kwargs):
         # mimic DocType behavior with _doc_type.mapping
-        super(AttrDict, self).__setattr__('_doc_type', type('Meta', (), {'mapping': mapping}))
+        super(AttrDict, self).__setattr__("_doc_type", type("Meta", (), {"mapping": mapping}))
         super(InnerObjectWrapper, self).__init__(**kwargs)
 
 
 class InnerObject(object):
     " Common functionality for nested and object fields. "
-    _param_defs = {'properties': {'type': 'field', 'hash': True}}
+    _param_defs = {"properties": {"type": "field", "hash": True}}
     _coerce = True
 
     def __init__(self, *args, **kwargs):
-        self._doc_class = kwargs.pop('doc_class', InnerObjectWrapper)
+        self._doc_class = kwargs.pop("doc_class", InnerObjectWrapper)
         super(InnerObject, self).__init__(*args, **kwargs)
 
     def field(self, name, *args, **kwargs):
@@ -144,23 +144,23 @@ class InnerObject(object):
         for f in itervalues(self.properties.to_dict()):
             yield f
             # multi fields
-            if hasattr(f, 'fields'):
+            if hasattr(f, "fields"):
                 for inner_f in itervalues(f.fields.to_dict()):
                     yield inner_f
             # nested and inner objects
-            if hasattr(f, '_collect_fields'):
+            if hasattr(f, "_collect_fields"):
                 for inner_f in f._collect_fields():
                     yield inner_f
 
     def update(self, other_object):
-        if not hasattr(other_object, 'properties'):
+        if not hasattr(other_object, "properties"):
             # not an inner/nested object, no merge possible
             return
 
         our, other = self.properties, other_object.properties
         for name in other:
             if name in our:
-                if hasattr(our[name], 'update'):
+                if hasattr(our[name], "update"):
                     our[name].update(other[name])
                 continue
             our[name] = other[name]
@@ -168,7 +168,7 @@ class InnerObject(object):
     def _deserialize(self, data):
         if data is None:
             return None
-        # don't wrap already wrapped data
+        # don"t wrap already wrapped data
         if isinstance(data, self._doc_class):
             return data
 
@@ -197,18 +197,18 @@ class InnerObject(object):
 
 
 class Object(InnerObject, Field):
-    name = 'object'
+    name = "object"
 
 class Nested(InnerObject, Field):
-    name = 'nested'
+    name = "nested"
 
     def __init__(self, *args, **kwargs):
         # change the default for Nested fields
-        kwargs.setdefault('multi', True)
+        kwargs.setdefault("multi", True)
         super(Nested, self).__init__(*args, **kwargs)
 
 class Date(Field):
-    name = 'date'
+    name = "date"
     _coerce = True
 
     def _deserialize(self, data):
@@ -221,34 +221,49 @@ class Date(Field):
             # TODO: add format awareness
             return parser.parse(data)
         except Exception as e:
-            raise ValidationException('Could not parse date from the value (%r)' % data, e)
+            raise ValidationException("Could not parse date from the value (%r)" % data, e)
 
 class String(Field):
     _param_defs = {
-        'fields': {'type': 'field', 'hash': True},
-        'analyzer': {'type': 'analyzer'},
-        'search_analyzer': {'type': 'analyzer'},
+        "fields": {"type": "field", "hash": True},
+        "analyzer": {"type": "analyzer"},
+        "search_analyzer": {"type": "analyzer"},
     }
-    name = 'string'
+    name = "string"
 
 class Text(Field):
     _param_defs = {
-        'fields': {'type': 'field', 'hash': True},
-        'analyzer': {'type': 'analyzer'},
-        'search_analyzer': {'type': 'analyzer'},
-        'search_quote_analyzer': {'type': 'analyzer'},
+        "fields": {"type": "field", "hash": True},
+        "analyzer": {"type": "analyzer"},
+        "search_analyzer": {"type": "analyzer"},
+        "search_quote_analyzer": {"type": "analyzer"},
     }
-    name = 'text'
+    name = "text"
+
+class APIIntent(Field):
+    _param_defs = {
+    }
+    name = "APIIntent"
+
+class KeywordIntent(Field):
+    _param_defs = {
+    }
+    name = "KeywordIntent"
+
+class RegexIntent(Field):
+    _param_defs = {
+    }
+    name = "RegexIntent"
 
 class Keyword(Field):
     _param_defs = {
-        'fields': {'type': 'field', 'hash': True},
-        'search_analyzer': {'type': 'analyzer'},
+        "fields": {"type": "field", "hash": True},
+        "search_analyzer": {"type": "analyzer"},
     }
-    name = 'keyword'
+    name = "keyword"
 
 class Boolean(Field):
-    name = 'boolean'
+    name = "boolean"
 
     def clean(self, data):
         if data is not None:
@@ -259,17 +274,17 @@ class Boolean(Field):
 
 
 FIELDS = (
-    'float',
-    'double',
-    'byte',
-    'short',
-    'integer',
-    'long',
-    'ip',
-    'attachment',
-    'geo_point',
-    'geo_shape',
-    'completion',
+    "float",
+    "double",
+    "byte",
+    "short",
+    "integer",
+    "long",
+    "ip",
+    "attachment",
+    "geo_point",
+    "geo_shape",
+    "completion",
 )
 
 # generate the query classes dynamically
