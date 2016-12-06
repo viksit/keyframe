@@ -143,7 +143,6 @@ class BotAPI(object):
             config=config.Config())
 
         botAPI = cls(
-            bot = BotAPI.bot,
             channelClient=channelClient
         )
         print("botapi is: ", botAPI)

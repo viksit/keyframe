@@ -132,7 +132,7 @@ class CancelIntentActionObject(ActionObject):
 
 
 
-class CalendarBotAPI(BotAPI):
+class CalendarBotHTTPAPI(BotAPI):
 
     def getBot(self):
         cf = config.Config()
