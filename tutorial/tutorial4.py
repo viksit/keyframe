@@ -135,13 +135,14 @@ class CancelIntentActionObject(ActionObject):
 class CalendarBotHTTPAPI(BotAPI):
 
     def getBot(self):
-        cf = config.Config()
-        channelClient = channel_client.getChannelClient(
-            channel=messages.CHANNEL_HTTP_REQUEST_RESPONSE,
-            requestType=None,
-            config=cf)
+        # cf = config.Config()
+        # channelClient = channel_client.getChannelClient(
+        #     channel=messages.CHANNEL_HTTP_REQUEST_RESPONSE,
+        #     requestType=None,
+        #     config=cf)
+        # print("channel client created via getbot in calendar http api is", channelClient)
         self.bot = bot
-        bot.setChannelClient(channelClient)
+        #bot.setChannelClient(channelClient)
         return bot
 
 # def requestHandler(event, context):

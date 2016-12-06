@@ -110,6 +110,7 @@ class BotAPI(object):
             return
         # The bot to be created may depend on the user.
         bot = self.getBot()
+        bot.setChannelClient(self.channelClient)
         bot.process(canonicalMsg)
 
     def getBot(self):
@@ -147,6 +148,7 @@ class BotAPI(object):
         )
         print("botapi is: ", botAPI)
         botAPI.handleMsg(channelMsg)
+        print(">> channel client in botapi is:", channelClient)
         print(">> botapi: chanel client is ", channelClient.responses)
         resp = channelClient.popResponses()
         log.info("BotAPI.requestHandler returning: %s", resp)
@@ -404,6 +406,7 @@ class BaseBotv2(object):
                         slotClass.prompt(),
                         responseType)
                     print(">>>>>> cr: ", cr)
+                    print(">>> channel client: ", self.channelClient)
                     print(">>> self.cc: PRE", self.channelClient.responses)
                     self.channelClient.sendResponse(cr)
                     print(">> self.cc POST responses: ", self.channelClient.responses)
