@@ -1,10 +1,12 @@
 from __future__ import print_function
 from os.path import expanduser, join
 
+from flask import Flask, request, Response
+
 from pymyra.api import client
 
 from keyframe.main import BaseBot, Actions, BotCmdLineHandler,\
-    ActionObject, BaseBotv2, Slot
+    ActionObject, BaseBotv2, Slot, BotAPI
 from keyframe import channel_client
 from keyframe import messages
 from keyframe import config
@@ -114,6 +116,7 @@ class CreateIntentActionObject(ActionObject):
 class CancelIntentActionObject(ActionObject):
 
     def process(self):
+
         # Process the response
         #e = self.apiResult.entities.entity_dict.get("builtin", {})
         message = "Sure, I'll cancel the meeting for you"
@@ -127,20 +130,67 @@ class CancelIntentActionObject(ActionObject):
         self.channelClient.sendResponse(cr)
 
 
-class CalendarCmdlineHandler(BotCmdLineHandler):
 
-    def init(self):
 
-        # channel configuration
+class CalendarBotAPI(BotAPI):
+
+    def getBot(self):
         cf = config.Config()
         channelClient = channel_client.getChannelClient(
-            channel=messages.CHANNEL_CMDLINE,
+            channel=messages.CHANNEL_HTTP_REQUEST_RESPONSE,
             requestType=None,
             config=cf)
-
         self.bot = bot
         bot.setChannelClient(channelClient)
+        return bot
+
+# def requestHandler(event, context):
+#     return CalendarBotAPI.requestHandler(event, context
+#    )
+
+# class CalendarCmdlineHandler(BotCmdLineHandler):
+#     def init(self):
+#         # channel configuration
+#         cf = config.Config()
+#         channelClient = channel_client.getChannelClient(
+#             channel=messages.CHANNEL_CMDLINE,
+#             requestType=None,
+#             config=cf)
+#         self.bot = bot
+#         bot.setChannelClient(channelClient)
+
+# if __name__ == "__main__":
+    # c = CalendarCmdlineHandler()
+    # c.begin()
+
+
+app = Flask(__name__)
+
+# cf = config.Config()
+# channelClient = channel_client.getChannelClient(
+#     channel = messages.CHANNEL_HTTP_REQUEST_RESPONSE,
+#     requestType = None,
+#     config = cf)
+
+# calendarBotHTTPAPI = BotAPI(bot, channelClient)
+
+@app.route("/localapi", methods=["GET", "POST"])
+def localapi():
+    event = {
+        "channel": messages.CHANNEL_HTTP_REQUEST_RESPONSE,
+        "request-type": request.method,
+        "body": request.json
+    }
+    r = CalendarBotHTTPAPI.requestHandler(
+        event=event,
+        context={})
+    return Response(str(r)), 200
+
+@app.route('/ping', methods=['GET', 'POST'])
+def ping():
+    print("PING")
+    print(request.data)
+    return Response('ok'), 200
 
 if __name__ == "__main__":
-    c = CalendarCmdlineHandler()
-    c.begin()
+    app.run(debug=True)

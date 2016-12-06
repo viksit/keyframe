@@ -59,7 +59,7 @@ class ChannelClientFacebook(ChannelClient):
         self.responses = collections.deque()
 
     def getChannelUserProfile(self, userId):
-        firstLastNameTuple = bot_arch.fb.get_user_name(
+        firstLastNameTuple = fb.get_user_name(
             userId, self.config.FB_PAGE_ACCESS_TOKEN)
         return messages.ChannelUserProfile(
             userId=userId,
@@ -72,7 +72,7 @@ class ChannelClientFacebook(ChannelClient):
     def extract(self, channelMsg):
         if not channelMsg.body:
             return None
-        x = bot_arch.fb.extract(channelMsg.body)
+        x = fb.extract(channelMsg.body)
         if not x:
             return None
         (sender_id, text) = x
@@ -83,7 +83,7 @@ class ChannelClientFacebook(ChannelClient):
             log.info("ChannelClientFacebook has config")
             if self.config.FB_PAGE_ACCESS_TOKEN:
                 log.info("ChannelClientFacebook has access token")
-                actualNameTuple = bot_arch.fb.get_user_name(
+                actualNameTuple = fb.get_user_name(
                     sender_id, self.config.FB_PAGE_ACCESS_TOKEN)
                 if actualNameTuple:
                     actualName = " ".join(actualNameTuple)
@@ -99,18 +99,18 @@ class ChannelClientFacebook(ChannelClient):
         for rElem in canonicalResponse.responseElements:
             fbFormattedJsonObject = None
             if rElem.type == messages.ResponseElement.TYPE_TEXT:
-                fbFormattedJsonObject = bot_arch.fb.response_text(
+                fbFormattedJsonObject = fb.response_text(
                     canonicalResponse.userId,
                     rElem.text)
             elif rElem.type == messages.ResponseElement.TYPE_CAROUSEL:
-                fbFormattedJsonObject = bot_arch.fb.response_carousel(
+                fbFormattedJsonObject = fb.response_carousel(
                     canonicalResponse.userId,
                     rElem.carousel)
             elif rElem.type == messages.ResponseElement.TYPE_YESNOBUTTON:
-                fbFormattedJsonObject = bot_arch.fb.response_yesnobutton(
+                fbFormattedJsonObject = fb.response_yesnobutton(
                     canonicalResponse.userId,
                     rElem.text)
-            bot_arch.fb.send(
+            fb.send(
                 fbFormattedJsonObject, self.config.FB_PAGE_ACCESS_TOKEN)
             self.responses.append(fbFormattedJsonObject)
 
@@ -135,6 +135,7 @@ class ChannelClientKeepResponses(ChannelClient):
         self.responses = collections.deque()
 
     def extract(self, channelMsg):
+        log.info("extract(%s)", channelMsg)
         return messages.CanonicalMsg(
             channel=channelMsg.channel,
             httpType=channelMsg.httpType,
@@ -152,6 +153,7 @@ class ChannelClientKeepResponses(ChannelClient):
 
     def popResponses(self):
         ret = self.getResponses()
+        print("................> ", ret)
         self.clearResponses()
         return ret
 
