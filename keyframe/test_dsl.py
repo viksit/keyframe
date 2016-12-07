@@ -82,7 +82,7 @@ def foo(ActionObject):
   class myslot(Slot):
     entity_type = myentitymodel.myfriend
     prompt = lambda x: "Whats your name?"
-
+    validation = lambda x, y, z: x.match("[a-zA-Z0-9]+"), True, False
   ..
 
 
