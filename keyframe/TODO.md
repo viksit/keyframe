@@ -1,35 +1,121 @@
 # TODO
 
-- lambda deployment
+## deployments
+- x lambda deployment via zappa
+- x dev server (command line handler)
+- live code reloading
+
+## channels
 - slack channel
 - facebook channel
-- dev server
-- live code reloading
+
+
+## keyframe binary
 - keyframe binary
+
+## dsl
 - orm layer for models
-- better algorithm for slot fill
-- better entity recognition (spacy/trainable)
-- integration with search index
-- github support
+- clean up, allow sync and train
+- how to use this in the intents
 
 
-# questions
+### questions for elasticsearch dsl
 - what is mapping for?
 - do we need it?
 
+## slot fill
+- take this and put into a separate class
+- inject as necessary
+- better algorithm for slot fill
+- better entity recognition (spacy/trainable)
+- integration with search index
+- export this via a myra api
+
+
+## state management
+- use kv store
+- export via a myra api to read/write from kv store backend
+
+
+## misc
+- github support
+
+
+
+## myra updates
+- use spacy latest version
+- update entity model to do things even better
+
+## Tests
 
 
 
 
 
-tests
+# Notes and thoughts
 
+## conversational flow
 
+A bot is defined via a set of ActionObjects and Transitions between them. It takes one or more Utterances from a user and delivers a Response.
 
-# notes
+An Utterance is defined as a sentence that was sent to the bot.
+
+An ActionObject is defined as a piece of code that achieves some Action and delivers a Response.
+
+A Response is some information sent back to the user, either text, images or other media.
+
+An Action is defined as calling out to an existing service, lookup or data that is independent from the bot logic.
+
+Each Action can be associated with zero or more Slots.
+
+A Slot is defined as a piece of data of a known Type.
+
+A Type is defined as a real world object that is referred to in a sentence.
+
+A bot can be in two states - Waiting or Processing.
+
+Waiting is when the bot is doing nothing in the foreground.
+
+Processing is when an ActionObject is executing.
+
+A Transition is defined as one of,
+-- going from Waiting into Processing
+-- Processing one ActionObject to Processing another ActionObject
+-- Processing to Waiting
+
+Each Transition is controlled by one or more of the following,
+
+- Incoming user Utterance
+- Output of an existing ActionObject
+- History of user Utterances
+- History of agent Responses
+- Global state for that user
+
+Global state is defined as a set of keys and values that store the most recent information about the user's ask and the bot's Response, including Responses and results of external Actions.
+
+A transition function T is defined in the context of another function F such as,
 
 ```
+T(state1, state2) = F(Incoming user utterance, output of existing ActionObject, History of user Utterances, Global State)
+```
 
+A Transition function in v0.2 of Keyframe is defined as,
+
+```
+T(state1, state2) = F_I(Incoming user utterance)
+```
+
+where F_I is an intent classification function.
+
+
+
+
+
+
+
+## ORM API for models
+
+```
 delete:
 http://localhost:7091/api/internal/delete_model_for_user?model_id=8446b802da8749ed86020c47b70a1096&user_id=3oPxV9oFXxzHYxuvpy56a9
 {
@@ -125,6 +211,9 @@ http://localhost:7091/api/internal/train_model_for_user?batch_size=50&learning_r
 
 
 # DSL
+
+- inspiration: elastic search dsl
+- django orm
 
 ```python
 
