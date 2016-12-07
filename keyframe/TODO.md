@@ -16,7 +16,8 @@
 ## dsl
 - orm layer for models
 - clean up, allow sync and train
-- how to use this in the intents
+- how to use this in the intents?
+
 
 
 ### questions for elasticsearch dsl
