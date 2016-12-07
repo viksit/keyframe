@@ -1,74 +1,154 @@
+from __future__ import print_function
 from os.path import expanduser, join
 
+from flask import Flask, request, Response
 
 from pymyra.api import client
-from pymyra.lib.keyframe import CmdLineHandler
 
-# Create the API config object from a configuration file
-# This gets the config from /Users/<username>/.myra/settings.conf
+from keyframe.main import BaseBot, Actions, BotCmdLineHandler,\
+    ActionObject, BaseBotv2, Slot, BotAPI
+from keyframe import channel_client
+from keyframe import messages
+from keyframe import config
 
-CONF_FILE = join(expanduser('~'), '.pymyra', 'settings.conf')
-config = client.get_config(CONF_FILE)
+############## Tutorial code ####################
 
-# TODO(viksit) move this to an actual ID that someone will replace
-INTENT_MODEL_ID = "27c71fe414984927a32ff4d6684e0a73"
-#ENTITY_MODEL_ID = "4911dc1f0005408881e08a05dd998b0f"
+# Create an API object to inject into our bot
+apicfg = {
+    "account_id": "1so4xiiNq29ElrbiONSsrS",
+    "account_secret": "a33efcebdc44f243aac4bfcf7bbcc24c29c90587"
+}
+# Intent and entity models that we're using
+INTENT_MODEL_ID = "0dfb5f1fe1c54466bd31503cc4dd82e4"
 
 # Establish a global API connection
-api = client.connect(config)
+api = client.connect(apicfg)
 api.set_intent_model(INTENT_MODEL_ID)
-#api.set_entity_model(ENTITY_MODEL_ID)
+
+# KV Store
+# TODO(viksit): move kv store into a pymyra api (same level as agents/intent/entity)
 
 
-class Actions(object):
+bot = BaseBotv2(api=api)
 
-    def __init__(self):
-        # Ultimately, given a model, we ought to be able to
-        # get a list of intents from an API
-        self.intent_map = {
-            "cancel": self.cancel_handler,
-            "create": self.create_handler,
-            "help": self.help_handler,
-            "unknown": self.unknown_handler
-        }
+# Actions
+@bot.intent("create")
+class CreateIntentActionObject(ActionObject):
 
-    def handle(self, **kwargs):
-        result = kwargs.get("result")
-        intent = result.intent
-        if intent.label not in self.intent_map:
-            intent.label = "unknown"
-            intent.score = 1
-        return self.intent_map.get(intent.label)(**kwargs)
+    @bot.slot("create", ["person", "optional", "PERSON"])
+    class PersonSlot(Slot):
 
-    def cancel_handler(self, **kwargs):
-        result = kwargs.get("result")
-        return "cancel meeting %s %s" % (result.intent.label, result.intent.score)
+        def prompt(self):
+            return "who do you want to set up the meeting with?"
 
-    def create_handler(self, **kwargs):
-        result = kwargs.get("result")
-        return "create meeting  %s %s" % (result.intent.label, result.intent.score)
+    @bot.slot("create", ["time", "optional", "DATE"])
+    class DateSlot(Slot):
 
-    def help_handler(self, **kwargs):
-        result = kwargs.get("result")
-        return "This is some help  %s %s" % (result.intent.label, result.intent.score)
-
-    def unknown_handler(self, **kwargs):
-        result = kwargs.get("result")
-        return "I'm sorry I don't know how to handle this\ %s %s" % (
-            result.intent.label, result.intent.score)
+        def prompt(self):
+            return "and when?"
 
 
-class CalendarBot(object):
+    @bot.slot("create", ["city", "optional", "GPE"])
+    class CitySlot(Slot):
 
-    def __init__(self):
-        self.actions = Actions()
+        def prompt(self):
+            return "which city do you want to meet in?"
 
-    def process(self, user_input):
-        result = api.get(user_input)
-        message = self.actions.handle(result=result)
-        print(">> ", message)
 
-if __name__ == "__main__":
-    bot = CalendarBot()
-    c = CmdLineHandler(bot)
-    c.begin()
+    @bot.slot("create", ["bank", "optional", "ORG"])
+    class BankSlot(Slot):
+
+        def prompt(self):
+            return "which bank do you want to meet at?"
+
+
+    # Intent functions
+    def process(self):
+
+        # At this point, any slots should be filled up.
+        for slot in self.slots:
+            print("(process) slot: ", slot.entityType, slot.filled, slot.value)
+
+        # Process the response
+        message = "Sure, I'll create the meeting for you"
+        #resp = _returnResponse(e, message)
+        resp = message
+
+        # Send it back on this channel
+        responseType = self.messages.ResponseElement.RESPONSE_TYPE_RESPONSE
+        cr = self.messages.createTextResponse(self.canonicalMsg,
+                                              resp,
+                                              responseType)
+        self.channelClient.sendResponse(cr)
+
+
+@bot.intent("cancel")
+class CancelIntentActionObject(ActionObject):
+
+    def process(self):
+
+        # Process the response
+        #e = self.apiResult.entities.entity_dict.get("builtin", {})
+        message = "Sure, I'll cancel the meeting for you"
+        #resp = _returnResponse(e, message)
+        resp = message
+        # Send it back on this channel
+        responseType = self.messages.ResponseElement.RESPONSE_TYPE_RESPONSE
+        cr = self.messages.createTextResponse(self.canonicalMsg,
+                                              resp,
+                                              responseType)
+        self.channelClient.sendResponse(cr)
+
+
+
+
+class CalendarBotHTTPAPI(BotAPI):
+
+    def getBot(self):
+        self.bot = bot
+        return bot
+
+
+
+## Deployment for command line
+
+# class CalendarCmdlineHandler(BotCmdLineHandler):
+#     def init(self):
+#         # channel configuration
+#         cf = config.Config()
+#         channelClient = channel_client.getChannelClient(
+#             channel=messages.CHANNEL_CMDLINE,
+#             requestType=None,
+#             config=cf)
+#         self.bot = bot
+#         bot.setChannelClient(channelClient)
+
+# if __name__ == "__main__":
+    # c = CalendarCmdlineHandler()
+    # c.begin()
+
+
+
+## Deployment for lambda
+
+# app = Flask(__name__)
+# @app.route("/localapi", methods=["GET", "POST"])
+# def localapi():
+#     event = {
+#         "channel": messages.CHANNEL_HTTP_REQUEST_RESPONSE,
+#         "request-type": request.method,
+#         "body": request.json
+#     }
+#     r = CalendarBotHTTPAPI.requestHandler(
+#         event=event,
+#         context={})
+#     return Response(str(r)), 200
+
+# @app.route('/ping', methods=['GET', 'POST'])
+# def ping():
+#     print("PING")
+#     print(request.data)
+#     return Response('ok'), 200
+
+# if __name__ == "__main__":
+#     app.run(debug=True)
