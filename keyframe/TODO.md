@@ -80,9 +80,9 @@ Waiting is when the bot is doing nothing in the foreground.
 Processing is when an ActionObject is executing.
 
 A Transition is defined as one of,
--- going from Waiting into Processing
--- Processing one ActionObject to Processing another ActionObject
--- Processing to Waiting
+- going from Waiting into Processing
+- Processing one ActionObject to Processing another ActionObject
+- Processing to Waiting
 
 Each Transition is controlled by one or more of the following,
 
