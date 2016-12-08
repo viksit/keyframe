@@ -6,6 +6,7 @@ import messages
 import channel_client
 import fb
 import config
+import slot_fill
 
 import uuid
 from collections import defaultdict
@@ -26,7 +27,6 @@ def getUUID():
    return str(uuid.uuid4()).replace("-", "")
 
 
-################# Library code #####################
 
 class CmdLineHandler(object):
 
@@ -160,8 +160,6 @@ class ActionObject(object):
 
     def __init__(self):
         self.__clsid__ = getUUID()
-        # TODO(viksit): dont make this manually assignable?
-        # Dynamically injected
         self.apiResult = None
         self.canonicalMsg = None
 
@@ -271,6 +269,8 @@ class BaseBotv2(object):
         self.ctxstore = kwargs.get("ctxstore")
         self.config = kwargs.get("config")
         self.debug = kwargs.get("debug")
+        self.slotFill = slot_fill.SlotFill()
+        self.slotFill.onetime = False
 
         self.intentActions = {}
         self.intentThresholds = {}
@@ -279,9 +279,6 @@ class BaseBotv2(object):
         self.intentSlots = defaultdict(lambda: [])
         # Add debug
         self.init()
-
-        self.state = "new"
-        self.onetime = False
 
     def init(self):
         # Override to initialize stuff in derived bots
@@ -302,7 +299,6 @@ class BaseBotv2(object):
             messages.ResponseElement.RESPONSE_TYPE_RESPONSE)
 
     def process(self, canonicalMsg):
-        print("---------: process called")
         return self.handle(
             canonicalMsg=canonicalMsg,
             myraAPI=self.api)
@@ -455,55 +451,19 @@ class BaseBotv2(object):
         # ******************
         apiResult = myraAPI.get(canonicalMsg.text)
         intentStr = apiResult.intent.label
-        intent_score = apiResult.intent.score
 
-
-        """
-        when an utterance comes in, we send it to our API to get an intent response back.
-        once the intent is known, we determine whether it contains any slots.
-        we then give this to the slot processor (its a list of slot items)
-        the slot processor is the first thing that is run after we get the intent.
-        once the slots are filled we should make them available as a dictionary locally.
-
-        actionObject.slots = {
-          "person": {
-            "filled": false/true,
-            "value": "foo",
-            "entity_type": ENTITY_TYPE,
-            "required": true/false,
-            "validated": true/false
-          }, ..
-        }
-
-
-        before we handle the intent, slots need to be filled.
-
-        for slotclass in slotlist:
-          channel.send(slotclass.prompt())
-          slotValue = slotclass.get()
-          v = slotclass.validate(slotValue)
-          if v:
-            continue
-          else:
-            ask again (max tries of 3)
-
-        once we assert that all slots are filled, we run the process and give it slot information.
-
-        """
-
-        if self.state == "process_slot":
-            # avoid using the intent itself.
-            # continue the slot filling
+        if self.slotFill.state == "process_slot":
             #print("state is process_slot")
             slotClasses = botState.get("slotClasses")
 
-            #print("we're in user fill mode")
-            allFilled = self.fill(slotClasses, canonicalMsg, apiResult)
+            allFilled = self.slotFill.fill(slotClasses, canonicalMsg, apiResult, botState, self.channelClient)
             # once the slots are filled, we need to get into the intent process
             if allFilled is False:
                 #print("allFilled is false, so lets go back to the fill function")
                 #allFilled = self.fill(slotClasses, canonicalMsg, apiResult)
                 return
+            # TODO(viksit): make slots part of actions and not intent. So first
+            # we look at the intent, figure out the action and then use the slot fill.
 
             # All slots are now filled
             intentStr = slotClasses[0].intent
@@ -519,13 +479,17 @@ class BaseBotv2(object):
 
         # TODO(viksit): serialize the intent-slot data structure
         slotClasses = self.intentSlots.get(intentStr)
-        allFilled = self.fill(slotClasses, canonicalMsg, apiResult)
+        allFilled = self.slotFill.fill(slotClasses, canonicalMsg, apiResult, botState, self.channelClient)
         if not allFilled:
             print("all slots were not filled")
             return
 
         # Get the actionObject
         actionObject = self.intentActions.get(intentStr)
+
+
+        # TODO(viksit): invoke slot actions here in the future not before this
+        # since the actions are what are connected to slots not the intent themselves.
 
         # Make slots available to actionObject
         # Make the apiResult available within the scope of the intent handler.
@@ -539,12 +503,12 @@ class BaseBotv2(object):
         # Once the actionObject is returned, lets clean out any state we have
         # Currently this doesn't actually return something.
 
-        print("state: %s" % self.state)
+        print("state: %s" % self.slotFill.state)
 
         # Reset the slot state
         for slotClass in slotClasses:
             slotClass.reset()
-        self.onetime = False
+        self.slotFill.onetime = False
 
         return actionObject.process()
 
