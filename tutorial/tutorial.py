@@ -112,20 +112,20 @@ class CalendarBotHTTPAPI(BotAPI):
 
 ## Deployment for command line
 
-# class CalendarCmdlineHandler(BotCmdLineHandler):
-#     def init(self):
-#         # channel configuration
-#         cf = config.Config()
-#         channelClient = channel_client.getChannelClient(
-#             channel=messages.CHANNEL_CMDLINE,
-#             requestType=None,
-#             config=cf)
-#         self.bot = bot
-#         bot.setChannelClient(channelClient)
+class CalendarCmdlineHandler(BotCmdLineHandler):
+    def init(self):
+        # channel configuration
+        cf = config.Config()
+        channelClient = channel_client.getChannelClient(
+            channel=messages.CHANNEL_CMDLINE,
+            requestType=None,
+            config=cf)
+        self.bot = bot
+        bot.setChannelClient(channelClient)
 
-# if __name__ == "__main__":
-    # c = CalendarCmdlineHandler()
-    # c.begin()
+if __name__ == "__main__":
+    c = CalendarCmdlineHandler()
+    c.begin()
 
 
 

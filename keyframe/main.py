@@ -405,11 +405,11 @@ class BaseBotv2(object):
                         canonicalMsg,
                         slotClass.prompt(),
                         responseType)
-                    print(">>>>>> cr: ", cr)
-                    print(">>> channel client: ", self.channelClient)
-                    print(">>> self.cc: PRE", self.channelClient.responses)
+                    # print(">>>>>> cr: ", cr)
+                    # print(">>> channel client: ", self.channelClient)
+                    # print(">>> self.cc: PRE", self.channelClient.responses)
                     self.channelClient.sendResponse(cr)
-                    print(">> self.cc POST responses: ", self.channelClient.responses)
+                    # print(">> self.cc POST responses: ", self.channelClient.responses)
                     self.state = "process_slot"
                     botState["slotClasses"] = slotClasses
                     return False
