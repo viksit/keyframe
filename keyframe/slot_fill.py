@@ -15,6 +15,35 @@ log.setLevel(logging.DEBUG)
 log.propagate = False
 
 
+class Slot(object):
+
+    def __init__(self):
+        pass
+
+    def init(self, **kwargs):
+        self.name = kwargs.get("name")
+        self.entityType = kwargs.get("entityType")
+        self.required = kwargs.get("required")
+        self.intent = kwargs.get("intent")
+        self.filled = False
+        self.value = None
+        self.validated = False
+
+    def get(self):
+        pass
+
+    def prompt(self):
+        pass
+
+    def validate(self):
+        pass
+
+    def reset(self):
+        # Only change the modifiable stuff
+        self.value = None
+        self.validated = False
+        self.filled = False
+
 class SlotFill(object):
 
     def __init__(self):
