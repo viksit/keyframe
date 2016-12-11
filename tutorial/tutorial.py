@@ -5,7 +5,7 @@ from flask import Flask, request, Response
 from pymyra.api import client
 
 from keyframe.cmdline import BotCmdLineHandler
-from keyframe.main2 import ActionObject, BaseBotv2
+from keyframe.main import ActionObject, BaseBotv2
 from keyframe.slot_fill import Slot
 from keyframe.bot_api import BotAPI
 from keyframe import channel_client
@@ -119,37 +119,37 @@ class CalendarCmdlineHandler(BotCmdLineHandler):
         self.bot = bot
         bot.setChannelClient(channelClient)
 
-if __name__ == "__main__":
-    c = CalendarCmdlineHandler()
-    c.begin()
-
 
 
 # -- Deployment for lambda
+class CalendarBotHTTPAPI(BotAPI):
+    def getBot(self):
+        self.bot = bot
+        return bot
 
-# class CalendarBotHTTPAPI(BotAPI):
-#     def getBot(self):
-#         self.bot = bot
-#         return bot
+app = Flask(__name__)
+@app.route("/localapi", methods=["GET", "POST"])
+def localapi():
+    event = {
+        "channel": messages.CHANNEL_HTTP_REQUEST_RESPONSE,
+        "request-type": request.method,
+        "body": request.json
+    }
+    r = CalendarBotHTTPAPI.requestHandler(
+        event=event,
+        context={})
+    return Response(str(r)), 200
 
-# app = Flask(__name__)
-# @app.route("/localapi", methods=["GET", "POST"])
-# def localapi():
-#     event = {
-#         "channel": messages.CHANNEL_HTTP_REQUEST_RESPONSE,
-#         "request-type": request.method,
-#         "body": request.json
-#     }
-#     r = CalendarBotHTTPAPI.requestHandler(
-#         event=event,
-#         context={})
-#     return Response(str(r)), 200
+@app.route('/ping', methods=['GET', 'POST'])
+def ping():
+    print("PING")
+    print(request.data)
+    return Response('ok'), 200
 
-# @app.route('/ping', methods=['GET', 'POST'])
-# def ping():
-#     print("PING")
-#     print(request.data)
-#     return Response('ok'), 200
+if __name__ == "__main__":
+    # Run the command line version
+    c = CalendarCmdlineHandler()
+    c.begin()
 
-# if __name__ == "__main__":
-#     app.run(debug=True)
+    # OR uncomment this to run this via flask
+    # app.run(debug=True)
