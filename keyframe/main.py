@@ -28,18 +28,18 @@ botState = {}
 # Class based decorators
 class ActionObject(object):
 
-    def __init__(self):
-        self.__clsid__ = getUUID()
-        self.apiResult = None
-        self.canonicalMsg = None
+   def __init__(self):
+      self.__clsid__ = getUUID()
+      self.apiResult = None
+      self.canonicalMsg = None
 
-    def process(self):
-        pass
-
+   def process(self):
+      pass
 
 class BaseBotv2(object):
 
-    def __init__(self, *args, **kwargs):
+
+   def __init__(self, *args, **kwargs):
 
         self.api = kwargs.get("api")
         self.channelClient = kwargs.get("channelClient")
@@ -57,32 +57,32 @@ class BaseBotv2(object):
         # Add debug
         self.init()
 
-    def init(self):
+   def init(self):
         # Override to initialize stuff in derived bots
         pass
 
-    def setChannelClient(self, cc):
+   def setChannelClient(self, cc):
         self.channelClient = cc
 
-    def createAndSendTextResponse(self, canonicalMsg, text, responseType=None):
+   def createAndSendTextResponse(self, canonicalMsg, text, responseType=None):
         log.info("createAndSendTextResponse(%s)", locals())
         cr = messages.createTextResponse(canonicalMsg, text, responseType)
         log.info("cr: %s", cr)
         self.channelClient.sendResponse(cr)
 
-    def errorResponse(self, canonicalMsg):
+   def errorResponse(self, canonicalMsg):
         self.createAndSendTextResponse(
             canonicalMsg, "Internal Error",
             messages.ResponseElement.RESPONSE_TYPE_RESPONSE)
 
-    def process(self, canonicalMsg):
+   def process(self, canonicalMsg):
         return self.handle(
             canonicalMsg=canonicalMsg,
             myraAPI=self.api)
 
-    # Decorators
-    # keyword intent, regex intent
-    def intent(self, intentStr, **args):
+   # Decorators
+   # keyword intent, regex intent
+   def intent(self, intentStr, **args):
         def myfun(cls):
             wrapped = cls(**args)
             self.intentActions[intentStr] = wrapped
@@ -101,8 +101,8 @@ class BaseBotv2(object):
         # return decorator
         return myfun
 
-    # why shouldn't this be just regular keyword args?
-    def slot(self, intentStr, slotList, **args):
+   # why shouldn't this be just regular keyword args?
+   def slot(self, intentStr, slotList, **args):
         def myfun(cls):
             wrapped = cls()
             wrapped.init(intent=intentStr,
@@ -114,7 +114,7 @@ class BaseBotv2(object):
         # return decorator
         return myfun
 
-    def handle(self, **kwargs):
+   def handle(self, **kwargs):
 
         """
         Support keyword intent, model intent and regex intent

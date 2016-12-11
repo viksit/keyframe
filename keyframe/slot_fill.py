@@ -151,6 +151,7 @@ class Slot(object):
         self.validated = False
         self.filled = False
 
+# Make this go into the action object itself.
 class SlotFill(object):
 
     def __init__(self):
