@@ -1,19 +1,17 @@
 from __future__ import print_function
 from os.path import expanduser, join
-
 from flask import Flask, request, Response
 
 from pymyra.api import client
 
-from keyframe.main import BaseBot, Actions, BotCmdLineHandler,\
-    ActionObject, BaseBotv2, BotAPI
+from keyframe.cmdline import BotCmdLineHandler
+from keyframe.main2 import ActionObject, BaseBotv2
 from keyframe.slot_fill import Slot
-
+from keyframe.bot_api import BotAPI
 from keyframe import channel_client
 from keyframe import messages
 from keyframe import config
 
-############## Tutorial code ####################
 
 # Create an API object to inject into our bot
 apicfg = {
@@ -29,7 +27,6 @@ api.set_intent_model(INTENT_MODEL_ID)
 
 # KV Store
 # TODO(viksit): move kv store into a pymyra api (same level as agents/intent/entity)
-
 
 bot = BaseBotv2(api=api)
 
@@ -103,14 +100,7 @@ class CancelIntentActionObject(ActionObject):
 
 
 
-class CalendarBotHTTPAPI(BotAPI):
-
-    def getBot(self):
-        self.bot = bot
-        return bot
-
 # Deployment for command line
-
 class CalendarCmdlineHandler(BotCmdLineHandler):
     def init(self):
         # channel configuration
@@ -129,6 +119,11 @@ if __name__ == "__main__":
 
 
 # -- Deployment for lambda
+
+# class CalendarBotHTTPAPI(BotAPI):
+#     def getBot(self):
+#         self.bot = bot
+#         return bot
 
 # app = Flask(__name__)
 # @app.route("/localapi", methods=["GET", "POST"])
