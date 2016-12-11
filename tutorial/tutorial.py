@@ -6,7 +6,9 @@ from flask import Flask, request, Response
 from pymyra.api import client
 
 from keyframe.main import BaseBot, Actions, BotCmdLineHandler,\
-    ActionObject, BaseBotv2, Slot, BotAPI
+    ActionObject, BaseBotv2, BotAPI
+from keyframe.slot_fill import Slot
+
 from keyframe import channel_client
 from keyframe import messages
 from keyframe import config
@@ -101,15 +103,11 @@ class CancelIntentActionObject(ActionObject):
 
 
 
-
 class CalendarBotHTTPAPI(BotAPI):
 
     def getBot(self):
         self.bot = bot
         return bot
-
-
-
 
 ## Deployment for command line
 
@@ -130,7 +128,7 @@ if __name__ == "__main__":
 
 
 
-## Deployment for lambda
+# -- Deployment for lambda
 
 # app = Flask(__name__)
 # @app.route("/localapi", methods=["GET", "POST"])
