@@ -5,7 +5,7 @@ from flask import Flask, request, Response
 from pymyra.api import client
 
 from keyframe.cmdline import BotCmdLineHandler
-from keyframe.main import ActionObject, BaseBotv2
+from keyframe.m5 import ActionObject, BaseBotv2
 from keyframe.slot_fill import Slot
 from keyframe.bot_api import BotAPI
 from keyframe import channel_client
@@ -34,28 +34,35 @@ bot = BaseBotv2(api=api)
 @bot.intent("create")
 class CreateIntentActionObject(ActionObject):
 
-    @bot.slot("create", ["person", "optional", "PERSON"])
     class PersonSlot(Slot):
+
+        entityType = "PERSON"
+        required = "optional"
+        parseOriginal = False
+        parseResponse = False
 
         def prompt(self):
             return "who do you want to set up the meeting with?"
 
-    @bot.slot("create", ["time", "optional", "DATE"])
     class DateSlot(Slot):
+        entityType = "DATE"
+        required = "optional"
 
         def prompt(self):
             return "and when?"
 
 
-    @bot.slot("create", ["city", "optional", "GPE"])
     class CitySlot(Slot):
+        entityType = "GPE"
+        required = "optional"
 
         def prompt(self):
             return "which city do you want to meet in?"
 
 
-    @bot.slot("create", ["bank", "optional", "ORG"])
     class BankSlot(Slot):
+        entityType = "ORG"
+        required = "optional"
 
         def prompt(self):
             return "which bank do you want to meet at?"

@@ -1,8 +1,11 @@
+from __future__ import print_function
 import sys
+import logging
 
 import messages
-
-import logging
+import misc
+from six import add_metaclass
+import re
 
 log = logging.getLogger(__name__)
 ch = logging.StreamHandler(sys.stdout)
@@ -14,45 +17,21 @@ log.addHandler(ch)
 log.setLevel(logging.DEBUG)
 log.propagate = False
 
-
-
-"""
-An ActionObject contains slots
-Once an intent is figured out we map it to the related action object
-
-Given a canonicalMsg, first try and fill the slots from this sentence.
-# SlotFill.fillFromOriginal()
-
-# Once we have done so, we go and ask for each prompt()
-for slot in actionobject.slots:
-  slot.init(apiResult, canonicalMsg)
-  slot.fill(parse=True)
-
-
-fill(parse=True):
-  # First, see if parse is True.
-  #   If True, then try and fill it from the sentence via entity extraction.
-  #   If False, then we take the value and dump it in slot fill.
-
-
-"""
-
-
 class Slot(object):
 
-    def __init__(self):
-        pass
+    parseOriginal = False
+    parseResponse = False
+    entityType = None
 
-    def init(self, **kwargs):
-        self.name = kwargs.get("name")
-        self.entityType = kwargs.get("entityType")
-        self.required = kwargs.get("required")
-        self.intent = kwargs.get("intent")
+    def __init__(self):
+        self.name = re.sub(r"(.)([A-Z])", r"\1_\2", self.__class__.__name__).lower()
         self.filled = False
         self.value = None
         self.validated = False
-        self.channelClient = kwargs.get("channelClient")
         self.state = "new" # or process_slot
+
+    def init(self, **kwargs):
+        self.channelClient = kwargs.get("channelClient")
 
     def fill(self, canonicalMsg, apiResult, channelClient, parseOriginal=False, parseResponse=False):
         """
@@ -84,7 +63,6 @@ class Slot(object):
 
             # The original sentence didn't have any items to fill this slot
             # Send a response
-            print("<>> send response")
             responseType = messages.ResponseElement.RESPONSE_TYPE_RESPONSE
             cr = messages.createTextResponse(
                 self.canonicalMsg,
@@ -151,7 +129,7 @@ class Slot(object):
         self.validated = False
         self.filled = False
 
-# Make this go into the action object itself.
+# TODO(viksit): Make this go into the action object itself.
 class SlotFill(object):
 
     def __init__(self):
@@ -160,7 +138,7 @@ class SlotFill(object):
     def fill(self, slotObjects, canonicalMsg, apiResult, botState, channelClient):
         for slotObject in slotObjects:
             if not slotObject.filled:
-                self.state = "process-slot"
+                self.state = "process_slot"
                 filled = slotObject.fill(canonicalMsg, apiResult, channelClient, parseOriginal=True, parseResponse=True)
                 botState["slotObjects"] = slotObjects
                 if filled is False:
