@@ -58,7 +58,7 @@ class BaseBot(object):
         self.config = kwargs.get("config")
         self.debug = kwargs.get("debug")
 
-        self.slotFill = slot_fill.SlotFill()
+        # self.slotFill = slot_fill.SlotFill()
 
         self.intentActions = {}
         self.intentThresholds = {}
@@ -218,17 +218,48 @@ class BaseBot(object):
         actionObject.slotObjects = slotObjects
         actionObject.apiResult = apiResult
         actionObject.canonicalMsg = canonicalMsg
-        actionObject.messages = messages
         actionObject.channelClient = self.channelClient
         actionObject.requestState = requestState
+        actionObject.originalIntentStr = intentStr
         log.debug("createActionObject: %s", actionObject)
         return actionObject
 
-    def getActionObject(self, actionObjectJSON):
+    def getActionObject(self, actionObjectJSON, canonicalMsg, apiResult, userProfile, requestState):
         """
         Create an action object from a given JSON object
         """
-        pass
+        print("getactionobject: ", actionObjectJSON)
+        # Initialize the class
+        intentStr = actionObjectJSON.get("origIntentStr")
+        slotObjectData = actionObjectJSON.get("slotObjects")
+        actionObjectCls = self.intentActions.get(intentStr)
+        actionObject = actionObjectCls()
+        print("MMMMMMMMMMM slots: ", slotObjectData)
+
+        slotClasses = getSlots(actionObjectCls)
+        slotObjects = []
+        for slotClass, slotObject in zip(slotClasses, slotObjectData):
+            sc = slotClass()
+            sc.entityType = getattr(sc, "entityType")
+            sc.required = getattr(sc, "required")
+            sc.parseOriginal = getattr(sc, "parseOriginal")
+            sc.parseResponse = getattr(sc, "parseResponse")
+            # Get these from the saved state
+            sc.filled = slotObject.get("filled")
+            sc.value = slotObject.get("value")
+            sc.validated = slotObject.get("validated")
+            sc.state = slotObject.get("state")
+            slotObjects.append(sc)
+
+        actionObject.slotObjects = slotObjects
+        actionObject.apiResult = apiResult
+        actionObject.canonicalMsg = canonicalMsg
+        actionObject.channelClient = self.channelClient
+        actionObject.requestState = requestState
+        actionObject.originalIntentStr = intentStr
+
+        log.debug("createActionObject: %s", actionObject)
+        return actionObject
 
     def process(self, canonicalMsg):
 
@@ -274,11 +305,12 @@ class BaseBot(object):
 
         requestState = BaseBot.REQUEST_STATE_NEW
         waitingActionJson = botState.getWaiting()
-
+        print("botstate: ", botState)
         if waitingActionJson:
-            actionObject = self.getActionObject(waitingActionJson)
+            log.info("+++ Waiting object is found!")
+            actionObject = self.getActionObject(waitingActionJson, canonicalMsg, apiResult, userProfile, requestState)
             #self.sendDebugResponse(botState, canonicalMsg)
-            requestState = actionObject.processWrapper()
+            requestState = actionObject.processWrapper(botState)
 
         if requestState != BaseBot.REQUEST_STATE_PROCESSED:
             log.info("requestState: %s", requestState)
@@ -287,7 +319,8 @@ class BaseBot(object):
                 canonicalMsg, apiResult, botState, userProfile, requestState)
             log.info("actionObject: %s", actionObject)
             #self.sendDebugResponse(botState, canonicalMsg)
-            requestState = actionObject.processWrapper()
+            requestState = actionObject.processWrapper(botState)
+            print("requeststae: ", requestState)
 
         if requestState != BaseBot.REQUEST_STATE_PROCESSED:
             raise Exception("Unprocessed message")
