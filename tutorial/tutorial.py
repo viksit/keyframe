@@ -5,12 +5,14 @@ from flask import Flask, request, Response
 from pymyra.api import client
 
 from keyframe.cmdline import BotCmdLineHandler
-from keyframe.m5 import ActionObject, BaseBotv2
+from keyframe.m5 import BaseBot
+from keyframe.actions import ActionObject
 from keyframe.slot_fill import Slot
 from keyframe.bot_api import BotAPI
 from keyframe import channel_client
 from keyframe import messages
 from keyframe import config
+from keyframe import store_api
 
 
 # Create an API object to inject into our bot
@@ -26,12 +28,18 @@ api = client.connect(apicfg)
 api.set_intent_model(INTENT_MODEL_ID)
 
 # KV Store
-# TODO(viksit): move kv store into a pymyra api (same level as agents/intent/entity)
+# TODO:
+# Initialize via a configuration file
+kvStore = store_api.get_kv_store(
+    store_api.TYPE_LOCALFILE,
+    #store_api.TYPE_DYNAMODB,
+    config.Config())
 
-bot = BaseBotv2(api=api)
+
+bot = BaseBot(api=api, kvStore=kvStore)
 
 # Actions
-@bot.intent("create")
+@bot.intent2("create")
 class CreateIntentActionObject(ActionObject):
 
     class PersonSlot(Slot):
@@ -86,7 +94,7 @@ class CreateIntentActionObject(ActionObject):
                                               resp,
                                               responseType)
         self.channelClient.sendResponse(cr)
-
+        return BaseBot.REQUEST_STATE_PROCESSED
 
 @bot.intent("cancel")
 class CancelIntentActionObject(ActionObject):

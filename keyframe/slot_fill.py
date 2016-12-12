@@ -22,6 +22,7 @@ class Slot(object):
     parseOriginal = False
     parseResponse = False
     entityType = None
+    required = False
 
     def __init__(self):
         self.name = re.sub(r"(.)([A-Z])", r"\1_\2", self.__class__.__name__).lower()
