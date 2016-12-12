@@ -118,7 +118,7 @@ class BaseBot(object):
         def myfun(cls):
 
             # Find the slots associated with action
-            slotClasses = getSlots(cls)
+            slotClasses = slot_fill.getSlots(cls)
             for slotClass in slotClasses:
                 sc = slotClass()
                 sc.entityType = getattr(sc, "entityType")
@@ -191,7 +191,7 @@ class BaseBot(object):
         intentStr = apiResult.intent.label
         actionObjectCls = self.intentActions.get(intentStr)
         log.debug("createActionObject: intent: %s cls: %s", intentStr, actionObjectCls)
-        slotClasses = getSlots(actionObjectCls)
+        slotClasses = slot_fill.getSlots(actionObjectCls)
         slotObjects = []
         for slotClass in slotClasses:
             sc = slotClass()
@@ -219,7 +219,7 @@ class BaseBot(object):
         slotObjectData = actionObjectJSON.get("slotObjects")
         actionObjectCls = self.intentActions.get(intentStr)
         actionObject = actionObjectCls()
-        slotClasses = getSlots(actionObjectCls)
+        slotClasses = slot_fill.getSlots(actionObjectCls)
         slotObjects = []
         for slotClass, slotObject in zip(slotClasses, slotObjectData):
             sc = slotClass()
