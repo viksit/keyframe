@@ -58,32 +58,55 @@ class ActionObject(object):
     def slotFill(self):
         """
         Function to do slot fill per action object.
+        Returns:
+          True if all slots are filled.
+          False if all slots haven't been filled yet or something went wrong.
+
         """
         log.info("-- slotFill --")
         log.info("slotobjects: %s", self.slotObjects)
         print(self.canonicalMsg, self.apiResult, self.botState, self.channelClient)
-        pass
+        print("Req state: ", self.requestState)
+
+        for slotObject in self.slotObjects:
+            if not slotObject.filled:
+                self.requestState = BaseBot.REQUEST_STATE_PROCESS_SLOT
+                filled = slotObject.fill(
+                    self.canonicalMsg, self.apiResult, self.channelClient,
+                    parseOriginal=True, parseResponse=True)
+                if filled is False:
+                    return False
+        # End slot filling
+        # Now, all slots for this should be filled.
+        allFilled = True
+        for slotObject in self.slotObjects:
+            if not slotObject.filled:
+                allFilled = False
+                break
+        return allFilled
+
 
     def process(self):
+        """
+        The user fills this up.
+        """
         raise NotImplementedError()
 
     def processWrapper(self):
         # Fill slots
-        log.info("processWrapper: botState: %s", self.botState)
-
+        log.info("processWrapper: botState: botstate: %s, reqstate: %s", self.botState, self.requestState)
         # Currently filling
-        if self.requestState == BaseBot.REQUEST_STATE_PROCESS_SLOT:
-            allFilled = self.slotFill()
-            if allFilled is False:
-                return
-        # New
-        elif self.requestState == BaseBot.REQUEST_STATE_NEW:
-            allFilled = self.slotFill()
-            if allFilled is False:
-                return
+        # if state is new, then fill
+        # if state is process-slot then fill
+        # if state is processed, then we wont even come here
+        # so this can always be fileld.
+        allFilled = self.slotFill()
+        if allFilled is False:
+            return self.requestState
 
         # Call process function with slot data in there.
-        return self.process()
+        self.requestState = self.process()
+        return self.requestState
 
     @classmethod
     def _createActionObjectKey(cls, canonicalMsg, id):
