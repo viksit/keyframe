@@ -73,7 +73,7 @@ class CreateIntentActionObject(ActionObject):
     def process(self):
 
         # At this point, any slots should be filled up.
-        for slot in self.slots:
+        for slot in self.slotObjects:
             print("(process) slot: ", slot.entityType, slot.filled, slot.value)
 
         # Process the response
