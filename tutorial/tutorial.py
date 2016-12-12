@@ -5,7 +5,7 @@ from flask import Flask, request, Response
 from pymyra.api import client
 
 from keyframe.cmdline import BotCmdLineHandler
-from keyframe.m5 import BaseBot
+from keyframe.base import BaseBot
 from keyframe.actions import ActionObject
 from keyframe.slot_fill import Slot
 from keyframe.bot_api import BotAPI

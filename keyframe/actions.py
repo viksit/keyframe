@@ -62,11 +62,6 @@ class ActionObject(object):
           False if all slots haven't been filled yet or something went wrong.
 
         """
-        log.info("-- slotFill --")
-        log.info("slotobjects: %s", self.slotObjects)
-        print(self.canonicalMsg, self.apiResult, botState, self.channelClient)
-        print("Req state: ", self.requestState)
-
         for slotObject in self.slotObjects:
             if not slotObject.filled:
                 filled = slotObject.fill(
@@ -74,7 +69,6 @@ class ActionObject(object):
                     parseOriginal=True, parseResponse=True)
                 if filled is False:
                     botState.putWaiting(self.toJSONObject())
-                    print(">>>>>>>>>> botstate: ", botState)
                     return False
         # End slot filling
         # Now, all slots for this should be filled.
