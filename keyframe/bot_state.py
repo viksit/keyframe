@@ -5,6 +5,7 @@ import config
 import slot_fill
 import copy
 import bot_api
+import store_api
 
 class BotState(object):
 

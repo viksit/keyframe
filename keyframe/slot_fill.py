@@ -39,6 +39,10 @@ fill(parse=True):
 
 
 class Slot(object):
+    parseOriginal = False
+    parseResponse = False
+    entityType = None
+    required = False
 
     def __init__(self):
         pass
