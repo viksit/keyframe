@@ -49,13 +49,12 @@ class ActionObject(object):
         self.channelClient = kwargs.get("channelClient")
         self.kvStore = kwargs.get("kvStore")
         self.slotObjects = kwargs.get("slotObjects")
-        self.botState = kwargs.get("botState")
         self.init()
 
     def init(self):
         pass
 
-    def slotFill(self):
+    def slotFill(self, botState):
         """
         Function to do slot fill per action object.
         Returns:
@@ -65,24 +64,29 @@ class ActionObject(object):
         """
         log.info("-- slotFill --")
         log.info("slotobjects: %s", self.slotObjects)
-        print(self.canonicalMsg, self.apiResult, self.botState, self.channelClient)
+        print(self.canonicalMsg, self.apiResult, botState, self.channelClient)
         print("Req state: ", self.requestState)
 
         for slotObject in self.slotObjects:
             if not slotObject.filled:
-                self.requestState = BaseBot.REQUEST_STATE_PROCESS_SLOT
                 filled = slotObject.fill(
                     self.canonicalMsg, self.apiResult, self.channelClient,
                     parseOriginal=True, parseResponse=True)
                 if filled is False:
+                    botState.putWaiting(self.toJSONObject())
+                    print(">>>>>>>>>> botstate: ", botState)
                     return False
         # End slot filling
         # Now, all slots for this should be filled.
         allFilled = True
+        # Is this necessary?
         for slotObject in self.slotObjects:
             if not slotObject.filled:
                 allFilled = False
                 break
+
+        # Save state before returning
+        # This can be better done as a decorator
         return allFilled
 
 
@@ -92,21 +96,17 @@ class ActionObject(object):
         """
         raise NotImplementedError()
 
-    def processWrapper(self):
+    def processWrapper(self, botState):
         # Fill slots
-        log.info("processWrapper: botState: botstate: %s, reqstate: %s", self.botState, self.requestState)
-        # Currently filling
-        # if state is new, then fill
-        # if state is process-slot then fill
-        # if state is processed, then we wont even come here
-        # so this can always be fileld.
-        allFilled = self.slotFill()
+        log.info("processWrapper: botState: botstate: %s, reqstate: %s", botState, self.requestState)
+        allFilled = self.slotFill(botState)
         if allFilled is False:
-            return self.requestState
+            return BaseBot.REQUEST_STATE_PROCESSED
 
-        # Call process function with slot data in there.
-        self.requestState = self.process()
-        return self.requestState
+        # Call process function only when slot data is filled up
+        requestState = self.process()
+        # should we save bot state here?
+        return requestState
 
     @classmethod
     def _createActionObjectKey(cls, canonicalMsg, id):
@@ -116,7 +116,19 @@ class ActionObject(object):
         return k
 
     def toJSONObject(self):
-        raise NotImplementedError()
+        # Each action object should have the following things stored
+        # Slotobjects
+        serializedSlotObjects = [i.toJSONObject() for i in self.slotObjects]
+
+        return {
+            "actionObjectClassName": self.__class__.__name__,
+            "origIntentStr": self.originalIntentStr,
+            "slotObjects": serializedSlotObjects
+        }
+
+    @classmethod
+    def fromJSONObject(self, jsonObject):
+        pass
 
     def createAndSendTextResponse(self, canonicalMsg, text, responseType=None):
         cr = messages.createTextResponse(canonicalMsg, text, responseType)

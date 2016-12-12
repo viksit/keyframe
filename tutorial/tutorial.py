@@ -31,8 +31,9 @@ api.set_intent_model(INTENT_MODEL_ID)
 # TODO:
 # Initialize via a configuration file
 kvStore = store_api.get_kv_store(
-    store_api.TYPE_LOCALFILE,
+    #store_api.TYPE_LOCALFILE,
     #store_api.TYPE_DYNAMODB,
+    store_api.TYPE_INMEMORY,
     config.Config())
 
 
@@ -76,7 +77,7 @@ class CreateIntentActionObject(ActionObject):
             return "which bank do you want to meet at?"
 
 
-    # Intent functions
+    # Won't get called till slots are filled.
     def process(self):
 
         # At this point, any slots should be filled up.
@@ -89,10 +90,10 @@ class CreateIntentActionObject(ActionObject):
         resp = message
 
         # Send it back on this channel
-        responseType = self.messages.ResponseElement.RESPONSE_TYPE_RESPONSE
-        cr = self.messages.createTextResponse(self.canonicalMsg,
-                                              resp,
-                                              responseType)
+        responseType = messages.ResponseElement.RESPONSE_TYPE_RESPONSE
+        cr = messages.createTextResponse(self.canonicalMsg,
+                                         resp,
+                                         responseType)
         self.channelClient.sendResponse(cr)
         return BaseBot.REQUEST_STATE_PROCESSED
 

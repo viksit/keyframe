@@ -31,6 +31,31 @@ class Slot(object):
         self.validated = False
         self.state = "new" # or process_slot
 
+    def toJSONObject(self):
+        return {
+            "className": self.__class__.__name__,
+            "name": self.name,
+            "filled": self.filled,
+            "value": self.value,
+            "validated": self.validated,
+            "state": self.state,
+            "parseOriginal": self.parseOriginal,
+            "parseResponse": self.parseResponse,
+            "entityType": self.entityType,
+            "required": self.required
+        }
+
+    def fromJSONObject(self, j):
+        self.name = j.get("name")
+        self.filled = j.get("filled")
+        self.value = j.get("value")
+        self.validated = j.get("validated")
+        self.state = j.get("state")
+        self.parseOriginal = j.get("parseOriginal")
+        self.parseResponse = j.get("parseResponse")
+        self.entityType = j.get("entityType")
+        self.required = j.get("required")
+
     def init(self, **kwargs):
         self.channelClient = kwargs.get("channelClient")
 
@@ -131,24 +156,24 @@ class Slot(object):
         self.filled = False
 
 # TODO(viksit): Make this go into the action object itself.
-class SlotFill(object):
+# class SlotFill(object):
 
-    def __init__(self):
-        self.state = "new"
+#     def __init__(self):
+#         self.state = "new"
 
-    def fill(self, slotObjects, canonicalMsg, apiResult, botState, channelClient):
-        for slotObject in slotObjects:
-            if not slotObject.filled:
-                self.state = "process_slot"
-                filled = slotObject.fill(canonicalMsg, apiResult, channelClient, parseOriginal=True, parseResponse=True)
-                botState["slotObjects"] = slotObjects
-                if filled is False:
-                    return False
-        # End slot filling
-        # Now, all slots for this should be filled.
-        allFilled = True
-        for slotObject in slotObjects:
-            if not slotObject.filled:
-                allFilled = False
-                break
-        return allFilled
+#     def fill(self, slotObjects, canonicalMsg, apiResult, botState, channelClient):
+#         for slotObject in slotObjects:
+#             if not slotObject.filled:
+#                 self.state = "process_slot"
+#                 filled = slotObject.fill(canonicalMsg, apiResult, channelClient, parseOriginal=True, parseResponse=True)
+#                 botState["slotObjects"] = slotObjects
+#                 if filled is False:
+#                     return False
+#         # End slot filling
+#         # Now, all slots for this should be filled.
+#         allFilled = True
+#         for slotObject in slotObjects:
+#             if not slotObject.filled:
+#                 allFilled = False
+#                 break
+#         return allFilled
