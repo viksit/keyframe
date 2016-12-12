@@ -8,7 +8,7 @@ import misc
 import uuid
 from collections import defaultdict
 import sys
-from m5 import BaseBot
+from base import BaseBot
 
 from six import iteritems, add_metaclass
 
