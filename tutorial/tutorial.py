@@ -85,7 +85,7 @@ class CreateIntentActionObject(ActionObject):
             print("(process) slot: ", slot.entityType, slot.filled, slot.value)
 
         # Process the response
-        message = "Sure, I'll create the meeting for you"
+        message = "Sure, I'll create the meeting for you with : {0} {1} {2} {3}".format(*[i.value for i in self.slotObjects])
         #resp = _returnResponse(e, message)
         resp = message
 
@@ -102,6 +102,7 @@ class CancelIntentActionObject(ActionObject):
 
     def process(self):
 
+        print(self.slotObjects)
         # Process the response
         #e = self.apiResult.entities.entity_dict.get("builtin", {})
         message = "Sure, I'll cancel the meeting for you"
@@ -137,6 +138,7 @@ class CalendarBotHTTPAPI(BotAPI):
         return bot
 
 app = Flask(__name__)
+
 @app.route("/localapi", methods=["GET", "POST"])
 def localapi():
     event = {
