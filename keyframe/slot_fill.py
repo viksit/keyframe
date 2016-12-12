@@ -17,7 +17,16 @@ log.addHandler(ch)
 log.setLevel(logging.DEBUG)
 log.propagate = False
 
+
+def getSlots(cls):
+    allClasses = [cls.__getattribute__(cls, i) for i in cls.__dict__.keys() if i[:1] != '_']
+    slotClasses = [i for i in allClasses if type(i) is type and issubclass(i, Slot)]
+    return slotClasses
+
 class Slot(object):
+
+    SLOT_STATE_NEW = "new"
+    SLOT_STATE_WAITING_FILL = "waiting_for_fill"
 
     parseOriginal = False
     parseResponse = False
@@ -78,10 +87,9 @@ class Slot(object):
         self.canonicalMsg = canonicalMsg
 
         fillResult = None
-        if self.state == "new":
+        if self.state == Slot.SLOT_STATE_NEW:
             if parseOriginal is True:
                 fillResult = self._extractSlotFromSentence()
-                print("a: fillresult", fillResult)
                 if fillResult:
                     self.value = fillResult
                     self.filled = True
@@ -95,10 +103,10 @@ class Slot(object):
                 self.prompt(),
                 responseType)
             channelClient.sendResponse(cr)
-            self.state = "waiting-for-fill"
+            self.state = Slot.SLOT_STATE_WAITING_FILL
 
         # Waiting for user response
-        elif self.state == "waiting-for-fill":
+        elif self.state == Slot.SLOT_STATE_WAITING_FILL:
             # If we want the incoming response to be put through an entity extractor
             if parseResponse is True:
                 fillResult = self._extractSlotFromSentence()
@@ -113,16 +121,20 @@ class Slot(object):
         return self.filled
 
     def _extractSlotFromSentence(self):
+
+        ENTITY_BUILTIN = "builtin"
+        ENTITY_DATE = "DATE"
+
         res = None
         log.info("_extractSlotFromSentence: %s", self.name)
-        e = self.apiResult.entities.entity_dict.get("builtin", {})
+        e = self.apiResult.entities.entity_dict.get(ENTITY_BUILTIN, {})
 
         # Entity type was found
         if self.entityType in e:
-            # TODO(viksit): this needs to change to have "text" in all entities.
+            # TODO(viksit): the Myra API needs to change to have "text" in all entities.
             k = "text"
             # TODO(viksit): special case for DATE. needs change in API.
-            if self.entityType == "DATE":
+            if self.entityType == ENTITY_DATE:
                 k = "date"
 
             # Extract the right value.
@@ -154,26 +166,3 @@ class Slot(object):
         self.value = None
         self.validated = False
         self.filled = False
-
-# TODO(viksit): Make this go into the action object itself.
-# class SlotFill(object):
-
-#     def __init__(self):
-#         self.state = "new"
-
-#     def fill(self, slotObjects, canonicalMsg, apiResult, botState, channelClient):
-#         for slotObject in slotObjects:
-#             if not slotObject.filled:
-#                 self.state = "process_slot"
-#                 filled = slotObject.fill(canonicalMsg, apiResult, channelClient, parseOriginal=True, parseResponse=True)
-#                 botState["slotObjects"] = slotObjects
-#                 if filled is False:
-#                     return False
-#         # End slot filling
-#         # Now, all slots for this should be filled.
-#         allFilled = True
-#         for slotObject in slotObjects:
-#             if not slotObject.filled:
-#                 allFilled = False
-#                 break
-#         return allFilled
