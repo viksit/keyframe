@@ -15,34 +15,17 @@ log.setLevel(logging.DEBUG)
 log.propagate = False
 
 
-
-"""
-An ActionObject contains slots
-Once an intent is figured out we map it to the related action object
-
-Given a canonicalMsg, first try and fill the slots from this sentence.
-# SlotFill.fillFromOriginal()
-
-# Once we have done so, we go and ask for each prompt()
-for slot in actionobject.slots:
-  slot.init(apiResult, canonicalMsg)
-  slot.fill(parse=True)
-
-
-fill(parse=True):
-  # First, see if parse is True.
-  #   If True, then try and fill it from the sentence via entity extraction.
-  #   If False, then we take the value and dump it in slot fill.
-
-
-"""
-
+def getSlots(cls):
+    allClasses = [cls.__getattribute__(cls, i) for i in cls.__dict__.keys() if i[:1] != '_']
+    slotClasses = [i for i in allClasses if type(i) is type and issubclass(i, Slot)]
+    return slotClasses
 
 class Slot(object):
-    parseOriginal = False
-    parseResponse = False
-    entityType = None
-    required = False
+
+    SLOT_STATE_NEW = "new"
+    SLOT_STATE_WAITING_FILL = "waiting_for_fill"
+
+    # TODO(viksit): overwrite the instance variables from the class variable
 
     def __init__(self):
         pass
@@ -105,10 +88,9 @@ class Slot(object):
         self.canonicalMsg = canonicalMsg
 
         fillResult = None
-        if self.state == "new":
+        if self.state == Slot.SLOT_STATE_NEW:
             if parseOriginal is True:
                 fillResult = self._extractSlotFromSentence()
-                print("a: fillresult", fillResult)
                 if fillResult:
                     self.value = fillResult
                     self.filled = True
@@ -123,10 +105,10 @@ class Slot(object):
                 self.prompt(),
                 responseType)
             channelClient.sendResponse(cr)
-            self.state = "waiting-for-fill"
+            self.state = Slot.SLOT_STATE_WAITING_FILL
 
         # Waiting for user response
-        elif self.state == "waiting-for-fill":
+        elif self.state == Slot.SLOT_STATE_WAITING_FILL:
             # If we want the incoming response to be put through an entity extractor
             if parseResponse is True:
                 fillResult = self._extractSlotFromSentence()
@@ -141,16 +123,20 @@ class Slot(object):
         return self.filled
 
     def _extractSlotFromSentence(self):
+
+        ENTITY_BUILTIN = "builtin"
+        ENTITY_DATE = "DATE"
+
         res = None
         log.info("_extractSlotFromSentence: %s", self.name)
-        e = self.apiResult.entities.entity_dict.get("builtin", {})
+        e = self.apiResult.entities.entity_dict.get(ENTITY_BUILTIN, {})
 
         # Entity type was found
         if self.entityType in e:
-            # TODO(viksit): this needs to change to have "text" in all entities.
+            # TODO(viksit): the Myra API needs to change to have "text" in all entities.
             k = "text"
             # TODO(viksit): special case for DATE. needs change in API.
-            if self.entityType == "DATE":
+            if self.entityType == ENTITY_DATE:
                 k = "date"
 
             # Extract the right value.
@@ -182,6 +168,7 @@ class Slot(object):
         self.value = None
         self.validated = False
         self.filled = False
+<<<<<<< 35402cb7650de571eaf7936f6dadf738fefbd738
 
 # Make this go into the action object itself.
 class SlotFill(object):
@@ -229,3 +216,5 @@ class SlotFill(object):
 #                 break
 #         return allFilled
 
+=======
+>>>>>>> rename and cleanup

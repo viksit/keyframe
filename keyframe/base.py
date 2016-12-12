@@ -13,6 +13,8 @@ from bot_state import BotState
 from six import iteritems, add_metaclass
 
 
+# TODO: move logging out into a nicer function/module
+
 log = logging.getLogger(__name__)
 ch = logging.StreamHandler(sys.stdout)
 ch.setLevel(logging.DEBUG)
@@ -23,21 +25,6 @@ log.addHandler(ch)
 log.setLevel(logging.DEBUG)
 log.propagate = False
 
-def getSlots(cls):
-    allClasses = [cls.__getattribute__(cls, i) for i in cls.__dict__.keys() if i[:1] != '_']
-    slotClasses = [i for i in allClasses if type(i) is type and issubclass(i, slot_fill.Slot)]
-    #slotClasses = [i for i in allClasses if type(i) is type and issubclass(i, misc.ObjectBase)]
-    #slotClasses = [i for i in allClasses if type(i) is misc.SlotMeta]
-    return slotClasses
-
-def getProps(cls):
-    allClasses = [cls.__getattribute__(cls, i) for i in cls.__dict__.keys() if i[:1] != '_']
-    return allClasses
-
-# This can be serialized into kvstore..
-botState = {}
-
-
 class BaseBot(object):
 
     botStateClass = BotState
@@ -45,7 +32,7 @@ class BaseBot(object):
     # Constants
     REQUEST_STATE_NEW = "req_new"
     REQUEST_STATE_PROCESSED = "req_processed"
-    REQUEST_STATE_PROCESS_SLOT = "req_process_slot"
+
     # User profile keys
     UP_NAME = "up_name"
 
@@ -200,7 +187,6 @@ class BaseBot(object):
         slots, messages, channelClient
 
         """
-        log.debug("channelclient: %s", self.channelClient)
         # Get the intent string and create an object from it.
         intentStr = apiResult.intent.label
         actionObjectCls = self.intentActions.get(intentStr)
@@ -228,14 +214,11 @@ class BaseBot(object):
         """
         Create an action object from a given JSON object
         """
-        print("getactionobject: ", actionObjectJSON)
         # Initialize the class
         intentStr = actionObjectJSON.get("origIntentStr")
         slotObjectData = actionObjectJSON.get("slotObjects")
         actionObjectCls = self.intentActions.get(intentStr)
         actionObject = actionObjectCls()
-        print("MMMMMMMMMMM slots: ", slotObjectData)
-
         slotClasses = getSlots(actionObjectCls)
         slotObjects = []
         for slotClass, slotObject in zip(slotClasses, slotObjectData):
@@ -257,7 +240,6 @@ class BaseBot(object):
         actionObject.channelClient = self.channelClient
         actionObject.requestState = requestState
         actionObject.originalIntentStr = intentStr
-
         log.debug("createActionObject: %s", actionObject)
         return actionObject
 
@@ -305,22 +287,21 @@ class BaseBot(object):
 
         requestState = BaseBot.REQUEST_STATE_NEW
         waitingActionJson = botState.getWaiting()
-        print("botstate: ", botState)
+
         if waitingActionJson:
-            log.info("+++ Waiting object is found!")
             actionObject = self.getActionObject(waitingActionJson, canonicalMsg, apiResult, userProfile, requestState)
             #self.sendDebugResponse(botState, canonicalMsg)
             requestState = actionObject.processWrapper(botState)
 
         if requestState != BaseBot.REQUEST_STATE_PROCESSED:
-            log.info("requestState: %s", requestState)
-            log.info("botState: %s", botState)
+            log.debug("requestState: %s", requestState)
+            log.debug("botState: %s", botState)
             actionObject = self.createActionObject(
                 canonicalMsg, apiResult, botState, userProfile, requestState)
-            log.info("actionObject: %s", actionObject)
+            log.debug("actionObject: %s", actionObject)
             #self.sendDebugResponse(botState, canonicalMsg)
             requestState = actionObject.processWrapper(botState)
-            print("requeststae: ", requestState)
+            log.debug("requeststate: %s", requestState)
 
         if requestState != BaseBot.REQUEST_STATE_PROCESSED:
             raise Exception("Unprocessed message")
@@ -332,57 +313,3 @@ class BaseBot(object):
                 botState=botState
             )
         return requestState
-
-        # Old logic that doesn't use the kvstore for state management.
-
-        # if action object in self.kvstore:
-        #     actionobject = self.kvstore.get(actionobject)
-        # else:
-        # actionObject = self.intentActions.get(intentStr)
-
-
-        # slotObjects = None
-        # # This should be within the process function
-
-        # # Resume a previously created slot fill loop.
-        # if self.slotFill.state == "process_slot":
-        #     slotObjects = botState.get("slotObjects")
-        #     allFilled = self.slotFill.fill(slotObjects, canonicalMsg, apiResult, botState, self.channelClient)
-        #     if allFilled is False:
-        #        return
-
-        # # We haven't yet start a slotfill and we may not have to.
-        # elif self.slotFill.state == "new":
-        #     if intentStr not in self.intentActions:
-        #         raise ValueError("Intent '{}'' has not been registered".format(intentStr))
-        #     if intentStr in self.intentSlots:
-        #         slotObjects = self.intentSlots.get(intentStr)
-        #         allFilled = self.slotFill.fill(slotObjects, canonicalMsg, apiResult, botState, self.channelClient)
-        #         if allFilled is False:
-        #             return
-        #     else:
-        #         # No slots need to be filled.
-        #         pass
-
-
-
-        # # Make slots available to actionObject
-        # # Make the apiResult available within the scope of the intent handler.
-        # # TODO(viksit): make slots a dict so it can be easily used by other people.
-        # assert slotObjects is not None
-
-        # actionObject.slots = copy.deepcopy(slotObjects)
-        # actionObject.apiResult = apiResult
-        # actionObject.canonicalMsg = canonicalMsg
-        # actionObject.messages = messages
-        # actionObject.channelClient = self.channelClient
-        # # Once the actionObject is returned, lets clean out any state we have
-        # # Currently this doesn't actually return something.
-
-        # # Reset the slot state
-        # # TODO(viksit): actionObject.resetSlots()
-
-        # for slotObject in slotObjects:
-        #    slotObject.reset()
-
-        # return actionObject.process()

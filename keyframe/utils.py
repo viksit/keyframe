@@ -3,6 +3,7 @@ from __future__ import print_function
 import logging
 from store_api import KVStore, KVStoreError
 
+
 class PersistentDict(object):
     def __init__(self, kvStore, kvStoreKey):
         self.kvStoreKey = kvStoreKey
