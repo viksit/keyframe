@@ -32,32 +32,69 @@ api.set_intent_model(INTENT_MODEL_ID)
 # Initialize via a configuration file
 kvStore = store_api.get_kv_store(
     #store_api.TYPE_LOCALFILE,
-    store_api.TYPE_DYNAMODB,
-    #store_api.TYPE_INMEMORY,
+    #store_api.TYPE_DYNAMODB,
+    store_api.TYPE_INMEMORY,
     config.Config())
 
 
 bot = BaseBot(api=api, kvStore=kvStore)
 
 # Actions
-@bot.intent2("create")
+@bot.intent("create")
 class CreateIntentActionObject(ActionObject):
 
     @bot.slot("create", ["person", "optional", "PERSON"])
     class PersonSlot(Slot):
 
+<<<<<<< 74a0369d8e790242287ee20034d11080312fdd1d
+=======
+        # TODO(viksit): right now, all slots need to have these 4 things
+        # In the future, we can have default values at the Slot level but not sure
+        # what this should be.
+
+        # Entity type is our api call entity type: person, gpe, date, org, etc.
+        entityType = "PERSON"
+
+        # Ignored right now.
+        required = "optional"
+
+        # NOTE(viksit):
+        # parseOriginal should either be True in all slots, or false in all.
+        # this is because of internal implementation reasons and also I'm not sure
+        # if the extra complexity of supporting it makes sense.
+        parseOriginal = False
+
+        # This means that any response the user makes need to contain an entity which
+        # our system can match to (PERSON)
+        parseResponse = True
+
+>>>>>>> add slot resets
         def prompt(self):
             return "who do you want to set up the meeting with?"
 
     @bot.slot("create", ["time", "optional", "DATE"])
     class DateSlot(Slot):
+<<<<<<< 74a0369d8e790242287ee20034d11080312fdd1d
+=======
+        entityType = "DATE"
+        required = "optional"
+        parseOriginal = False
+        parseResponse = False
+>>>>>>> add slot resets
 
         def prompt(self):
-            return "and when?"
+            return "when do you want the meeting to be set up?"
 
 
     @bot.slot("create", ["city", "optional", "GPE"])
     class CitySlot(Slot):
+<<<<<<< 74a0369d8e790242287ee20034d11080312fdd1d
+=======
+        entityType = "GPE"
+        required = "optional"
+        parseOriginal = False
+        parseResponse = False
+>>>>>>> add slot resets
 
         def prompt(self):
             return "which city do you want to meet in?"
@@ -65,6 +102,13 @@ class CreateIntentActionObject(ActionObject):
 
     @bot.slot("create", ["bank", "optional", "ORG"])
     class BankSlot(Slot):
+<<<<<<< 74a0369d8e790242287ee20034d11080312fdd1d
+=======
+        entityType = "ORG"
+        required = "optional"
+        parseOriginal = False
+        parseResponse = False
+>>>>>>> add slot resets
 
         def prompt(self):
             return "which bank do you want to meet at?"
@@ -159,8 +203,8 @@ def ping():
 
 if __name__ == "__main__":
     # Run the command line version
-    #c = CalendarCmdlineHandler()
-    #c.begin()
+    c = CalendarCmdlineHandler()
+    c.begin()
 
     # OR uncomment this to run this via flask
-    app.run(debug=True)
+    #app.run(debug=True)

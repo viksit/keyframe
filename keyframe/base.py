@@ -112,39 +112,7 @@ class BaseBot(object):
             messages.ResponseElement.RESPONSE_TYPE_RESPONSE)
 
 
-    # Decorators
-    # keyword intent, regex intent
     def intent(self, intentStr, **args):
-        def myfun(cls):
-
-            # Find the slots associated with action
-            slotClasses = slot_fill.getSlots(cls)
-            for slotClass in slotClasses:
-                sc = slotClass()
-                sc.entityType = getattr(sc, "entityType")
-                sc.required = getattr(sc, "required")
-                sc.parseOriginal = getattr(sc, "parseOriginal")
-                sc.parseResponse = getattr(sc, "parseResponse")
-                self.intentSlots[intentStr].append(sc)
-
-            # Instantiate action object
-            wrapped = cls(**args)
-            self.intentActions[intentStr] = wrapped
-
-            class Wrapper(object):
-                def __init__(self, *args):
-                    self.wrapped = cls(*args)
-                    self.intentActions[intentStr] = self.wrapped
-
-                def __getattr__(self, name):
-                    return getattr(self.wrapped, name)
-            # return class
-            return Wrapper
-
-        # return decorator
-        return myfun
-
-    def intent2(self, intentStr, **args):
         def myfun(cls):
             self.wrapped = cls
             self.intentActions[intentStr] = self.wrapped
