@@ -1,7 +1,7 @@
 from __future__ import print_function
 import sys
 import logging
-
+import inspect
 import messages
 import misc
 from six import add_metaclass
@@ -23,13 +23,14 @@ def getSlots(cls):
     slotClasses = [i for i in allClasses if type(i) is type and issubclass(i, Slot)]
     return slotClasses
 
+#@add_metaclass(misc.SlotMeta)
 class Slot(object):
 
     SLOT_STATE_NEW = "new"
     SLOT_STATE_WAITING_FILL = "waiting_for_fill"
 
-    parseOriginal = False
-    parseResponse = False
+    #parseOriginal = False
+    #parseResponse = False
     entityType = None
     required = False
 
@@ -68,7 +69,7 @@ class Slot(object):
     def init(self, **kwargs):
         self.channelClient = kwargs.get("channelClient")
 
-    def fill(self, canonicalMsg, apiResult, channelClient, parseOriginal=False, parseResponse=False):
+    def fill(self, canonicalMsg, apiResult, channelClient):
         """
         if parseOriginal is true
           analyze the intent canonicalMsg to see if we can extract
@@ -88,8 +89,11 @@ class Slot(object):
 
         fillResult = None
         if self.state == Slot.SLOT_STATE_NEW:
-            if parseOriginal is True:
+            log.debug("(1) state: %s", self.state)
+            log.debug("parseoriginal: %s", self.parseOriginal)
+            if self.parseOriginal is True:
                 fillResult = self._extractSlotFromSentence()
+                log.debug("fillresult: %s", fillResult)
                 if fillResult:
                     self.value = fillResult
                     self.filled = True
@@ -97,28 +101,43 @@ class Slot(object):
 
             # The original sentence didn't have any items to fill this slot
             # Send a response
-            responseType = messages.ResponseElement.RESPONSE_TYPE_RESPONSE
-            cr = messages.createTextResponse(
-                self.canonicalMsg,
-                self.prompt(),
-                responseType)
-            channelClient.sendResponse(cr)
+            self._createAndSendResponse(self.prompt(), channelClient)
             self.state = Slot.SLOT_STATE_WAITING_FILL
 
         # Waiting for user response
         elif self.state == Slot.SLOT_STATE_WAITING_FILL:
+            log.debug("(2) state: %s", self.state)
             # If we want the incoming response to be put through an entity extractor
-            if parseResponse is True:
+            if self.parseResponse is True:
+                log.debug("parse response is true")
                 fillResult = self._extractSlotFromSentence()
                 if fillResult:
                     self.value = fillResult
                     self.filled = True
+                else:
+                    # We notify the user that this value is invalid.
+                    # ask to re-fill.
+                    # currently this is an inifnite loop.
+                    # TODO(viksit/nishant): add a nice way to control this.
+                    msg = "You entered an incorrect value for %s. Please enter again." % self.name
+                    self._createAndSendResponse(msg, channelClient)
+                    self.state = Slot.SLOT_STATE_WAITING_FILL
+                    self.filled = False
+                    return self.filled
             # Otherwise we just take the whole utterance and incorporate it.
             else:
                 fillResult = self.canonicalMsg.text
                 self.value = fillResult
                 self.filled = True
         return self.filled
+
+    def _createAndSendResponse(self, msg, channelClient):
+        responseType = messages.ResponseElement.RESPONSE_TYPE_RESPONSE
+        cr = messages.createTextResponse(
+            self.canonicalMsg,
+            msg,
+            responseType)
+        channelClient.sendResponse(cr)
 
     def _extractSlotFromSentence(self):
 

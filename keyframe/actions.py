@@ -54,6 +54,10 @@ class ActionObject(object):
     def init(self):
         pass
 
+    def resetSlots(self):
+        for slotObject in self.slotObjects:
+            slotObject.reset()
+
     def slotFill(self, botState):
         """
         Function to do slot fill per action object.
@@ -65,8 +69,7 @@ class ActionObject(object):
         for slotObject in self.slotObjects:
             if not slotObject.filled:
                 filled = slotObject.fill(
-                    self.canonicalMsg, self.apiResult, self.channelClient,
-                    parseOriginal=True, parseResponse=True)
+                    self.canonicalMsg, self.apiResult, self.channelClient)
                 if filled is False:
                     botState.putWaiting(self.toJSONObject())
                     return False
@@ -100,6 +103,8 @@ class ActionObject(object):
         # Call process function only when slot data is filled up
         requestState = self.process()
         # should we save bot state here?
+        # reset slots now that we're filled
+        self.resetSlots()
         return requestState
 
     @classmethod
