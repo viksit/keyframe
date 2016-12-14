@@ -42,6 +42,19 @@ kvStore = store_api.get_kv_store(
 
 bot = BaseBot(api=api, kvStore=kvStore)
 
+
+@bot.intent(IntentModel.fivedig)
+class DigitActionObject(ActionObject):
+    def process(self):
+        resp = "Some 5 digit number was shown!!!!!!!"
+        # Send it back on this channel
+        responseType = messages.ResponseElement.RESPONSE_TYPE_RESPONSE
+        cr = messages.createTextResponse(self.canonicalMsg,
+                                         resp,
+                                         responseType)
+        self.channelClient.sendResponse(cr)
+        return BaseBot.REQUEST_STATE_PROCESSED
+
 @bot.intent(IntentModel.greeting)
 class GreetingActionObject(ActionObject):
 
