@@ -165,7 +165,6 @@ class APIEntity(BaseEntity):
         # We now store entity types inside of entity field definitions
         # So, we look at the entity object to see what kind of label it contains
         # Entity type was found
-        print("self.entityType: ", self.entityType)
         if self.entityType in e:
 
             # TODO(viksit): the Myra API needs to change to have "text" in all entities.
@@ -177,7 +176,6 @@ class APIEntity(BaseEntity):
 
             # Extract the right value.
             tmp = [i.get(k) for i in e.get(self.entityType)]
-            print("tmp; ", tmp)
             if len(tmp) > 0:
                 log.info("\t(a) slot was filled in this sentence")
                 res = tmp[0]
