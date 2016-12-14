@@ -16,7 +16,19 @@ class BaseField(object):
         """
         pass
 
+
 # Intents
+
+class DefaultIntent(BaseField):
+
+    _params = {}
+
+    def __init__(self, **kwargs):
+        super(DefaultIntent, self).__init__(**kwargs)
+
+    def field_eval_fn(self, **kwargs):
+        return True
+
 class RegexIntent(BaseField):
 
     _params = {}
@@ -62,6 +74,8 @@ class APIIntent(BaseField):
 
 # Models
 class BaseModel(object):
+
+    default = DefaultIntent()
 
     def __init__(self, **kwargs):
         assert self.label is not None
