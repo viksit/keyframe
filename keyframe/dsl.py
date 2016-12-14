@@ -16,6 +16,21 @@ class BaseField(object):
         """
         pass
 
+# Intents
+class RegexIntent(BaseField):
+
+    _params = {}
+
+    def __init__(self, **kwargs):
+        self.regex = kwargs.get("regex")
+        assert self.regex is not None,\
+            "Did you forget to initialize %s with a (.. regex=regexobj) argument?" % self.label
+        super(RegexIntent, self).__init__(**kwargs)
+
+    def field_eval_fn(self, **kwargs):
+        canonicalMsg = kwargs.get("canonicalMsg")
+        return bool(len(re.findall(self.regex, " " + canonicalMsg.text + " ")))
+
 class KeywordIntent(BaseField):
 
     _params = {}
@@ -45,6 +60,7 @@ class APIIntent(BaseField):
         intentStr = apiResult.intent.label
         return intentStr == self.label
 
+# Models
 class BaseModel(object):
 
     def __init__(self, **kwargs):
