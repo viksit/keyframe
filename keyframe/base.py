@@ -11,6 +11,7 @@ import utils
 from bot_state import BotState
 
 from six import iteritems, add_metaclass
+from orderedset import OrderedSet
 
 
 # TODO: move logging out into a nicer function/module
@@ -51,6 +52,9 @@ class BaseBot(object):
         self.intentThresholds = {}
         self.keywordIntents = {}
         self.regexIntents = {}
+
+        self.intentEvalSet = OrderedSet([])
+
         self.intentSlots = defaultdict(lambda: [])
         self.debug = True
 
@@ -112,15 +116,43 @@ class BaseBot(object):
             messages.ResponseElement.RESPONSE_TYPE_RESPONSE)
 
 
-    def intent(self, intentStr, **args):
+    def intent(self, intentObj, **args):
+        """
+        intent can be a string or also some variable.
+        if its a var like modelclassname.varname
+        we initialize that
+        the resulting class should give us an
+         - intent_name: this is the value of the var name
+         - intent_type - this is the string key which will return.
+         - intent_eval_fn - if this evaluates to true then we return the intent type
+         - intent_register_fn - used to register this intent in our dict
+        which we can run
+
+        registration flow
+
+        - find the class object, get its string
+        - intentactionmap[string] = actionobject
+        - intentevallist = [intentobject1, intentobject2]
+
+        text flow
+
+        - text comes in, we run a loop through all intent eval functions
+        - evaluate them on this string and see if any match. first match is
+          taken. return intenteval.label
+        - this is then used to get intentactonmap.get(label)
+
+        """
+
         def myfun(cls):
             self.wrapped = cls
-            self.intentActions[intentStr] = self.wrapped
+            self.intentActions[intentObj.label] = self.wrapped
+            self.intentEvalSet.add(intentObj)
 
             class Wrapper(object):
                 def __init__(self, *args):
                     self.wrapped = cls
-                    self.intentActions[intentStr] = self.wrapped
+                    self.intentActions[intentObj.label] = self.wrapped
+                    self.intentEvalSet.add(intentObj)
             # return class
             return Wrapper
 
@@ -156,8 +188,7 @@ class BaseBot(object):
 
         """
         # Get the intent string and create an object from it.
-        intentStr = apiResult.intent.label
-        actionObjectCls = self.intentActions.get(intentStr)
+        intentStr, actionObjectCls = self._getActionObjectFromIntentHandlers(canonicalMsg)
         log.debug("createActionObject: intent: %s cls: %s", intentStr, actionObjectCls)
         slotClasses = slot_fill.getSlots(actionObjectCls)
         slotObjects = []
@@ -168,6 +199,7 @@ class BaseBot(object):
             sc.parseOriginal = getattr(sc, "parseOriginal")
             sc.parseResponse = getattr(sc, "parseResponse")
             slotObjects.append(sc)
+
         actionObject = actionObjectCls()
         actionObject.slotObjects = slotObjects
         actionObject.apiResult = apiResult
@@ -189,6 +221,7 @@ class BaseBot(object):
         actionObject = actionObjectCls()
         slotClasses = slot_fill.getSlots(actionObjectCls)
         slotObjects = []
+
         for slotClass, slotObject in zip(slotClasses, slotObjectData):
             sc = slotClass()
             sc.entityType = getattr(sc, "entityType")
@@ -229,6 +262,29 @@ class BaseBot(object):
             userProfile = userProfile
         )
 
+    def _getActionObjectFromIntentHandlers(self, canonicalMsg):
+
+        # Support default intent.
+        intentStr = "default"
+
+        # For now, simply go through the list and return the first one that comes up.
+        # In the future, we could do something different.
+        # If no intents are matched we just return whatever is mapped to a default intent.
+
+        for intentObj in self.intentEvalSet:
+            if intentObj.field_eval_fn(
+                    myraAPI = self.api,
+                    canonicalMsg = canonicalMsg):
+                intentStr = intentObj.label
+                break
+
+        # We now check if this intent has any registered action objects.
+        actionObjectCls = self.intentActions.get(intentStr, None)
+
+        assert actionObjectCls is not None, "No action objects were registered for this intent"
+        return (intentStr, actionObjectCls)
+
+
     def handle(self, **kwargs):
 
         """
@@ -244,10 +300,16 @@ class BaseBot(object):
         If there isn't, then we do a new one, else we retrieve it from the old one.
 
         """
-
         canonicalMsg = kwargs.get("canonicalMsg")
+
+        # TODO(viksit): Don't run API by default
+        # We do this right now since we need apiresult in our main
+        # slot fill function.
+        # This should be controlled by APIEntity() or something.
+
         myraAPI = kwargs.get("myraAPI")
         apiResult = myraAPI.get(canonicalMsg.text)
+
         botState = kwargs.get("botState")
         userProfile = kwargs.get("userProfile")
 
