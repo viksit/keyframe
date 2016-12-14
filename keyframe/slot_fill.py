@@ -2,6 +2,10 @@ import sys
 import logging
 import inspect
 import messages
+import misc
+from six import add_metaclass
+import re
+from dsl import BaseEntity
 
 log = logging.getLogger(__name__)
 ch = logging.StreamHandler(sys.stdout)
@@ -38,7 +42,11 @@ class Slot(object):
         self.filled = False
         self.value = None
         self.validated = False
-        self.state = "new" # or process_slot
+        self.state = Slot.SLOT_STATE_NEW
+        self.parseOriginal = False
+        self.parseResponse = False
+        self.entityType = None
+        self.required = False
 
     def toJSONObject(self):
         return {
@@ -50,7 +58,7 @@ class Slot(object):
             "state": self.state,
             "parseOriginal": self.parseOriginal,
             "parseResponse": self.parseResponse,
-            "entityType": self.entityType,
+            "entity": self.entity.toJSON(),
             "required": self.required
         }
 
@@ -62,7 +70,7 @@ class Slot(object):
         self.state = j.get("state")
         self.parseOriginal = j.get("parseOriginal")
         self.parseResponse = j.get("parseResponse")
-        self.entityType = j.get("entityType")
+        self.entity = BaseEntity.fromJSON(j.get("entity"))
         self.required = j.get("required")
 
     def init(self, **kwargs):
@@ -87,12 +95,18 @@ class Slot(object):
         self.channelClient = channelClient
         self.canonicalMsg = canonicalMsg
 
+        # TODO(viksit): Make this cleaner
+        if self.parseOriginal is True:
+            assert self.apiResult is not None
+        if self.parseResponse is True:
+            assert self.apiResult is not None
+
         fillResult = None
         if self.state == Slot.SLOT_STATE_NEW:
             log.debug("(1) state: %s", self.state)
             log.debug("parseoriginal: %s", self.parseOriginal)
             if self.parseOriginal is True:
-                fillResult = self._extractSlotFromSentence()
+                fillResult = self._extractSlotFromSentence(canonicalMsg.text)
                 log.debug("fillresult: %s", fillResult)
                 if fillResult:
                     self.value = fillResult
@@ -110,7 +124,7 @@ class Slot(object):
             # If we want the incoming response to be put through an entity extractor
             if self.parseResponse is True:
                 log.debug("parse response is true")
-                fillResult = self._extractSlotFromSentence()
+                fillResult = self._extractSlotFromSentence(canonicalMsg)
                 if fillResult:
                     self.value = fillResult
                     self.filled = True
@@ -139,34 +153,24 @@ class Slot(object):
             responseType)
         channelClient.sendResponse(cr)
 
-    def _extractSlotFromSentence(self):
+    def _extractSlotFromSentence(self, text):
+        """
+        Take a given sentence.
+        For the current slot, run the entity_extract_fn() on it
 
-        ENTITY_BUILTIN = "builtin"
-        ENTITY_DATE = "DATE"
+        The return value of this is what we give to the result
+
+        """
 
         res = None
         log.info("_extractSlotFromSentence: %s", self.name)
-        e = self.apiResult.entities.entity_dict.get(ENTITY_BUILTIN, {})
+        assert self.apiResult is not None, "Failure in Myra API call"
 
-        # Entity type was found
-        if self.entityType in e:
-            # TODO(viksit): the Myra API needs to change to have "text" in all entities.
-            k = "text"
-            # TODO(viksit): special case for DATE. needs change in API.
-            if self.entityType == ENTITY_DATE:
-                k = "date"
 
-            # Extract the right value.
-            tmp = [i.get(k) for i in e.get(self.entityType)]
+        res = self.entity.entity_extract_fn(text=text)
+        if res:
+            log.info("(a) Slot was filled in this sentence")
 
-            if len(tmp) > 0:
-                log.info("\t(a) slot was filled in this sentence")
-                res = tmp[0]
-            else:
-                log.info("\t(b) slot wasn't filled in this sentence")
-        # The entity type wasnt found
-        else:
-            log.info("\t(c) slot wasn't filled in this sentence")
 
         # Return final result
         return res
