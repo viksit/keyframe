@@ -180,8 +180,8 @@ def ping():
 
 if __name__ == "__main__":
     # Run the command line version
-    c = CalendarCmdlineHandler()
-    c.begin()
+    # c = CalendarCmdlineHandler()
+    # c.begin()
 
     # OR uncomment this to run this via flask
-    #app.run(debug=True)
+    app.run(debug=True)
