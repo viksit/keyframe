@@ -14,28 +14,28 @@
 - keyframe binary
 
 ## dsl
-- orm layer for models
+- x orm layer for models
 - clean up, allow sync and train
-- how to use this in the intents?
+- x how to use this in the intents?
 
 
 
 ### questions for elasticsearch dsl
-- what is mapping for?
-- do we need it?
+- x what is mapping for?
+- x do we need it?
 
 ## slot fill
-- take this and put into a separate class
-- inject as necessary
-- better algorithm for slot fill
-- better entity recognition (spacy/trainable)
+- x take this and put into a separate class
+- x inject as necessary
+- x better algorithm for slot fill
+- x better entity recognition (spacy/trainable)
 - integration with search index
 - export this via a myra api
 
 
 ## state management
-- use kv store
-- export via a myra api to read/write from kv store backend
+- x use kv store
+- x export via a myra api to read/write from kv store backend
 
 
 ## misc

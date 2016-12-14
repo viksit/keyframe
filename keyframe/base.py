@@ -39,7 +39,7 @@ class BaseBot(object):
 
     def __init__(self, *args, **kwargs):
 
-        self.api = kwargs.get("api")
+        self.api = kwargs.get("api", None)
         # TODO(viksit): is this needed?
         self.channelClient = kwargs.get("channelClient")
         self.kvStore = kwargs.get("kvStore")
@@ -57,6 +57,7 @@ class BaseBot(object):
 
         self.intentSlots = defaultdict(lambda: [])
         self.debug = True
+
 
         self.init()
 
@@ -103,6 +104,8 @@ class BaseBot(object):
     # Channel and I/O related functions
     def setChannelClient(self, cc):
         self.channelClient = cc
+
+
 
     def createAndSendTextResponse(self, canonicalMsg, text, responseType=None):
         log.info("createAndSendTextResponse(%s)", locals())
@@ -179,7 +182,7 @@ class BaseBot(object):
             canonicalMsg.channel, id)
         return k
 
-    def createActionObject(self, canonicalMsg, apiResult, botState, userProfile, requestState):
+    def createActionObject(self, canonicalMsg, botState, userProfile, requestState):
 
         """
         Create a new action object from the given data
@@ -187,6 +190,8 @@ class BaseBot(object):
         slots, messages, channelClient
 
         """
+        runAPICall = False
+
         # Get the intent string and create an object from it.
         intentStr, actionObjectCls = self._getActionObjectFromIntentHandlers(canonicalMsg)
         log.debug("createActionObject: intent: %s cls: %s", intentStr, actionObjectCls)
@@ -194,15 +199,25 @@ class BaseBot(object):
         slotObjects = []
         for slotClass in slotClasses:
             sc = slotClass()
-            sc.entityType = getattr(sc, "entityType")
+            sc.entity = getattr(sc, "entity")
             sc.required = getattr(sc, "required")
             sc.parseOriginal = getattr(sc, "parseOriginal")
             sc.parseResponse = getattr(sc, "parseResponse")
             slotObjects.append(sc)
+            if sc.entity.needsAPICall:
+                runAPICall = True
 
         actionObject = actionObjectCls()
         actionObject.slotObjects = slotObjects
-        actionObject.apiResult = apiResult
+
+        # If a flag is set that tells us to make a myra API call
+        # Then we invoke it and fill this.
+        # This is used for slot fill.
+        # Else, this is None.
+        if runAPICall:
+            apiResult = self.api.get(canonicalMsg.text)
+            actionObject.apiResult = apiResult
+
         actionObject.canonicalMsg = canonicalMsg
         actionObject.channelClient = self.channelClient
         actionObject.requestState = requestState
@@ -210,11 +225,13 @@ class BaseBot(object):
         log.debug("createActionObject: %s", actionObject)
         return actionObject
 
-    def getActionObject(self, actionObjectJSON, canonicalMsg, apiResult, userProfile, requestState):
+    def getActionObject(self, actionObjectJSON, canonicalMsg, userProfile, requestState):
         """
         Create an action object from a given JSON object
         """
+        runAPICall = False
         # Initialize the class
+
         intentStr = actionObjectJSON.get("origIntentStr")
         slotObjectData = actionObjectJSON.get("slotObjects")
         actionObjectCls = self.intentActions.get(intentStr)
@@ -224,19 +241,31 @@ class BaseBot(object):
 
         for slotClass, slotObject in zip(slotClasses, slotObjectData):
             sc = slotClass()
-            sc.entityType = getattr(sc, "entityType")
+            sc.entity = getattr(sc, "entity")
             sc.required = getattr(sc, "required")
             sc.parseOriginal = getattr(sc, "parseOriginal")
             sc.parseResponse = getattr(sc, "parseResponse")
+
             # Get these from the saved state
             sc.filled = slotObject.get("filled")
             sc.value = slotObject.get("value")
             sc.validated = slotObject.get("validated")
             sc.state = slotObject.get("state")
             slotObjects.append(sc)
+            if sc.entity.needsAPICall:
+                runAPICall = True
 
         actionObject.slotObjects = slotObjects
-        actionObject.apiResult = apiResult
+
+        # If a flag is set that tells us to make a myra API call
+        # Then we invoke it and fill this.
+        # This is used for slot fill.
+        # Else, this is None.
+        if runAPICall:
+            apiResult = self.api.get(canonicalMsg.text)
+            actionObject.apiResult = apiResult
+
+
         actionObject.canonicalMsg = canonicalMsg
         actionObject.channelClient = self.channelClient
         actionObject.requestState = requestState
@@ -273,7 +302,7 @@ class BaseBot(object):
 
         for intentObj in self.intentEvalSet:
             if intentObj.field_eval_fn(
-                    myraAPI = self.api,
+                    myraAPI = self.api, # If no API is passed to bot, this will be None
                     canonicalMsg = canonicalMsg):
                 intentStr = intentObj.label
                 break
@@ -307,9 +336,6 @@ class BaseBot(object):
         # slot fill function.
         # This should be controlled by APIEntity() or something.
 
-        myraAPI = kwargs.get("myraAPI")
-        apiResult = myraAPI.get(canonicalMsg.text)
-
         botState = kwargs.get("botState")
         userProfile = kwargs.get("userProfile")
 
@@ -319,7 +345,7 @@ class BaseBot(object):
         waitingActionJson = botState.getWaiting()
 
         if waitingActionJson:
-            actionObject = self.getActionObject(waitingActionJson, canonicalMsg, apiResult, userProfile, requestState)
+            actionObject = self.getActionObject(waitingActionJson, canonicalMsg, userProfile, requestState)
             #self.sendDebugResponse(botState, canonicalMsg)
             requestState = actionObject.processWrapper(botState)
 
@@ -327,7 +353,7 @@ class BaseBot(object):
             log.debug("requestState: %s", requestState)
             log.debug("botState: %s", botState)
             actionObject = self.createActionObject(
-                canonicalMsg, apiResult, botState, userProfile, requestState)
+                canonicalMsg, botState, userProfile, requestState)
             log.debug("actionObject: %s", actionObject)
             #self.sendDebugResponse(botState, canonicalMsg)
             requestState = actionObject.processWrapper(botState)

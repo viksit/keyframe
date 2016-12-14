@@ -49,6 +49,7 @@ class ActionObject(object):
         self.channelClient = kwargs.get("channelClient")
         self.kvStore = kwargs.get("kvStore")
         self.slotObjects = kwargs.get("slotObjects")
+        self.filledSlots = {}
         self.init()
 
     def init(self):
@@ -73,9 +74,11 @@ class ActionObject(object):
                 if filled is False:
                     botState.putWaiting(self.toJSONObject())
                     return False
+
         # End slot filling
         # Now, all slots for this should be filled.
         allFilled = True
+
         # Is this necessary?
         for slotObject in self.slotObjects:
             if not slotObject.filled:
@@ -101,6 +104,10 @@ class ActionObject(object):
             return BaseBot.REQUEST_STATE_PROCESSED
 
         # Call process function only when slot data is filled up
+        self.filledSlots = {}
+        for s in self.slotObjects:
+            self.filledSlots[s.name] = s.value
+
         requestState = self.process()
         # should we save bot state here?
         # reset slots now that we're filled
@@ -132,3 +139,17 @@ class ActionObject(object):
     def createAndSendTextResponse(self, canonicalMsg, text, responseType=None):
         cr = messages.createTextResponse(canonicalMsg, text, responseType)
         self.channelClient.sendResponse(cr)
+
+    def respond(self, text, canonicalMsg=None, responseType=None):
+        if not canonicalMsg:
+            canonicalMsg = self.canonicalMsg
+        if not responseType:
+            responseType = messages.ResponseElement.RESPONSE_TYPE_RESPONSE
+
+        cr = messages.createTextResponse(
+            self.canonicalMsg,
+            text,
+            responseType)
+
+        self.channelClient.sendResponse(cr)
+        return BaseBot.REQUEST_STATE_PROCESSED
