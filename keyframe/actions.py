@@ -73,9 +73,11 @@ class ActionObject(object):
                 if filled is False:
                     botState.putWaiting(self.toJSONObject())
                     return False
+
         # End slot filling
         # Now, all slots for this should be filled.
         allFilled = True
+
         # Is this necessary?
         for slotObject in self.slotObjects:
             if not slotObject.filled:
