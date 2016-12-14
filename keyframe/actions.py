@@ -49,6 +49,7 @@ class ActionObject(object):
         self.channelClient = kwargs.get("channelClient")
         self.kvStore = kwargs.get("kvStore")
         self.slotObjects = kwargs.get("slotObjects")
+        self.filledSlots = {}
         self.init()
 
     def init(self):
@@ -103,6 +104,10 @@ class ActionObject(object):
             return BaseBot.REQUEST_STATE_PROCESSED
 
         # Call process function only when slot data is filled up
+        self.filledSlots = {}
+        for s in self.slotObjects:
+            self.filledSlots[s.name] = s.value
+
         requestState = self.process()
         # should we save bot state here?
         # reset slots now that we're filled
