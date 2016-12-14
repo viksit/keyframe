@@ -221,7 +221,7 @@ class OrgEntity(APIEntity):
 # Models
 class BaseModel(object):
 
-    default = DefaultIntent(label="default")
+    default = DefaultIntent()
 
     def __init__(self, **kwargs):
         assert self.label is not None

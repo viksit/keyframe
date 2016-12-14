@@ -1,4 +1,5 @@
 from __future__ import print_function
+import sys
 from os.path import expanduser, join
 from flask import Flask, request, Response
 
@@ -41,6 +42,7 @@ class GreetingActionObject(ActionObject):
 
     class UserSlot(Slot):
         entity = EntityModel.user
+        required = "optional"
         parseResponse = True
 
         def prompt(self):
@@ -98,9 +100,10 @@ def ping():
     return Response('ok'), 200
 
 if __name__ == "__main__":
-    # Run the command line version
-    # c = CalendarCmdlineHandler()
-    # c.begin()
-
-    # OR uncomment this to run this via flask
-    app.run(debug=True)
+    if len(sys.argv) > 1 and sys.argv[1] == 'cmd':
+        # Run the command line version
+        c = CalendarCmdlineHandler()
+        c.begin()
+    else:
+        # OR uncomment this to run this via flask
+        app.run(debug=True)
