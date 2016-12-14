@@ -145,7 +145,7 @@ class Slot(object):
         ENTITY_DATE = "DATE"
 
         res = None
-        log.info("_extractSlotFromSentence: %s", self.name)
+        log.debug("_extractSlotFromSentence: %s", self.name)
         e = self.apiResult.entities.entity_dict.get(ENTITY_BUILTIN, {})
 
         # Entity type was found
@@ -160,13 +160,13 @@ class Slot(object):
             tmp = [i.get(k) for i in e.get(self.entityType)]
 
             if len(tmp) > 0:
-                log.info("\t(a) slot was filled in this sentence")
+                log.debug("\t(a) slot was filled in this sentence")
                 res = tmp[0]
             else:
-                log.info("\t(b) slot wasn't filled in this sentence")
+                log.debug("\t(b) slot wasn't filled in this sentence")
         # The entity type wasnt found
         else:
-            log.info("\t(c) slot wasn't filled in this sentence")
+            log.debug("\t(c) slot wasn't filled in this sentence")
 
         # Return final result
         return res

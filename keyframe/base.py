@@ -51,6 +51,7 @@ class BaseBot(object):
         self.intentActions = {}
         self.intentThresholds = {}
         self.keywordIntents = {}
+        self.keywordIntentsList = {}
         self.regexIntents = {}
 
         self.intentEvalSet = OrderedSet([])
@@ -116,6 +117,24 @@ class BaseBot(object):
             messages.ResponseElement.RESPONSE_TYPE_RESPONSE)
 
 
+    def keyword_intent(self, intentStr, intentKeywordList, **args):
+        def myfun(cls):
+            self.wrapped = cls
+            self.keywordIntents[intentStr] = self.wrapped
+            self.keywordIntentsList[intentStr] = intentKeywordList
+
+            class Wrapper(object):
+                def __init__(self, *args):
+                    self.wrapped = cls
+                    self.keywordIntents[intentStr] = self.wrapped
+                    self.keywordIntentsList[intentStr] = intentKeywordList
+            # return class
+            return Wrapper
+
+        # return decorator
+        return myfun
+
+    def intent(self, intentStr, **args):
     def intent(self, intentObj, **args):
         """
         intent can be a string or also some variable.
@@ -142,7 +161,6 @@ class BaseBot(object):
         - this is then used to get intentactonmap.get(label)
 
         """
-
         def myfun(cls):
             self.wrapped = cls
             self.intentActions[intentObj.label] = self.wrapped
@@ -159,6 +177,41 @@ class BaseBot(object):
         # return decorator
         return myfun
 
+    def processMsg(self, canonicalMsg):
+        """Extracts intent and entities as appropriate and
+        returns them as ProcessedInputMsg.
+        """
+        # TODO: Need to know how to handle a mix of api and non-api
+        # intent and entities.
+        pim = messages.ProcessedInputMsg(None, None, None)
+        intentStr = self.processKeywordIntent(canonicalMsg)
+        if intentStr:
+            pim.intent = intentStr
+            pim.intentScore = 1
+        elif self.intents:
+            if not self.api:
+                raise Exception(
+                    ("intents without api! "
+                     "You can't decorate your cake without icing."))
+            apiResult = self.api.get(canonicalMsg.text)
+            pim = self.apiResultToProcessedInputMsg(apiResult)
+        else:
+            pim = messages.ProcessedInputIntent(
+                intent="unknown", intentScore=1, entities=None)
+        return pim
+
+    def apiResultToProcessedInputMsg(self, apiResult):
+        """Transform apiResult into ProcessedInputMsg.
+        """
+        if not apiResult:
+            return None
+        pim = messages.ProcessedInputMsg(None, None, None)
+        if apiResult.intent:
+            pim.intent = apiResult.intent.label
+            pim.intentScore = apiResult.intent.score
+        pim.entities = apiResult.entities
+        return pim
+        
     def sendDebugResponse(self, botState, canonicalMsg):
         if self.debug:
             log.info("sending DEBUG info")
@@ -179,11 +232,11 @@ class BaseBot(object):
             canonicalMsg.channel, id)
         return k
 
-    def createActionObject(self, canonicalMsg, apiResult, botState, userProfile, requestState):
+    def createActionObject(self, canonicalMsg, processedInputMsg, botState, userProfile, requestState):
 
         """
         Create a new action object from the given data
-        canonicalMsg, apiResult, intentStr
+        canonicalMsg, processedInputMsg, intentStr
         slots, messages, channelClient
 
         """
@@ -202,7 +255,7 @@ class BaseBot(object):
 
         actionObject = actionObjectCls()
         actionObject.slotObjects = slotObjects
-        actionObject.apiResult = apiResult
+        actionObject.processedInputMsg = processedInputMsg
         actionObject.canonicalMsg = canonicalMsg
         actionObject.channelClient = self.channelClient
         actionObject.requestState = requestState
@@ -210,7 +263,7 @@ class BaseBot(object):
         log.debug("createActionObject: %s", actionObject)
         return actionObject
 
-    def getActionObject(self, actionObjectJSON, canonicalMsg, apiResult, userProfile, requestState):
+    def getActionObject(self, actionObjectJSON, canonicalMsg, processedInputMsg, userProfile, requestState):
         """
         Create an action object from a given JSON object
         """
@@ -236,7 +289,7 @@ class BaseBot(object):
             slotObjects.append(sc)
 
         actionObject.slotObjects = slotObjects
-        actionObject.apiResult = apiResult
+        actionObject.processedInputMsg = processedInputMsg
         actionObject.canonicalMsg = canonicalMsg
         actionObject.channelClient = self.channelClient
         actionObject.requestState = requestState
@@ -257,13 +310,11 @@ class BaseBot(object):
 
         return self.handle(
             canonicalMsg = canonicalMsg,
-            myraAPI = self.api,
             botState = botState,
             userProfile = userProfile
         )
 
     def _getActionObjectFromIntentHandlers(self, canonicalMsg):
-
         # Support default intent.
         intentStr = "default"
 
@@ -283,6 +334,23 @@ class BaseBot(object):
 
         assert actionObjectCls is not None, "No action objects were registered for this intent"
         return (intentStr, actionObjectCls)
+
+    def _kwIntentMatch(self, text, keywordList):
+        s1 = set(text.split())
+        s2 = set(keywordList)
+        return bool(set.intersection(s1, s2))
+
+    def processKeywordIntent(self, canonicalMsg):
+        # Loop through self,keywordintents
+        # See if this word is within the sentence
+        # if yes, return true, else false
+        #for (k,v) in self.keywordIntentsList.iteritems():
+        pass
+
+    def _generateMockAPIResult(self):
+        # Copy the format for the myra API response
+        # send it across
+        pass
 
 
     def handle(self, **kwargs):
@@ -307,8 +375,23 @@ class BaseBot(object):
         # slot fill function.
         # This should be controlled by APIEntity() or something.
 
-        myraAPI = kwargs.get("myraAPI")
-        apiResult = myraAPI.get(canonicalMsg.text)
+        processedInputMsg = messages.ProcessedInputMsg(None, None, None)
+        # TODO: Check if we have keyword intents. If yes call.
+        intentStr = self.processKeywordIntent(canonicalMsg)
+        if not processedInputMsg:
+            # TODO: Check if we have an intent or entity model. If not, should be
+            # the unknown intent.
+            myraAPI = kwargs.get("myraAPI")
+            if not myraAPI:
+                processedInputMsg = messages.ProcessedInputIntent(
+                    intent="unknown", intentScore=1, entities=None)
+            else:
+                apiResult = myraAPI.get(canonicalMsg.text)
+                processedInputMsg = self.apiResultToProcessedInputMsg(apiResult)
+
+        # Nishant: start here
+        assert apiResult is not None
+
 
         botState = kwargs.get("botState")
         userProfile = kwargs.get("userProfile")

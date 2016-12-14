@@ -73,6 +73,16 @@ class ResponseElement(object):
             (self.type, self.responseType, self.text, self.carousel)
 
 
+class ProcessedInputMsg(object):
+    def __init__(self, intent, intentScore, entities):
+        self.intent = intent
+        self.intentScore = intentScore
+        self.entities = entities
+
+    def __repr__(self):
+        return "%s" % (self.__dict__,)
+
+
 def createTextResponse(canonicalMsg, text, responseType=None):
     responseElement = ResponseElement(
         type=ResponseElement.TYPE_TEXT,

@@ -88,7 +88,7 @@ class CreateIntentActionObject(ActionObject):
         # parseOriginal should either be True in all slots, or false in all.
         # this is because of internal implementation reasons and also I'm not sure
         # if the extra complexity of supporting it makes sense.
-        parseOriginal = False
+        parseOriginal = True
 
         # This means that any response the user makes need to contain an entity which
         # our system can match to (PERSON)
@@ -100,8 +100,8 @@ class CreateIntentActionObject(ActionObject):
     class DateSlot(Slot):
         entityType = "DATE"
         required = "optional"
-        parseOriginal = False
-        parseResponse = False
+        parseOriginal = True
+        parseResponse = True
 
         def prompt(self):
             return "when do you want the meeting to be set up?"
@@ -110,8 +110,8 @@ class CreateIntentActionObject(ActionObject):
     class CitySlot(Slot):
         entityType = "GPE"
         required = "optional"
-        parseOriginal = False
-        parseResponse = False
+        parseOriginal = True
+        parseResponse = True
 
         def prompt(self):
             return "which city do you want to meet in?"
@@ -120,8 +120,8 @@ class CreateIntentActionObject(ActionObject):
     class BankSlot(Slot):
         entityType = "ORG"
         required = "optional"
-        parseOriginal = False
-        parseResponse = False
+        parseOriginal = True
+        parseResponse = True
 
         def prompt(self):
             return "which bank do you want to meet at?"
