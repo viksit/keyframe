@@ -39,7 +39,7 @@ class BaseBot(object):
 
     def __init__(self, *args, **kwargs):
 
-        self.api = kwargs.get("api")
+        self.api = kwargs.get("api", None)
         # TODO(viksit): is this needed?
         self.channelClient = kwargs.get("channelClient")
         self.kvStore = kwargs.get("kvStore")
@@ -179,7 +179,7 @@ class BaseBot(object):
             canonicalMsg.channel, id)
         return k
 
-    def createActionObject(self, canonicalMsg, apiResult, botState, userProfile, requestState):
+    def createActionObject(self, canonicalMsg, botState, userProfile, requestState):
 
         """
         Create a new action object from the given data
@@ -202,7 +202,7 @@ class BaseBot(object):
 
         actionObject = actionObjectCls()
         actionObject.slotObjects = slotObjects
-        actionObject.apiResult = apiResult
+        #actionObject.apiResult = apiResult
         actionObject.canonicalMsg = canonicalMsg
         actionObject.channelClient = self.channelClient
         actionObject.requestState = requestState
@@ -210,7 +210,7 @@ class BaseBot(object):
         log.debug("createActionObject: %s", actionObject)
         return actionObject
 
-    def getActionObject(self, actionObjectJSON, canonicalMsg, apiResult, userProfile, requestState):
+    def getActionObject(self, actionObjectJSON, canonicalMsg, userProfile, requestState):
         """
         Create an action object from a given JSON object
         """
@@ -236,7 +236,7 @@ class BaseBot(object):
             slotObjects.append(sc)
 
         actionObject.slotObjects = slotObjects
-        actionObject.apiResult = apiResult
+        #actionObject.apiResult = apiResult
         actionObject.canonicalMsg = canonicalMsg
         actionObject.channelClient = self.channelClient
         actionObject.requestState = requestState
@@ -273,7 +273,7 @@ class BaseBot(object):
 
         for intentObj in self.intentEvalSet:
             if intentObj.field_eval_fn(
-                    myraAPI = self.api,
+                    myraAPI = self.api, # If no API is passed to bot, this will be None
                     canonicalMsg = canonicalMsg):
                 intentStr = intentObj.label
                 break
@@ -307,9 +307,6 @@ class BaseBot(object):
         # slot fill function.
         # This should be controlled by APIEntity() or something.
 
-        myraAPI = kwargs.get("myraAPI")
-        apiResult = myraAPI.get(canonicalMsg.text)
-
         botState = kwargs.get("botState")
         userProfile = kwargs.get("userProfile")
 
@@ -319,7 +316,7 @@ class BaseBot(object):
         waitingActionJson = botState.getWaiting()
 
         if waitingActionJson:
-            actionObject = self.getActionObject(waitingActionJson, canonicalMsg, apiResult, userProfile, requestState)
+            actionObject = self.getActionObject(waitingActionJson, canonicalMsg, userProfile, requestState)
             #self.sendDebugResponse(botState, canonicalMsg)
             requestState = actionObject.processWrapper(botState)
 
@@ -327,7 +324,7 @@ class BaseBot(object):
             log.debug("requestState: %s", requestState)
             log.debug("botState: %s", botState)
             actionObject = self.createActionObject(
-                canonicalMsg, apiResult, botState, userProfile, requestState)
+                canonicalMsg, botState, userProfile, requestState)
             log.debug("actionObject: %s", actionObject)
             #self.sendDebugResponse(botState, canonicalMsg)
             requestState = actionObject.processWrapper(botState)
