@@ -120,7 +120,7 @@ class CreateIntentActionObject(ActionObject):
 
     # Won't get called till slots are filled.
     def process(self):
-        message = "Sure, I'll create the meeting for you with : {0} {1} {2} {3}".format(*[i.value for i in self.slotObjects])
+        message = "(example) Sure, I'll create the meeting for you with : {date_slot} {person_slot} {bank_slot} {city_slot}".format(**self.filledSlots)
         resp = message
         return self.respond(resp)
 
@@ -180,8 +180,8 @@ def ping():
 
 if __name__ == "__main__":
     # Run the command line version
-    # c = CalendarCmdlineHandler()
-    # c.begin()
+    c = CalendarCmdlineHandler()
+    c.begin()
 
     # OR uncomment this to run this via flask
-    app.run(debug=True)
+    # app.run(debug=True)
