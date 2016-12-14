@@ -1,6 +1,6 @@
 from keyframe.dsl import BaseModel, KeywordIntent, APIIntent
 
-class IntentModelv2(BaseModel):
+class IntentModel(BaseModel):
 
     kw = ["hello", "hi", "yo"]
 
