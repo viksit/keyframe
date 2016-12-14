@@ -1,5 +1,6 @@
 import logging
 import re
+import sys
 
 log = logging.getLogger(__name__)
 ch = logging.StreamHandler(sys.stdout)
@@ -45,10 +46,10 @@ class RegexIntent(BaseField):
     _params = {}
 
     def __init__(self, **kwargs):
+        super(RegexIntent, self).__init__(**kwargs)
         self.regex = kwargs.get("regex")
         assert self.regex is not None,\
             "Did you forget to initialize %s with a (.. regex=regexobj) argument?" % self.label
-        super(RegexIntent, self).__init__(**kwargs)
 
     def field_eval_fn(self, **kwargs):
         canonicalMsg = kwargs.get("canonicalMsg")
@@ -59,10 +60,10 @@ class KeywordIntent(BaseField):
     _params = {}
 
     def __init__(self, **kwargs):
+        super(KeywordIntent, self).__init__(**kwargs)
         self.keywords = set(kwargs.get("keywords"))
         assert self.keywords is not None,\
             "Did you forget to initialize %s with a (.. keyword=[list of kw]) argument?" % self.label
-        super(KeywordIntent, self).__init__(**kwargs)
 
     def field_eval_fn(self, **kwargs):
         canonicalMsg = kwargs.get("canonicalMsg")
@@ -138,9 +139,9 @@ class RegexEntity(BaseEntity):
     _params = {}
 
     def __init__(self, **kwargs):
+        super(RegexEntity, self).__init__(**kwargs)
         self.regex = kwargs.get("regex", None)
         assert self.regex is not None, "Did you initialize %s with a regex=expression?" % self.label
-        super(RegexEntity, self).__init__(**kwargs)
 
     def entity_extract_fn(self, **kwargs):
         text = kwargs.get("text")
@@ -150,19 +151,21 @@ class RegexEntity(BaseEntity):
 class APIEntity(BaseEntity):
 
     def __init__(self, **kwargs):
-        self.needsAPICall = True
         super(APIEntity, self).__init__(**kwargs)
+        self.needsAPICall = True
 
     def entity_extract_fn(self, **kwargs):
 
+
         apiResult = kwargs.get("apiResult", None)
-        assert apiResult is not None, "Myra API did not run sucessfully"
+        assert apiResult is not None, "apiResult is None in extract_entity_fn"
 
         res = None
         e = apiResult.entities.entity_dict.get(ENTITY_BUILTIN, {})
         # We now store entity types inside of entity field definitions
         # So, we look at the entity object to see what kind of label it contains
         # Entity type was found
+        print("self.entityType: ", self.entityType)
         if self.entityType in e:
 
             # TODO(viksit): the Myra API needs to change to have "text" in all entities.
@@ -174,7 +177,7 @@ class APIEntity(BaseEntity):
 
             # Extract the right value.
             tmp = [i.get(k) for i in e.get(self.entityType)]
-
+            print("tmp; ", tmp)
             if len(tmp) > 0:
                 log.info("\t(a) slot was filled in this sentence")
                 res = tmp[0]
@@ -184,6 +187,7 @@ class APIEntity(BaseEntity):
         else:
             log.info("\t(c) slot wasn't filled in this sentence")
 
+
         # Finally.
         return res
 
@@ -191,30 +195,30 @@ class PersonEntity(APIEntity):
     _params = {}
 
     def __init__(self, **kwargs):
-        self.entityType = "PERSON"
         super(PersonEntity, self).__init__(**kwargs)
+        self.entityType = "PERSON"
 
 
 class DateEntity(APIEntity):
     _params = {}
 
     def __init__(self, **kwargs):
-        self.entityType = "DATE"
         super(DateEntity, self).__init__(**kwargs)
+        self.entityType = "DATE"
 
 class LocationEntity(APIEntity):
     _params = {}
 
     def __init__(self, **kwargs):
-        self.entityType = "GPE"
         super(LocationEntity, self).__init__(**kwargs)
+        self.entityType = "GPE"
 
 class OrgEntity(APIEntity):
     _params = {}
 
     def __init__(self, **kwargs):
-        self.entityType = "ORG"
         super(OrgEntity, self).__init__(**kwargs)
+        self.entityType = "ORG"
 
 # Models
 class BaseModel(object):

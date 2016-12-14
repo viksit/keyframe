@@ -132,3 +132,17 @@ class ActionObject(object):
     def createAndSendTextResponse(self, canonicalMsg, text, responseType=None):
         cr = messages.createTextResponse(canonicalMsg, text, responseType)
         self.channelClient.sendResponse(cr)
+
+    def respond(self, text, canonicalMsg=None, responseType=None):
+        if not canonicalMsg:
+            canonicalMsg = self.canonicalMsg
+        if not responseType:
+            responseType = messages.ResponseElement.RESPONSE_TYPE_RESPONSE
+
+        cr = messages.createTextResponse(
+            self.canonicalMsg,
+            text,
+            responseType)
+
+        self.channelClient.sendResponse(cr)
+        return BaseBot.REQUEST_STATE_PROCESSED

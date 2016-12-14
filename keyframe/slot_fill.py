@@ -43,10 +43,7 @@ class Slot(object):
         self.value = None
         self.validated = False
         self.state = Slot.SLOT_STATE_NEW
-        self.parseOriginal = False
-        self.parseResponse = False
-        self.entityType = None
-        self.required = False
+        ## self.required = False
 
     def toJSONObject(self):
         return {
@@ -159,19 +156,13 @@ class Slot(object):
         For the current slot, run the entity_extract_fn() on it
 
         The return value of this is what we give to the result
-
         """
-
         res = None
         log.info("_extractSlotFromSentence: %s", self.name)
         assert self.apiResult is not None, "Failure in Myra API call"
-
-
-        res = self.entity.entity_extract_fn(text=text)
+        res = self.entity.entity_extract_fn(text=text, apiResult=self.apiResult)
         if res:
             log.info("(a) Slot was filled in this sentence")
-
-
         # Return final result
         return res
 
