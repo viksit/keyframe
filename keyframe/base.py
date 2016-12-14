@@ -204,7 +204,6 @@ class BaseBot(object):
             sc.parseOriginal = getattr(sc, "parseOriginal")
             sc.parseResponse = getattr(sc, "parseResponse")
             slotObjects.append(sc)
-            print("sc.entity: ", sc.entity.__dict__)
             if sc.entity.needsAPICall:
                 runAPICall = True
 
@@ -215,7 +214,6 @@ class BaseBot(object):
         # Then we invoke it and fill this.
         # This is used for slot fill.
         # Else, this is None.
-        print("runAPICall: ", runAPICall)
         if runAPICall:
             apiResult = self.api.get(canonicalMsg.text)
             actionObject.apiResult = apiResult
@@ -254,7 +252,6 @@ class BaseBot(object):
             sc.validated = slotObject.get("validated")
             sc.state = slotObject.get("state")
             slotObjects.append(sc)
-            print("sc.entity: ", sc.entity.__dict__)
             if sc.entity.needsAPICall:
                 runAPICall = True
 
@@ -264,7 +261,6 @@ class BaseBot(object):
         # Then we invoke it and fill this.
         # This is used for slot fill.
         # Else, this is None.
-        print("runAPICall: ", runAPICall)
         if runAPICall:
             apiResult = self.api.get(canonicalMsg.text)
             actionObject.apiResult = apiResult
