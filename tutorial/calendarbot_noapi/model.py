@@ -1,4 +1,4 @@
-from keyframe.dsl import BaseModel, KeywordIntent, APIIntent, RegexIntent
+from keyframe.dsl import BaseModel, KeywordIntent, APIIntent, RegexIntent, PersonEntity, FreeTextEntity
 
 class IntentModel(BaseModel):
 
@@ -12,3 +12,10 @@ class IntentModel(BaseModel):
 
     class Meta:
         description = "My fun intent model"
+
+class EntityModel(BaseModel):
+
+    user = PersonEntity(label="user")
+
+    class Meta:
+        description = "My even more fun entity model"

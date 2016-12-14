@@ -187,6 +187,8 @@ class BaseBot(object):
         slots, messages, channelClient
 
         """
+        runAPICall = False
+
         # Get the intent string and create an object from it.
         intentStr, actionObjectCls = self._getActionObjectFromIntentHandlers(canonicalMsg)
         log.debug("createActionObject: intent: %s cls: %s", intentStr, actionObjectCls)
@@ -194,15 +196,25 @@ class BaseBot(object):
         slotObjects = []
         for slotClass in slotClasses:
             sc = slotClass()
-            sc.entityType = getattr(sc, "entityType")
+            sc.entity = getattr(sc, "entity")
             sc.required = getattr(sc, "required")
             sc.parseOriginal = getattr(sc, "parseOriginal")
             sc.parseResponse = getattr(sc, "parseResponse")
             slotObjects.append(sc)
+            if sc.entity.needsAPICall:
+                runAPICall = True
 
         actionObject = actionObjectCls()
         actionObject.slotObjects = slotObjects
-        #actionObject.apiResult = apiResult
+
+        # If a flag is set that tells us to make a myra API call
+        # Then we invoke it and fill this.
+        # This is used for slot fill.
+        # Else, this is None.
+        if runAPICall:
+            apiResult = self.api.get(canonicalMsg.text)
+            actionObject.apiResult = apiResult
+
         actionObject.canonicalMsg = canonicalMsg
         actionObject.channelClient = self.channelClient
         actionObject.requestState = requestState
@@ -214,7 +226,9 @@ class BaseBot(object):
         """
         Create an action object from a given JSON object
         """
+        runAPICall = False
         # Initialize the class
+
         intentStr = actionObjectJSON.get("origIntentStr")
         slotObjectData = actionObjectJSON.get("slotObjects")
         actionObjectCls = self.intentActions.get(intentStr)
@@ -224,19 +238,31 @@ class BaseBot(object):
 
         for slotClass, slotObject in zip(slotClasses, slotObjectData):
             sc = slotClass()
-            sc.entityType = getattr(sc, "entityType")
+            sc.entity = getattr(sc, "entity")
             sc.required = getattr(sc, "required")
             sc.parseOriginal = getattr(sc, "parseOriginal")
             sc.parseResponse = getattr(sc, "parseResponse")
+
             # Get these from the saved state
             sc.filled = slotObject.get("filled")
             sc.value = slotObject.get("value")
             sc.validated = slotObject.get("validated")
             sc.state = slotObject.get("state")
             slotObjects.append(sc)
+            if sc.entity.needsAPICall:
+                runAPICall = True
 
         actionObject.slotObjects = slotObjects
-        #actionObject.apiResult = apiResult
+
+        # If a flag is set that tells us to make a myra API call
+        # Then we invoke it and fill this.
+        # This is used for slot fill.
+        # Else, this is None.
+        if runAPICall:
+            apiResult = self.api.get(canonicalMsg.text)
+            actionObject.apiResult = apiResult
+
+
         actionObject.canonicalMsg = canonicalMsg
         actionObject.channelClient = self.channelClient
         actionObject.requestState = requestState

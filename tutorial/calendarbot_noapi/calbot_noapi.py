@@ -16,6 +16,7 @@ from keyframe import store_api
 
 # Custom stuff
 from model import IntentModel
+from model import EntityModel
 
 # TODO:
 # Initialize via a configuration file
@@ -44,8 +45,16 @@ class DigitActionObject(ActionObject):
 @bot.intent(IntentModel.greeting)
 class GreetingActionObject(ActionObject):
 
+    class UserSlot(Slot):
+        entity = EntityModel.user
+        parseResponse = True
+
+        def prompt(self):
+            return "Who are you?"
+
     def process(self):
-        resp = "Hi there!"
+        print("slots: ", self.slotObjects)
+        resp = "Hi there, %s!" % (self.slotObjects[0].value)
         # Send it back on this channel
         responseType = messages.ResponseElement.RESPONSE_TYPE_RESPONSE
         cr = messages.createTextResponse(self.canonicalMsg,
