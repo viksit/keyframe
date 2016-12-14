@@ -13,6 +13,7 @@ from keyframe import channel_client
 from keyframe import messages
 from keyframe import config
 from keyframe import store_api
+from keyframe.mod import IntentModelv2
 
 
 # Create an API object to inject into our bot
@@ -39,8 +40,22 @@ kvStore = store_api.get_kv_store(
 
 bot = BaseBot(api=api, kvStore=kvStore)
 
+
+@bot.intent(IntentModelv2.greeting)
+class GreetingActionObject(ActionObject):
+
+    def process(self):
+        resp = "Hi there!"
+        # Send it back on this channel
+        responseType = messages.ResponseElement.RESPONSE_TYPE_RESPONSE
+        cr = messages.createTextResponse(self.canonicalMsg,
+                                         resp,
+                                         responseType)
+        self.channelClient.sendResponse(cr)
+        return BaseBot.REQUEST_STATE_PROCESSED
+
 # Actions
-@bot.intent("create")
+@bot.intent(IntentModelv2.create)
 class CreateIntentActionObject(ActionObject):
 
     class PersonSlot(Slot):
@@ -118,7 +133,7 @@ class CreateIntentActionObject(ActionObject):
         self.channelClient.sendResponse(cr)
         return BaseBot.REQUEST_STATE_PROCESSED
 
-@bot.intent("cancel")
+@bot.intent(IntentModelv2.cancel)
 class CancelIntentActionObject(ActionObject):
 
     def process(self):
