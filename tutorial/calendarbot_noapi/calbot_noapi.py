@@ -55,13 +55,7 @@ class GreetingActionObject(ActionObject):
     def process(self):
         print("slots: ", self.slotObjects)
         resp = "Hi there, %s!" % (self.slotObjects[0].value)
-        # Send it back on this channel
-        responseType = messages.ResponseElement.RESPONSE_TYPE_RESPONSE
-        cr = messages.createTextResponse(self.canonicalMsg,
-                                         resp,
-                                         responseType)
-        self.channelClient.sendResponse(cr)
-        return BaseBot.REQUEST_STATE_PROCESSED
+        return self.respond(resp)
 
 
 @bot.intent(IntentModel.default)
@@ -69,13 +63,7 @@ class DefaultActionObject(ActionObject):
 
     def process(self):
         resp = "Looks like I didn't get what you said!"
-        # Send it back on this channel
-        responseType = messages.ResponseElement.RESPONSE_TYPE_RESPONSE
-        cr = messages.createTextResponse(self.canonicalMsg,
-                                         resp,
-                                         responseType)
-        self.channelClient.sendResponse(cr)
-        return BaseBot.REQUEST_STATE_PROCESSED
+        return self.respond(resp)
 
 # Deployment for command line
 class CalendarCmdlineHandler(BotCmdLineHandler):
