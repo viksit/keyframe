@@ -34,13 +34,7 @@ bot = BaseBot(kvStore=kvStore)
 class DigitActionObject(ActionObject):
     def process(self):
         resp = "Some 5 digit number was shown!!!!!!!"
-        # Send it back on this channel
-        responseType = messages.ResponseElement.RESPONSE_TYPE_RESPONSE
-        cr = messages.createTextResponse(self.canonicalMsg,
-                                         resp,
-                                         responseType)
-        self.channelClient.sendResponse(cr)
-        return BaseBot.REQUEST_STATE_PROCESSED
+        return self.respond(resp)
 
 @bot.intent(IntentModel.greeting)
 class GreetingActionObject(ActionObject):
