@@ -1,5 +1,4 @@
 from __future__ import print_function
-from os.path import expanduser, join
 from flask import Flask, request, Response
 
 from pymyra.api import client
@@ -18,7 +17,9 @@ from keyframe import store_api
 from model import IntentModel
 from model import EntityModel
 
+# TODO(viksit): put configuraton object into a nicer format.
 # Create an API object to inject into our bot
+
 apicfg = {
     "account_id": "1so4xiiNq29ElrbiONSsrS",
     "account_secret": "a33efcebdc44f243aac4bfcf7bbcc24c29c90587"
@@ -35,8 +36,8 @@ api.set_intent_model(INTENT_MODEL_ID)
 # Initialize via a configuration file
 kvStore = store_api.get_kv_store(
     #store_api.TYPE_LOCALFILE,
-    store_api.TYPE_DYNAMODB,
-    #store_api.TYPE_INMEMORY,
+    #store_api.TYPE_DYNAMODB,
+    store_api.TYPE_INMEMORY,
     config.Config())
 
 
@@ -149,7 +150,6 @@ class CalendarCmdlineHandler(BotCmdLineHandler):
             config=cf)
         self.bot = bot
         bot.setChannelClient(channelClient)
-
 
 
 # -- Deployment for lambda
