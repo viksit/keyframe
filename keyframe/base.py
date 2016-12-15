@@ -3,6 +3,7 @@ import logging
 
 import messages
 import slot_fill
+import dsl
 import copy
 import misc
 from collections import defaultdict
@@ -300,13 +301,20 @@ class BaseBot(object):
         # In the future, we could do something different.
         # If no intents are matched we just return whatever is mapped to a default intent.
 
+        defaultIntent = None
         for intentObj in self.intentEvalSet:
+            if isinstance(intentObj, dsl.DefaultIntent):
+                defaultIntent = intentObj
+                continue
             if intentObj.field_eval_fn(
                     myraAPI = self.api, # If no API is passed to bot, this will be None
                     canonicalMsg = canonicalMsg):
                 intentStr = intentObj.label
                 break
-
+        # No non-default intent detected.
+        if not intentStr and defaultIntent:
+            intentStr = defaultIntent.label
+        log.debug("intentStr: %s", intentStr)
         # We now check if this intent has any registered action objects.
         actionObjectCls = self.intentActions.get(intentStr, None)
 
