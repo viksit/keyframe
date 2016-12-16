@@ -210,6 +210,7 @@ class BaseBot(object):
 
         defaultIntent = None
         for intentObj in self.intentEvalSet:
+            log.debug("intentObj: %s", intentObj)
             if isinstance(intentObj, dsl.DefaultIntent):
                 defaultIntent = intentObj
                 continue
@@ -217,6 +218,7 @@ class BaseBot(object):
                     myraAPI = self.api, # If no API is passed to bot, this will be None
                     canonicalMsg = canonicalMsg):
                 intentStr = intentObj.label
+                log.debug("found intentStr: %s", intentStr)
                 break
         # No non-default intent detected.
         if not intentStr and defaultIntent:
@@ -227,13 +229,6 @@ class BaseBot(object):
 
         assert actionObjectCls is not None, "No action objects were registered for this intent"
         return (intentStr, actionObjectCls)
-
-    def getActionObjectXXX(self, actionObjectCls, intentStr, waitingActionJson,
-                        canonicalMsg,
-                        userProfile, requestState):
-        return actionObjectCls.getActionObject(
-            intentStr, waitingActionJson,
-            canonicalMsg, userProfile, requestState, self.channelClient)
 
     def createActionObject(self, actionObjectCls, intentStr,
                            canonicalMsg, botState,
