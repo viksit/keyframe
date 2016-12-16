@@ -10,6 +10,8 @@ from collections import defaultdict
 import sys
 import utils
 from bot_state import BotState
+import actions
+import constants
 
 from six import iteritems, add_metaclass
 from orderedset import OrderedSet
@@ -30,10 +32,6 @@ log.propagate = False
 class BaseBot(object):
 
     botStateClass = BotState
-
-    # Constants
-    REQUEST_STATE_NEW = "req_new"
-    REQUEST_STATE_PROCESSED = "req_processed"
 
     # User profile keys
     UP_NAME = "up_name"
@@ -183,97 +181,6 @@ class BaseBot(object):
             canonicalMsg.channel, id)
         return k
 
-    def createActionObject(self, canonicalMsg, botState, userProfile, requestState):
-
-        """
-        Create a new action object from the given data
-        canonicalMsg, apiResult, intentStr
-        slots, messages, channelClient
-
-        """
-        runAPICall = False
-
-        # Get the intent string and create an object from it.
-        intentStr, actionObjectCls = self._getActionObjectFromIntentHandlers(canonicalMsg)
-        log.debug("createActionObject: intent: %s cls: %s", intentStr, actionObjectCls)
-        slotClasses = slot_fill.getSlots(actionObjectCls)
-        slotObjects = []
-        for slotClass in slotClasses:
-            sc = slotClass()
-            sc.entity = getattr(sc, "entity")
-            sc.required = getattr(sc, "required")
-            sc.parseOriginal = getattr(sc, "parseOriginal")
-            sc.parseResponse = getattr(sc, "parseResponse")
-            slotObjects.append(sc)
-            if sc.entity.needsAPICall:
-                runAPICall = True
-
-        actionObject = actionObjectCls()
-        actionObject.slotObjects = slotObjects
-
-        # If a flag is set that tells us to make a myra API call
-        # Then we invoke it and fill this.
-        # This is used for slot fill.
-        # Else, this is None.
-        if runAPICall:
-            apiResult = self.api.get(canonicalMsg.text)
-            actionObject.apiResult = apiResult
-
-        actionObject.canonicalMsg = canonicalMsg
-        actionObject.channelClient = self.channelClient
-        actionObject.requestState = requestState
-        actionObject.originalIntentStr = intentStr
-        log.debug("createActionObject: %s", actionObject)
-        return actionObject
-
-    def getActionObject(self, actionObjectJSON, canonicalMsg, userProfile, requestState):
-        """
-        Create an action object from a given JSON object
-        """
-        runAPICall = False
-        # Initialize the class
-
-        intentStr = actionObjectJSON.get("origIntentStr")
-        slotObjectData = actionObjectJSON.get("slotObjects")
-        actionObjectCls = self.intentActions.get(intentStr)
-        actionObject = actionObjectCls()
-        slotClasses = slot_fill.getSlots(actionObjectCls)
-        slotObjects = []
-
-        for slotClass, slotObject in zip(slotClasses, slotObjectData):
-            sc = slotClass()
-            sc.entity = getattr(sc, "entity")
-            sc.required = getattr(sc, "required")
-            sc.parseOriginal = getattr(sc, "parseOriginal")
-            sc.parseResponse = getattr(sc, "parseResponse")
-
-            # Get these from the saved state
-            sc.filled = slotObject.get("filled")
-            sc.value = slotObject.get("value")
-            sc.validated = slotObject.get("validated")
-            sc.state = slotObject.get("state")
-            slotObjects.append(sc)
-            if sc.entity.needsAPICall:
-                runAPICall = True
-
-        actionObject.slotObjects = slotObjects
-
-        # If a flag is set that tells us to make a myra API call
-        # Then we invoke it and fill this.
-        # This is used for slot fill.
-        # Else, this is None.
-        if runAPICall:
-            apiResult = self.api.get(canonicalMsg.text)
-            actionObject.apiResult = apiResult
-
-
-        actionObject.canonicalMsg = canonicalMsg
-        actionObject.channelClient = self.channelClient
-        actionObject.requestState = requestState
-        actionObject.originalIntentStr = intentStr
-        log.debug("createActionObject: %s", actionObject)
-        return actionObject
-
     def process(self, canonicalMsg):
 
         botState = self.getBotState(
@@ -349,25 +256,30 @@ class BaseBot(object):
 
         botState.setDebug(self.debug)
 
-        requestState = BaseBot.REQUEST_STATE_NEW
+        requestState = constants.BOT_REQUEST_STATE_NEW
         waitingActionJson = botState.getWaiting()
 
         if waitingActionJson:
-            actionObject = self.getActionObject(waitingActionJson, canonicalMsg, userProfile, requestState)
+            intentStr = actions.ActionObject.getIntentStrFromJSON(waitingActionJson)
+            actionObjectCls = self.intentActions.get(intentStr)
+            actionObject = actionObjectCls.getActionObject(intentStr, waitingActionJson, canonicalMsg, userProfile, requestState, self.channelClient)
             #self.sendDebugResponse(botState, canonicalMsg)
             requestState = actionObject.processWrapper(botState)
 
-        if requestState != BaseBot.REQUEST_STATE_PROCESSED:
+        if requestState != constants.BOT_REQUEST_STATE_PROCESSED:
             log.debug("requestState: %s", requestState)
             log.debug("botState: %s", botState)
-            actionObject = self.createActionObject(
-                canonicalMsg, botState, userProfile, requestState)
+            intentStr, actionObjectCls = self._getActionObjectFromIntentHandlers(canonicalMsg)
+            log.debug("GetActionObjectFromIntentHandlers: intent: %s cls: %s", intentStr, actionObjectCls)
+            actionObject = actionObjectCls.createActionObject(
+                intentStr, canonicalMsg, botState, userProfile,
+                requestState, self.api, self.channelClient)
             log.debug("actionObject: %s", actionObject)
             #self.sendDebugResponse(botState, canonicalMsg)
             requestState = actionObject.processWrapper(botState)
             log.debug("requeststate: %s", requestState)
 
-        if requestState != BaseBot.REQUEST_STATE_PROCESSED:
+        if requestState != constants.BOT_REQUEST_STATE_PROCESSED:
             raise Exception("Unprocessed message")
 
         if botState.changed:
