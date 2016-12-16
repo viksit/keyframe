@@ -228,6 +228,20 @@ class BaseBot(object):
         assert actionObjectCls is not None, "No action objects were registered for this intent"
         return (intentStr, actionObjectCls)
 
+    def getActionObject(self, actionObjectCls, intentStr, waitingActionJson,
+                        canonicalMsg,
+                        userProfile, requestState):
+        return actionObjectCls.getActionObject(
+            intentStr, waitingActionJson,
+            canonicalMsg, userProfile, requestState, self.channelClient)
+
+    def createActionObject(self, actionObjectCls, intentStr,
+                           canonicalMsg, botState,
+                           userProfile, requestState):
+        return actionObjectCls.createActionObject(
+            intentStr, canonicalMsg, botState,
+            userProfile, requestState, self.api, self.channelClient)
+
 
     def handle(self, **kwargs):
 
@@ -262,7 +276,9 @@ class BaseBot(object):
         if waitingActionJson:
             intentStr = actions.ActionObject.getIntentStrFromJSON(waitingActionJson)
             actionObjectCls = self.intentActions.get(intentStr)
-            actionObject = actionObjectCls.getActionObject(intentStr, waitingActionJson, canonicalMsg, userProfile, requestState, self.channelClient)
+            actionObject = self.getActionObject(
+                actionObjectCls, intentStr, waitingActionJson,
+                canonicalMsg, userProfile, requestState)
             #self.sendDebugResponse(botState, canonicalMsg)
             requestState = actionObject.processWrapper(botState)
 
@@ -271,9 +287,10 @@ class BaseBot(object):
             log.debug("botState: %s", botState)
             intentStr, actionObjectCls = self._getActionObjectFromIntentHandlers(canonicalMsg)
             log.debug("GetActionObjectFromIntentHandlers: intent: %s cls: %s", intentStr, actionObjectCls)
-            actionObject = actionObjectCls.createActionObject(
+            actionObject = self.createActionObject(
+                actionObjectCls,
                 intentStr, canonicalMsg, botState, userProfile,
-                requestState, self.api, self.channelClient)
+                requestState)
             log.debug("actionObject: %s", actionObject)
             #self.sendDebugResponse(botState, canonicalMsg)
             requestState = actionObject.processWrapper(botState)
