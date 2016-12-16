@@ -63,7 +63,9 @@ class ActionObject(object):
         return slotClasses
 
     @classmethod
-    def createActionObject(cls, intentStr, canonicalMsg, botState, userProfile, requestState, api, channelClient):
+    def createActionObject(
+            cls, intentStr, canonicalMsg, botState,
+            userProfile, requestState, api, channelClient, actionObjectParams={}):
 
         """
         Create a new action object from the given data
@@ -72,6 +74,7 @@ class ActionObject(object):
 
         """
         runAPICall = False
+        #actionObject = cls(actionObjectParams)
         actionObject = cls()
 
         # Get the intent string and create an object from it.
