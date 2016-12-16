@@ -109,52 +109,18 @@ class ActionObject(object):
     def getIntentStrFromJSON(cls, actionObjectJSON):
         return actionObjectJSON.get("origIntentStr")
 
-    @classmethod
-    def getActionObject(cls, intentStr, actionObjectJSON, canonicalMsg, userProfile, requestState, channelClient):
+    def populateFromJson(self, actionObjectJSON):
         """
         Create an action object from a given JSON object
         """
-        runAPICall = False
-        # Initialize the class
         slotObjectData = actionObjectJSON.get("slotObjects")
-        actionObject = cls()
-        #slotClasses = slot_fill.getSlots(cls)
-        slotClasses = actionObject.getSlots()
-        slotObjects = []
-
-        for slotClass, slotObject in zip(slotClasses, slotObjectData):
-            sc = slotClass()
-            sc.entity = getattr(sc, "entity")
-            sc.required = getattr(sc, "required")
-            sc.parseOriginal = getattr(sc, "parseOriginal")
-            sc.parseResponse = getattr(sc, "parseResponse")
-
+        assert len(slotObjectData) == len(self.slotObjects)
+        for slotObject, slotData in zip(self.slotObjects, slotObjectData):
             # Get these from the saved state
-            sc.filled = slotObject.get("filled")
-            sc.value = slotObject.get("value")
-            sc.validated = slotObject.get("validated")
-            sc.state = slotObject.get("state")
-            slotObjects.append(sc)
-            if sc.entity.needsAPICall:
-                runAPICall = True
-
-        actionObject.slotObjects = slotObjects
-
-        # If a flag is set that tells us to make a myra API call
-        # Then we invoke it and fill this.
-        # This is used for slot fill.
-        # Else, this is None.
-        if runAPICall:
-            apiResult = self.api.get(canonicalMsg.text)
-            actionObject.apiResult = apiResult
-
-
-        actionObject.canonicalMsg = canonicalMsg
-        actionObject.channelClient = channelClient
-        actionObject.requestState = requestState
-        actionObject.originalIntentStr = intentStr
-        log.debug("createActionObject: %s", actionObject)
-        return actionObject
+            slotObject.filled = slotData.get("filled")
+            slotObject.value = slotData.get("value")
+            slotObject.validated = slotData.get("validated")
+            slotObject.state = slotData.get("state")
 
     def resetSlots(self):
         for slotObject in self.slotObjects:

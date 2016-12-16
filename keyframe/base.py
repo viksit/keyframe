@@ -228,7 +228,7 @@ class BaseBot(object):
         assert actionObjectCls is not None, "No action objects were registered for this intent"
         return (intentStr, actionObjectCls)
 
-    def getActionObject(self, actionObjectCls, intentStr, waitingActionJson,
+    def getActionObjectXXX(self, actionObjectCls, intentStr, waitingActionJson,
                         canonicalMsg,
                         userProfile, requestState):
         return actionObjectCls.getActionObject(
@@ -276,9 +276,10 @@ class BaseBot(object):
         if waitingActionJson:
             intentStr = actions.ActionObject.getIntentStrFromJSON(waitingActionJson)
             actionObjectCls = self.intentActions.get(intentStr)
-            actionObject = self.getActionObject(
-                actionObjectCls, intentStr, waitingActionJson,
-                canonicalMsg, userProfile, requestState)
+            actionObject = self.createActionObject(
+                actionObjectCls, intentStr,
+                canonicalMsg, botState, userProfile, requestState)
+            actionObject.populateFromJson(waitingActionJson)
             #self.sendDebugResponse(botState, canonicalMsg)
             requestState = actionObject.processWrapper(botState)
 
