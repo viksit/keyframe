@@ -8,7 +8,8 @@ import misc
 import uuid
 from collections import defaultdict
 import sys
-from base import BaseBot
+import constants
+import slot_fill
 
 from six import iteritems, add_metaclass
 
@@ -54,6 +55,75 @@ class ActionObject(object):
 
     def init(self):
         pass
+
+    def getSlots(self):
+        cls = self.__class__
+        allClasses = [cls.__getattribute__(cls, i) for i in cls.__dict__.keys() if i[:1] != '_']
+        slotClasses = [i for i in allClasses if type(i) is type and issubclass(i, slot_fill.Slot)]
+        return slotClasses
+
+    @classmethod
+    def createActionObject(
+            cls, intentStr, canonicalMsg, botState,
+            userProfile, requestState, api, channelClient, actionObjectParams={}):
+
+        """
+        Create a new action object from the given data
+        canonicalMsg, apiResult, intentStr
+        slots, messages, channelClient
+
+        """
+        runAPICall = False
+        #actionObject = cls(actionObjectParams)
+        actionObject = cls()
+
+        # Get the intent string and create an object from it.
+        #slotClasses = slot_fill.getSlots(cls)
+        slotClasses = actionObject.getSlots()
+        slotObjects = []
+        for slotClass in slotClasses:
+            sc = slotClass()
+            sc.entity = getattr(sc, "entity")
+            sc.required = getattr(sc, "required")
+            sc.parseOriginal = getattr(sc, "parseOriginal")
+            sc.parseResponse = getattr(sc, "parseResponse")
+            slotObjects.append(sc)
+            if sc.entity.needsAPICall:
+                runAPICall = True
+
+        actionObject.slotObjects = slotObjects
+
+        # If a flag is set that tells us to make a myra API call
+        # Then we invoke it and fill this.
+        # This is used for slot fill.
+        # Else, this is None.
+        if runAPICall:
+            apiResult = api.get(canonicalMsg.text)
+            actionObject.apiResult = apiResult
+
+        actionObject.canonicalMsg = canonicalMsg
+        actionObject.channelClient = channelClient
+        actionObject.requestState = requestState
+        actionObject.originalIntentStr = intentStr
+        log.debug("createActionObject: %s", actionObject)
+        return actionObject
+
+    @classmethod
+    def getIntentStrFromJSON(cls, actionObjectJSON):
+        return actionObjectJSON.get("origIntentStr")
+
+    def populateFromJson(self, actionObjectJSON):
+        """
+        Create an action object from a given JSON object
+        """
+        slotObjectData = actionObjectJSON.get("slotObjects")
+        assert len(slotObjectData) == len(self.slotObjects)
+        for slotObject, slotData in zip(self.slotObjects, slotObjectData):
+            # Get these from the saved state
+            slotObject.filled = slotData.get("filled")
+            slotObject.value = slotData.get("value")
+            slotObject.validated = slotData.get("validated")
+            slotObject.state = slotData.get("state")
 
     def resetSlots(self):
         for slotObject in self.slotObjects:
@@ -101,7 +171,7 @@ class ActionObject(object):
         log.info("processWrapper: botState: botstate: %s, reqstate: %s", botState, self.requestState)
         allFilled = self.slotFill(botState)
         if allFilled is False:
-            return BaseBot.REQUEST_STATE_PROCESSED
+            return constants.BOT_REQUEST_STATE_PROCESSED
 
         # Call process function only when slot data is filled up
         self.filledSlots = {}
@@ -152,4 +222,4 @@ class ActionObject(object):
             responseType)
 
         self.channelClient.sendResponse(cr)
-        return BaseBot.REQUEST_STATE_PROCESSED
+        return constants.BOT_REQUEST_STATE_PROCESSED

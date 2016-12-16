@@ -43,7 +43,8 @@ class GreetingActionObject(ActionObject):
     class UserSlot(Slot):
         entity = EntityModel.user
         required = "optional"
-        parseResponse = True
+        parseResponse = False
+        parseOriginal = False
 
         def prompt(self):
             return "Who are you?"
@@ -54,6 +55,80 @@ class GreetingActionObject(ActionObject):
         return self.respond(resp)
 
 
+# ------
+
+# Actions
+@bot.intent(IntentModel.create)
+class CreateIntentActionObject(ActionObject):
+
+    class PersonSlot(Slot):
+
+        # TODO(viksit): right now, all slots need to have these 4 things
+        # In the future, we can have default values at the Slot level but not sure
+        # what this should be.
+
+        entity = EntityModel.person
+
+        # Ignored right now.
+        required = False
+
+        # NOTE(viksit):
+        # parseOriginal should either be True in all slots, or false in all.
+        # this is because of internal implementation reasons and also I'm not sure
+        # if the extra complexity of supporting it makes sense.
+        parseOriginal = False
+
+        # This means that any response the user makes need to contain an entity which
+        # our system can match to (PERSON)
+        parseResponse = False
+
+        def prompt(self):
+            return "who do you want to set up the meeting with?"
+
+    class DateSlot(Slot):
+        entity = EntityModel.mydate
+        parseOriginal = False
+        parseResponse = False
+        required = False
+
+        def prompt(self):
+            return "when do you want the meeting to be set up?"
+
+
+    class CitySlot(Slot):
+        entity = EntityModel.mycity
+        parseOriginal = False
+        parseResponse = False
+        required = False
+
+        def prompt(self):
+            return "which city do you want to meet in?"
+
+
+    class BankSlot(Slot):
+        entity = EntityModel.mybank
+        parseOriginal = False
+        parseResponse = False
+        required = False
+
+        def prompt(self):
+            return "which bank do you want to meet at?"
+
+    # Won't get called till slots are filled.
+    def process(self):
+        message = "(example) Sure, I'll create the meeting for you with : {date_slot} {person_slot} {bank_slot} {city_slot}".format(**self.filledSlots)
+        resp = message
+        return self.respond(resp)
+
+@bot.intent(IntentModel.cancel)
+class CancelIntentActionObject(ActionObject):
+
+    def process(self):
+        message = "Sure, I'll cancel the meeting for you"
+        resp = message
+        return self.respond(resp)
+
+# -----
 @bot.intent(IntentModel.default)
 class DefaultActionObject(ActionObject):
 

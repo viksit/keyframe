@@ -6,8 +6,8 @@ class IntentModel(BaseModel):
     regexobj = r"\D(\d{5})\D"
 
     greeting = KeywordIntent(label="f1", keywords=kw)
-    create = APIIntent(label="create")
-    cancel = APIIntent(label="cancel")
+    create = KeywordIntent(label="create", keywords=["create"])
+    cancel = KeywordIntent(label="cancel", keywords=["cancel"])
     fivedig = RegexIntent(label="fivedig", regex=regexobj)
 
     class Meta:
@@ -15,7 +15,11 @@ class IntentModel(BaseModel):
 
 class EntityModel(BaseModel):
 
-    user = PersonEntity(label="user")
+    user = FreeTextEntity(label="user")
+    person = FreeTextEntity(label="person")
+    mydate = FreeTextEntity(label="date")
+    mycity = FreeTextEntity(label="city")
+    mybank = FreeTextEntity(label="bank")
 
     class Meta:
         description = "My even more fun entity model"
