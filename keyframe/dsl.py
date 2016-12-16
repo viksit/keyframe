@@ -69,6 +69,8 @@ class KeywordIntent(BaseField):
         log.debug("keywordIntent.field_eval_fn(%s)", locals())
         canonicalMsg = kwargs.get("canonicalMsg")
         canonMsgTokenSet = set(canonicalMsg.text.split())
+        log.debug("canonMsgTokenSet: %s", canonMsgTokenSet)
+        log.debug("self.keywords: %s", self.keywords)
         ret = bool(set(canonMsgTokenSet.intersection(self.keywords)))
         log.debug("field_eval_fn returning %s", ret)
         return ret
