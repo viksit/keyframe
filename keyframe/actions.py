@@ -9,6 +9,7 @@ import uuid
 from collections import defaultdict
 import sys
 import constants
+import slot_fill
 
 from six import iteritems, add_metaclass
 
@@ -55,6 +56,12 @@ class ActionObject(object):
     def init(self):
         pass
 
+    def getSlots(self):
+        cls = self.__class__
+        allClasses = [cls.__getattribute__(cls, i) for i in cls.__dict__.keys() if i[:1] != '_']
+        slotClasses = [i for i in allClasses if type(i) is type and issubclass(i, slot_fill.Slot)]
+        return slotClasses
+
     @classmethod
     def createActionObject(cls, intentStr, canonicalMsg, botState, userProfile, requestState, api, channelClient):
 
@@ -65,9 +72,11 @@ class ActionObject(object):
 
         """
         runAPICall = False
+        actionObject = cls()
 
         # Get the intent string and create an object from it.
-        slotClasses = slot_fill.getSlots(cls)
+        #slotClasses = slot_fill.getSlots(cls)
+        slotClasses = actionObject.getSlots()
         slotObjects = []
         for slotClass in slotClasses:
             sc = slotClass()
@@ -79,7 +88,6 @@ class ActionObject(object):
             if sc.entity.needsAPICall:
                 runAPICall = True
 
-        actionObject = cls()
         actionObject.slotObjects = slotObjects
 
         # If a flag is set that tells us to make a myra API call
@@ -110,7 +118,8 @@ class ActionObject(object):
         # Initialize the class
         slotObjectData = actionObjectJSON.get("slotObjects")
         actionObject = cls()
-        slotClasses = slot_fill.getSlots(cls)
+        #slotClasses = slot_fill.getSlots(cls)
+        slotClasses = actionObject.getSlots()
         slotObjects = []
 
         for slotClass, slotObject in zip(slotClasses, slotObjectData):
