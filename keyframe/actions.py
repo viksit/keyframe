@@ -170,6 +170,7 @@ class ActionObject(object):
         # Fill slots
         log.info("processWrapper: botState: botstate: %s, reqstate: %s", botState, self.requestState)
         allFilled = self.slotFill(botState)
+        log.debug("allFilled: %s", allFilled)
         if allFilled is False:
             return constants.BOT_REQUEST_STATE_PROCESSED
 

@@ -27,13 +27,9 @@ class Slot(object):
     # TODO(viksit): overwrite the instance variables from the class variable
 
     def __init__(self):
-        pass
-
-    def init(self, **kwargs):
-        self.name = kwargs.get("name")
-        self.entityType = kwargs.get("entityType")
-        self.required = kwargs.get("required")
-        self.intent = kwargs.get("intent")
+        # If there are multiple slots with the same class, the slot definition
+        # will have to override this and give some names.
+        self.name = re.sub(r"(.)([A-Z])", r"\1_\2", self.__class__.__name__).lower()
         self.filled = False
         self.value = None
         self.validated = False
