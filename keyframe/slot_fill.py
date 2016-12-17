@@ -28,6 +28,8 @@ class Slot(object):
     # TODO(viksit): overwrite the instance variables from the class variable
 
     def __init__(self):
+        # If there are multiple slots with the same class, the slot definition
+        # will have to override this and give some names.
         self.name = re.sub(r"(.)([A-Z])", r"\1_\2", self.__class__.__name__).lower()
         self.filled = False
         self.value = None
