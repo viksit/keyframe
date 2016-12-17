@@ -37,7 +37,7 @@ class BaseBot(object):
     UP_NAME = "up_name"
 
     def __init__(self, *args, **kwargs):
-
+        self.name = kwargs.get("name")
         self.api = kwargs.get("api", None)
         # TODO(viksit): is this needed?
         self.channelClient = kwargs.get("channelClient")
@@ -68,8 +68,8 @@ class BaseBot(object):
 
     def getUserProfile(self, userId, channel):
 
-        userProfileKey = "%s.userprofile.%s.%s" % (
-            self.__class__.__name__, userId, channel)
+        userProfileKey = "%s.%s.userprofile.%s.%s" % (
+            self.__class__.__name__, self.name, userId, channel)
 
         userProfile = utils.CachedPersistentDict(
             kvStore=self.kvStore,
@@ -85,8 +85,8 @@ class BaseBot(object):
         return userProfile
 
     def _botStateKey(self, userId, channel):
-        k = "botstate.%s.%s.%s" % (
-            self.__class__.__name__, userId, channel)
+        k = "botstate.%s.%s.%s.%s" % (
+            self.__class__.__name__, self.name, userId, channel)
         return k
 
     def getBotState(self, userId, channel):
@@ -174,6 +174,7 @@ class BaseBot(object):
             log.info("self.debug: %s. NOT sending DEBUG info", self.debug)
 
 
+    # TODO: Looks like this is not used?
     @classmethod
     def _createBotKey(cls, canonicalMsg, id):
         k = "%s.%s.%s.%s" % (
@@ -267,7 +268,7 @@ class BaseBot(object):
 
         requestState = constants.BOT_REQUEST_STATE_NEW
         waitingActionJson = botState.getWaiting()
-
+        log.debug("waitingActionJson: %s", waitingActionJson)
         if waitingActionJson:
             intentStr = actions.ActionObject.getIntentStrFromJSON(waitingActionJson)
             actionObjectCls = self.intentActions.get(intentStr)

@@ -31,6 +31,12 @@ class GenericActionObject(actions.ActionObject):
     def __init__(self, **kwargs):
         super(GenericActionObject, self).__init__(**kwargs)
 
+    def process(self):
+        # TODO: put names from json config.
+        msg = ("GenericActionObject.process: {generic_slot_0} {generic_slot_1}"
+               "").format(**self.filledSlots)
+        return self.respond(msg)
+
     # I don't think we need all this complexity!
     def backup__init__(self, **kwargs):
         super(GenericActionObject, self).__init__(kwargs)
@@ -40,12 +46,7 @@ class GenericActionObject(actions.ActionObject):
                 "Must initialize GenericActionObject with specJson")
 
     def getSlots(self):
-        # TODO: Use self.specJson to get slots.
-        # For now, hard-code slots here.
-        return [
-            generic_slot.GenericSlot,
-            generic_slot.GenericSlot
-            ]
+        raise Exception("This should not be used")
 
     @classmethod
     def createActionObject(cls, specJson, intentStr, canonicalMsg, botState,
@@ -57,16 +58,18 @@ class GenericActionObject(actions.ActionObject):
         slotObjects = []
         ctr = 0
         runAPICall = False
-        for slotClass in [GenericSlot, GenericSlot]:
+        for slotClass in [generic_slot.GenericSlot, generic_slot.GenericSlot]:
             sc = slotClass()
             sc.entity = getattr(sc, "entity")
             sc.required = getattr(sc, "required")
             sc.parseOriginal = getattr(sc, "parseOriginal")
             sc.parseResponse = getattr(sc, "parseResponse")
             sc.promptMsg = "prompt_%s" % (ctr,)  # TODO: get from json
+            sc.name = "generic_slot_%s" % (ctr,)  # TODO: get from json
             slotObjects.append(sc)
             if sc.entity.needsAPICall:
                 runAPICall = True
+            ctr += 1
 
         actionObject.slotObjects = slotObjects
         
