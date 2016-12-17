@@ -2,6 +2,7 @@ from __future__ import print_function
 import sys
 from os.path import expanduser, join
 from flask import Flask, request, Response
+import json
 
 from pymyra.api import client
 
@@ -26,7 +27,7 @@ kvStore = store_api.get_kv_store(
 
 
 # TODO: This should get a json file for all the config in the future.
-bot = generic_bot.GenericBot(kvStore=kvStore)
+#bot = generic_bot.GenericBot(kvStore=kvStore)
 
 
 # Deployment for command line
@@ -38,24 +39,23 @@ class GenericCmdlineHandler(BotCmdLineHandler):
             channel=messages.CHANNEL_CMDLINE,
             requestType=None,
             config=cf)
-        self.bot = bot
+        configJson = self.kwargs.get("config_json")
+        # TODO: inject json and have the GenericBot decipher it!!
+        self.bot = generic_bot.GenericBot(kvStore=kvStore, )
         bot.setChannelClient(channelClient)
 
-
-# Deployment for command line
-class CalendarCmdlineHandler(BotCmdLineHandler):
-    def init(self):
-        # channel configuration
-        cf = config.Config()
-        channelClient = channel_client.getChannelClient(
-            channel=messages.CHANNEL_CMDLINE,
-            requestType=None,
-            config=cf)
-        self.bot = bot
-        bot.setChannelClient(channelClient)
 
 if __name__ == "__main__":
     # Run the command line version
-    c = CalendarCmdlineHandler()
+    d = {}
+    if len(sys.argv) > 1:
+        jsonFile = sys.argv[1]
+        if os.path.isfile(jsonFile):
+            configJson = json.loads(open(jsonFile).read())
+            d['config_json'] = configJson
+        else:
+            print("%s is not a valid json bot configuration file",
+                  jsonFile, file=sys.stderr)
+    c = GenericCmdlineHandler(d)
     c.begin()
 
