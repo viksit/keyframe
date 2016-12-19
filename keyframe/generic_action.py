@@ -30,20 +30,12 @@ class GenericActionObject(actions.ActionObject):
 
     def __init__(self, **kwargs):
         super(GenericActionObject, self).__init__(**kwargs)
+        self.msg = None
 
     def process(self):
         # TODO: put names from json config.
-        msg = ("GenericActionObject.process: {generic_slot_0} {generic_slot_1}"
-               "").format(**self.filledSlots)
+        msg = self.msg.format(**self.filledSlots)
         return self.respond(msg)
-
-    # I don't think we need all this complexity!
-    def backup__init__(self, **kwargs):
-        super(GenericActionObject, self).__init__(kwargs)
-        self.specJson = kwargs.get("specJson")
-        if not self.specJson:
-            raise Exception(
-                "Must initialize GenericActionObject with specJson")
 
     def getSlots(self):
         raise Exception("This should not be used")
@@ -52,24 +44,37 @@ class GenericActionObject(actions.ActionObject):
     def createActionObject(cls, specJson, intentStr, canonicalMsg, botState,
                            userProfile, requestState, api, channelClient,
                            actionObjectParams={}):
+        log.debug("createActionObject(%s)", locals())
         # Create a GenericActionObject using specJson
         actionObject = cls()
         # TODO: Use specJson. Right now just hard-code.
+        actionObject.msg = specJson.get("text")
+        assert actionObject.msg, "No text field in json: %s" % (specJson,)
+        slots = specJson.get("slots", [])
         slotObjects = []
-        ctr = 0
         runAPICall = False
-        for slotClass in [generic_slot.GenericSlot, generic_slot.GenericSlot]:
-            sc = slotClass()
-            sc.entity = getattr(sc, "entity")
-            sc.required = getattr(sc, "required")
-            sc.parseOriginal = getattr(sc, "parseOriginal")
-            sc.parseResponse = getattr(sc, "parseResponse")
-            sc.promptMsg = "prompt_%s" % (ctr,)  # TODO: get from json
-            sc.name = "generic_slot_%s" % (ctr,)  # TODO: get from json
-            slotObjects.append(sc)
-            if sc.entity.needsAPICall:
+        for slotSpec in slots:
+            gc = generic_slot.GenericSlot()
+            gc.entity = getattr(gc, "entity")
+            gc.required = slotSpec.get("required")
+            if not gc.required:
+                log.debug("slotSpec does not specify required - getting default")
+                gc.required = getattr(gc, "required")
+            gc.parseOriginal = slotSpec.get("parse_original")
+            if not gc.parseOriginal:
+                log.debug("slotSpec does not specify parseOriginal - getting default")
+                gc.parseOriginal = getattr(gc, "parseOriginal")
+            gc.parseResponse = slotSpec.get("parse_response")
+            if not gc.parseResponse:
+                log.debug("slotSpec does not specify parseResponse - getting default")
+                gc.parseResponse = getattr(gc, "parseResponse")
+            gc.promptMsg = slotSpec.get("prompt")
+            assert gc.promptMsg, "slot %s must have a prompt" % (slotSpec,)
+            gc.name = slotSpec.get("name")
+            assert gc.name, "slot %s must have a name" % (slotSpec,)
+            slotObjects.append(gc)
+            if gc.entity.needsAPICall:
                 runAPICall = True
-            ctr += 1
 
         actionObject.slotObjects = slotObjects
         
