@@ -26,10 +26,11 @@ log.propagate = False
 
 class CmdLineHandler(object):
 
-    def __init__(self, userId=None):
-        self.userId = userId
+    def __init__(self, **kwargs):
+        self.userId = kwargs.get("userId")
         if not self.userId:
             self.userId = "bot_arch_msghandler_user"
+        self.kwargs = kwargs
         self.init()
 
     def init(self):

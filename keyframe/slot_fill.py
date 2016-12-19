@@ -19,11 +19,6 @@ log.setLevel(logging.DEBUG)
 log.propagate = False
 
 
-def getSlots(cls):
-    allClasses = [cls.__getattribute__(cls, i) for i in cls.__dict__.keys() if i[:1] != '_']
-    slotClasses = [i for i in allClasses if type(i) is type and issubclass(i, Slot)]
-    return slotClasses
-
 #@add_metaclass(misc.SlotMeta)
 class Slot(object):
 
@@ -33,6 +28,8 @@ class Slot(object):
     # TODO(viksit): overwrite the instance variables from the class variable
 
     def __init__(self):
+        # If there are multiple slots with the same class, the slot definition
+        # will have to override this and give some names.
         self.name = re.sub(r"(.)([A-Z])", r"\1_\2", self.__class__.__name__).lower()
         self.filled = False
         self.value = None

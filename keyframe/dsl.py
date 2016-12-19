@@ -66,9 +66,14 @@ class KeywordIntent(BaseField):
             "Did you forget to initialize %s with a (.. keyword=[list of kw]) argument?" % self.label
 
     def field_eval_fn(self, **kwargs):
+        log.debug("keywordIntent.field_eval_fn(%s)", locals())
         canonicalMsg = kwargs.get("canonicalMsg")
-        canonMsgTokenSet = set(canonicalMsg.text.split(" "))
-        return bool(set(canonMsgTokenSet.intersection(self.keywords)))
+        canonMsgTokenSet = set(canonicalMsg.text.split())
+        log.debug("canonMsgTokenSet: %s", canonMsgTokenSet)
+        log.debug("self.keywords: %s", self.keywords)
+        ret = bool(set(canonMsgTokenSet.intersection(self.keywords)))
+        log.debug("field_eval_fn returning %s", ret)
+        return ret
 
 class APIIntent(BaseField):
     _params = {}
@@ -221,7 +226,7 @@ class OrgEntity(APIEntity):
 # Models
 class BaseModel(object):
 
-    default = DefaultIntent()
+    default = DefaultIntent(label="default")
 
     def __init__(self, **kwargs):
         assert self.label is not None
