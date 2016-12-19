@@ -121,7 +121,7 @@ class LocalFileKVStore(KVStore):
     def get(self, key):
         p = self.local_dir + "/" + key
         if not os.path.exists(p):
-            log.info("path:%s does not exist")
+            log.info("path:%s does not exist", p)
             return None
         with open(self.local_dir + "/" + key, "r") as f:
             return f.read()

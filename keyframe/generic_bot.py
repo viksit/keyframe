@@ -31,25 +31,48 @@ class DefaultActionObject(keyframe.actions.ActionObject):
 
 class GenericBot(keyframe.base.BaseBot):
 
-    # TODO: from json - hardcode for now for some basic test.
     def __init__(self, *args, **kwargs):
         super(GenericBot, self).__init__(*args, **kwargs)
-        ki = keyframe.dsl.KeywordIntent(label="f1", keywords=["testing"])
-        self.intentEvalSet.add(ki)
-        di = keyframe.dsl.DefaultIntent()
-        self.intentEvalSet.add(di)
-        self.intentActions["f1"] = keyframe.generic_action.GenericActionObject
-        self.intentActions["default"] = DefaultActionObject()
-        log.debug("GenericBot.__init__() called")
+        self.specJson = kwargs.get("configJson")
+        log.debug("self.specJson: %s", self.specJson)
+        self.configFromJson()
+
+    def configFromJson(self):
+        log.debug("GenericBot.configFromJson()")
+        intents = self.specJson.get("intents")
+        for (intentId, intentProperties) in intents.iteritems():
+            intentType = intentProperties.get("intent_type")
+            if intentType == "api":
+                i = keyframe.dsl.APIIntent(label=intentId)
+                self.intentEvalSet.add(i)
+                self.intentActions[intentId] = keyframe.generic_action.GenericActionObject
+            elif intentType == "keyword":
+                intentKeywords = intentProperties.get("intent_data")
+                assert intentKeywords, "keywords intent must have keywords"
+                assert isinstance(intentKeywords, list), "keywords intent must have a list of keywords"
+                i = keyframe.dsl.KeywordIntent(
+                    label=intentId,
+                    keywords=intentKeywords)
+                self.intentEvalSet.add(i)
+                self.intentActions[intentId] = keyframe.generic_action.GenericActionObject
+            elif intentType == "default":
+                i = keyframe.dsl.DefaultIntent(label="default")
+                self.intentEvalSet.add(i)
+                self.intentActions[intentId] = keyframe.generic_action.GenericActionObject
+            else:
+                raise Exception("Unknown intentType: %s" % (intentType,))
 
     def createActionObject(self, actionObjectCls, intentStr,
                            canonicalMsg, botState,
                            userProfile, requestState):
         log.debug("GenericBot.createActionObject(%s) called", locals())
         if actionObjectCls == keyframe.generic_action.GenericActionObject:
-            log.debug("creating GenericActionObject")
+            actionObjectSpecJson = self.specJson.get(
+                "intents", {}).get(intentStr)
+            log.debug("creating GenericActionObject with json: %s",
+                      actionObjectSpecJson)
             return actionObjectCls.createActionObject(
-                {}, # This is the json spec - currently just a placeholder
+                actionObjectSpecJson,
                 intentStr, canonicalMsg, botState,
                 userProfile, requestState, self.api, self.channelClient)
 

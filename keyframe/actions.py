@@ -137,7 +137,9 @@ class ActionObject(object):
           False if all slots haven't been filled yet or something went wrong.
 
         """
+        log.debug("slotFill(%s)", locals())
         for slotObject in self.slotObjects:
+            log.debug("slotObject: %s", slotObject)
             if not slotObject.filled:
                 filled = slotObject.fill(
                     self.canonicalMsg, self.apiResult, self.channelClient)
