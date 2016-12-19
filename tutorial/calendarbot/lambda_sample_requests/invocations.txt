@@ -1,0 +1,4 @@
+1321  http POST "https://ravdtz3k4c.execute-api.us-west-2.amazonaws.com/dev/localapi" < s2.json
+1322  http POST "https://ravdtz3k4c.execute-api.us-west-2.amazonaws.com/dev/localapi" < wb.json
+1323  http POST "https://ravdtz3k4c.execute-api.us-west-2.amazonaws.com/dev/localapi" < london.json
+1307  http POST "https://ravdtz3k4c.execute-api.us-west-2.amazonaws.com/dev/localapi" < sample_req.json
