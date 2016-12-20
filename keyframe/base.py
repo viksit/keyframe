@@ -14,7 +14,11 @@ import actions
 import constants
 
 from six import iteritems, add_metaclass
-from orderedset import OrderedSet
+
+# ordereset has a .so file which is incompat with lambda.
+# from orderedset import OrderedSet
+# alternative
+from ordered_set import OrderedSet
 
 
 # TODO: move logging out into a nicer function/module
