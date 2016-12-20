@@ -1,4 +1,6 @@
 from __future__ import print_function
+import sys
+
 from flask import Flask, request, Response
 
 from pymyra.api import client
@@ -132,14 +134,7 @@ class CancelIntentActionObject(ActionObject):
         resp = message
         return self.respond(resp)
 
-class CalendarBotHTTPAPI(BotAPI):
-
-    def getBot(self):
-        self.bot = bot
-        return bot
-
-## Deployment for command line
-
+# Deployment for command line
 class CalendarCmdlineHandler(BotCmdLineHandler):
     def init(self):
         # channel configuration
@@ -152,7 +147,7 @@ class CalendarCmdlineHandler(BotCmdLineHandler):
         bot.setChannelClient(channelClient)
 
 
-# -- Deployment for lambda
+# Deployment for lambda
 class CalendarBotHTTPAPI(BotAPI):
     def getBot(self):
         self.bot = bot
@@ -179,9 +174,10 @@ def ping():
     return Response('ok'), 200
 
 if __name__ == "__main__":
-    # Run the command line version
-    c = CalendarCmdlineHandler()
-    c.begin()
-
-    # OR uncomment this to run this via flask
-    # app.run(debug=True)
+    if len(sys.argv) > 1 and sys.argv[1] == 'cmd':
+        # Run the command line version
+        c = CalendarCmdlineHandler()
+        c.begin()
+    else:
+        # OR uncomment this to run this via flask
+        app.run(debug=True)

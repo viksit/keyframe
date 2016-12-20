@@ -69,7 +69,6 @@ class BaseBot(object):
         pass
 
     # Bot state related functions
-
     def getUserProfile(self, userId, channel):
 
         userProfileKey = "%s.%s.userprofile.%s.%s" % (

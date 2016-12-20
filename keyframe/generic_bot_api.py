@@ -13,6 +13,8 @@ import uuid
 from collections import defaultdict
 import sys
 
+import bot_api
+
 log = logging.getLogger(__name__)
 ch = logging.StreamHandler(sys.stdout)
 ch.setLevel(logging.DEBUG)
@@ -24,48 +26,19 @@ log.setLevel(logging.DEBUG)
 log.propagate = False
 
 
-class BotAPI(object):
+class GenericBotAPI(bot_api.BotAPI):
     """
     Class that allows this bot to be called via a flask API. This can be deployed
     wherever
     """
     def __init__(self, *args, **kwargs):
-        self.channelClient = kwargs.get("channelClient")
-        self.args = args
-        self.kwargs = kwargs
-        self.init()
+        super(GenericBotAPI, self).__init__(*args, **kwargs)
 
-    def init(self):
+    def getBotJsonSpecFromDB(self):
         pass
-
-    def createAndSendTextResponse(self, canonicalMsg, text, responseType=None):
-        cr = messages.createTextResponse(canonicalMsg, text, responseType)
-        self.channelClient.sendResponse(cr)
-
-    def handleMsg(self, channelMsg):
-        """Handle the input message from all channels.
-        Input
-          inputMsg: (messages.ChannelMsg)
-        Returns
-          nothing
-        """
-        canonicalMsg = self.channelClient.extract(
-            channelMsg=channelMsg)
-        if not canonicalMsg:
-            log.warn("no canonicalMsg extracted from channelMsg (%s)", channelMsg)
-            return
-        # The bot to be created may depend on the user.
-        bot = self.getBot()
-        bot.setChannelClient(self.channelClient)
-        bot.process(canonicalMsg)
 
     def getBot(self):
         return self.bot
-
-    @classmethod
-    def getChannelClient(cls):
-        channelClient = channel_client.ChannelClient()
-        return channelClient
 
     @classmethod
     def requestHandler(cls, event, context):

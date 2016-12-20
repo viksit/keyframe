@@ -2,6 +2,8 @@ from __future__ import print_function
 import sys, os
 from os.path import expanduser, join
 from flask import Flask, request, Response
+from flask import Flask, current_app
+
 import json
 import logging
 
@@ -17,6 +19,7 @@ from keyframe import messages
 from keyframe import config
 from keyframe import store_api
 from keyframe import generic_bot
+from keyframe import generic_bot_api
 
 logging.basicConfig()
 log = logging.getLogger()
@@ -44,10 +47,6 @@ kvStore = store_api.get_kv_store(
     config.Config())
 
 
-# TODO: This should get a json file for all the config in the future.
-#bot = generic_bot.GenericBot(kvStore=kvStore)
-
-
 # Deployment for command line
 class GenericCmdlineHandler(BotCmdLineHandler):
     def init(self):
@@ -71,17 +70,97 @@ class GenericCmdlineHandler(BotCmdLineHandler):
         self.bot.setChannelClient(channelClient)
 
 
+# Deployment for lambda
+
+app = Flask(__name__)
+
+class GenericBotHTTPAPI(generic_bot_api.GenericBotAPI):
+
+    """
+    When a request comes in, we'll have to take the user_id
+    and agent_id to make a query into the database.
+    This retrieves a json, which is what we use to run the bot for the given
+    request.
+
+    """
+    def getBotJsonSpecFromFile(self):
+        res = None
+        # See if app.config has it
+        with app.app_context():
+            # within this block, current_app points to app.
+            if "config_json" in current_app.config:
+                res = current_app.config["config_json"]
+        return res
+
+    def getBot(self):
+        configJson = None
+        runMode = None
+
+        with app.app_context():
+            if "run_mode" in current_app.config:
+                runMode = current_app.config["run_mode"]
+                configJson = self.getBotJsonSpecFromFile()
+
+        if not runMode:
+            # Fetch config from a remote server
+            configJson = self.getBotJsonSpecFromDB()
+
+        intentModelId = configJson.get("config_json").get("intent_model_id")
+        api = None
+        log.debug("intent_model_id: %s", intentModelId)
+        if intentModelId:
+            api = client.connect(apicfg)
+            api.set_intent_model(intentModelId)
+        self.bot = generic_bot.GenericBot(
+            kvStore=kvStore, configJson=configJson.get("config_json"), api=api)
+        return self.bot
+
+@app.route("/run_agent", methods=["GET"])
+def localapi():
+    user_id = request.args.get("user_id", None)
+    agent_id = request.args.get("agent_id", None)
+    event = {
+        "agent_id": agent_id,
+        "user_id": user_id,
+        "channel": messages.CHANNEL_HTTP_REQUEST_RESPONSE,
+        "request-type": request.method,
+        "body": request.json
+    }
+    r = GenericBotHTTPAPI.requestHandler(
+        event=event,
+        context={})
+    return Response(str(r)), 200
+
+@app.route('/ping', methods=['GET', 'POST'])
+def ping():
+    print("Received ping")
+    resp = json.dumps({
+        "status": "OK",
+        "request": request.data
+    })
+    return Response(resp), 200
+
+
 if __name__ == "__main__":
     # Run the command line version
-    assert len(sys.argv) > 1, "usage: gbot.py /full/path/to/json_spec.json"
+    assert len(sys.argv) > 1, "usage: gbot.py [cmd/http] /full/path/to/json_spec.json"
+
     d = {}
-    jsonFile = sys.argv[1]
+    cmd = sys.argv[1]
+    jsonFile = sys.argv[2]
+
     if os.path.isfile(jsonFile):
         configJson = json.loads(open(jsonFile).read())
         d['config_json'] = configJson
     else:
         print("%s is not a valid json bot configuration file",
               jsonFile, file=sys.stderr)
-    c = GenericCmdlineHandler(config_json=d)
-    c.begin()
 
+    if cmd == "cmd":
+        c = GenericCmdlineHandler(config_json=d)
+        c.begin()
+
+    elif cmd == "http":
+        app.config["run_mode"] = "local"
+        app.config["config_json"] = d
+        app.run(debug=True)

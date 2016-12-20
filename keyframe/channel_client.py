@@ -153,7 +153,6 @@ class ChannelClientKeepResponses(ChannelClient):
 
     def popResponses(self):
         ret = self.getResponses()
-        print("................> ", ret)
         self.clearResponses()
         return ret
 
@@ -166,7 +165,7 @@ channelClientMap = {
     messages.CHANNEL_HTTP_REQUEST_RESPONSE:
     ChannelClientKeepResponses,
     messages.CHANNEL_FB:ChannelClientFacebook
-    }
+}
 
 def getChannelClient(channel, requestType, config=None):
     logging.info("getChannelClient(%s)", locals())
