@@ -77,7 +77,6 @@ class GenericActionObject(actions.ActionObject):
                 runAPICall = True
 
         actionObject.slotObjects = slotObjects
-        
         if runAPICall:
             apiResult = api.get(canonicalMsg.text)
             actionObject.apiResult = apiResult
@@ -88,5 +87,3 @@ class GenericActionObject(actions.ActionObject):
         actionObject.originalIntentStr = intentStr
         log.debug("createActionObject: %s", actionObject)
         return actionObject
-
-        

@@ -6,6 +6,7 @@ class GenericSlot(slot_fill.Slot):
         super(GenericSlot, self).__init__()
         self.promptMsg = promptMsg
 
+    # TODO(viksit): This should be defined via the JSON spec file.
     entity = keyframe.dsl.FreeTextEntity(label="genericentity")
     required = False
     parseOriginal = False

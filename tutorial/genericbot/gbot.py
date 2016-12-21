@@ -55,7 +55,7 @@ kvStore = store_api.get_kv_store(
 
 
 """
-DBStore
+BotMetaStore
 {
   "botmeta.<acctid>.<agentid>" : {
      "jsonSpec": {},
