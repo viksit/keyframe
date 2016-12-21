@@ -41,39 +41,44 @@ apicfg = {
 # TODO:
 # Initialize via a configuration file
 kvStore = store_api.get_kv_store(
-    # store_api.TYPE_LOCALFILE,
-    #store_api.TYPE_DYNAMODB,
-    store_api.TYPE_INMEMORY,
+    store_api.TYPE_LOCALFILE,
+    # store_api.TYPE_DYNAMODB,
+    # store_api.TYPE_INMEMORY,
     config.Config())
 
-class DB(object):
 
-    @classmethod
-    def get(cls, accountId, agentid):
 
-        return {
-            "config_json": {
-            "intent_model_id": "m-msvm-cd46649818196b1b370e452a3",
-            "intents":
-            {"intent_23e05cd52ade452283835b0f59f70586":
-             {"text": "Sure! We can do that.",
-              "api_id": "",
-              "intent_type":"api",
-              "slots":[{"prompt":"What is your email?", "name":"email"}],
-              "parse_original": False,
-              "parse_response": False
-             },
-             "intent_5c1b3bce6d954a829240b601ea6e006c":
-             {"text": "After we receive and process your gift, we will send you a tax receipt within a week.", "api_id": "", "intent_type":"api",
-              "slots":[{"prompt":"What is the applicable tax year?", "name":"tax_year"},
-                       {"prompt":"Which state is the tax receipt for?", "name":"tax_state"}]},
-             "intent_ec8eac3d216344fab1b570effba528d0":
-             {"text": "Once we receive your donation, it takes up to a week to process. By two weeks, you will receive a tax receipt and confirmation letter via mail.",
-              "api_id": "", "intent_type":"api"},
-             "default": {"text": "Sorry I cannot understand your question. Let me forward you to a support agent.", "intent_type":"api"}
-        }
-        }}
+"""
+DBStore
+{
+  "botmeta.<acctid>.<agentid>" : {
+     "jsonSpec": {},
+   }
+}
+"""
 
+class BotMetaStore(object):
+
+    def __init__(self, kvStore):
+        self.kvStore = kvStore
+
+    def _botMetaKey(self, accountId, agentId):
+        k = "botmeta.%s.%s" % (accountId, agentId)
+        return k
+
+    def getJsonSpec(self, accountId, agentId):
+        """
+        Should return a python dict
+        """
+        k = self._botMetaKey(accountId, agentId)
+        return json.loads(self.kvStore.get_json(k))
+
+    def putJsonSpec(self, accountId, agentId, jsonSpec):
+        """
+        Input is a python dict, and stores it as json
+        """
+        k = self._botMetaKey(accountId, agentId)
+        self.kvStore.put_json(k, json.dumps(jsonSpec))
 
 # Deployment for command line
 class GenericCmdlineHandler(BotCmdLineHandler):
@@ -88,10 +93,11 @@ class GenericCmdlineHandler(BotCmdLineHandler):
             config=cf)
 
         configJson = self.kwargs.get("config_json")
+        bms = BotMetaStore(kvStore=kvStore)
         if not len(configJson.keys()):
             agentId = self.kwargs.get("agentId")
             accountId = self.kwargs.get("accountId")
-            configJson = DB.get(accountId, agentId)
+            configJson = bms.getJsonSpec(accountId, agentId)
 
         intentModelId = configJson.get("config_json").get("intent_model_id")
         # TODO: inject json and have the GenericBot decipher it!!
@@ -125,6 +131,7 @@ class GenericBotHTTPAPI(generic_bot_api.GenericBotAPI):
         """
         Given a key to db, fetch json from there
         """
+        bms = BotMetaStore(kvStore)
         with app.app_context():
             if current_app.config["run_mode"] == "file":
                 log.info("(++) Running in file mode")
@@ -134,11 +141,10 @@ class GenericBotHTTPAPI(generic_bot_api.GenericBotAPI):
                 accountId = kwargs.get("accountId")
                 GenericBotHTTPAPI.agentId = agentId
                 GenericBotHTTPAPI.accountId = accountId
-                GenericBotHTTPAPI.configJson = DB.get(accountId, agentId)
+                GenericBotHTTPAPI.configJson = bms.getJsonSpec(accountId, agentId)
 
     def getBot(self):
         configJson = GenericBotHTTPAPI.configJson
-        print(":::::::::::::::;;;; cj: ", configJson)
         intentModelId = configJson.get("config_json").get("intent_model_id")
         api = None
         log.debug("intent_model_id: %s", intentModelId)
@@ -148,8 +154,6 @@ class GenericBotHTTPAPI(generic_bot_api.GenericBotAPI):
 
         self.bot = generic_bot.GenericBot(
             kvStore=kvStore, configJson=configJson.get("config_json"), api=api)
-        print(":::::::::::::::", self.bot)
-
         return self.bot
 
 @app.route("/run_agent", methods=["GET"])
