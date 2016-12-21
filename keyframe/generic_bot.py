@@ -34,8 +34,26 @@ class GenericBot(keyframe.base.BaseBot):
     def __init__(self, *args, **kwargs):
         super(GenericBot, self).__init__(*args, **kwargs)
         self.specJson = kwargs.get("configJson")
+        self.agentId = kwargs.get("agentId")
+        self.accountId = kwargs.get("accountId")
+
         log.debug("self.specJson: %s", self.specJson)
         self.configFromJson()
+
+    def _botStateKey(self, userId, channel):
+        """
+        A generic bot has an account Id and an agentId associated with it.
+        """
+
+        k = "botstate.{classname}.{botname}.{accountId}.{agentId}.{userId}.{channel}".format(**{
+            "classname": self.__class__.__name__,
+            "botname": self.name,
+            "accountId": self.accountId,
+            "agentId": self.agentId,
+            "userId": userId,
+            "channel": channel
+        })
+        return k
 
     def configFromJson(self):
         log.debug("GenericBot.configFromJson()")

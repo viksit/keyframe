@@ -41,8 +41,8 @@ apicfg = {
 # TODO:
 # Initialize via a configuration file
 kvStore = store_api.get_kv_store(
-    store_api.TYPE_LOCALFILE,
-    # store_api.TYPE_DYNAMODB,
+    # store_api.TYPE_LOCALFILE,
+    store_api.TYPE_DYNAMODB,
     # store_api.TYPE_INMEMORY,
     config.Config())
 
@@ -123,7 +123,6 @@ class GenericBotHTTPAPI(generic_bot_api.GenericBotAPI):
     and agent_id to make a query into the database.
     This retrieves a json, which is what we use to run the bot for the given
     request.
-
     """
 
     @classmethod
@@ -133,10 +132,14 @@ class GenericBotHTTPAPI(generic_bot_api.GenericBotAPI):
         """
         bms = BotMetaStore(kvStore)
         with app.app_context():
-            if current_app.config["run_mode"] == "file":
+
+            if "run_mode" in current_app.config and \
+               current_app.config["run_mode"] == "file":
                 log.info("(++) Running in file mode")
                 GenericBotHTTPAPI.configJson = current_app.config["config_json"]
-            elif current_app.config["run_mode"] == "db":
+
+            # We're in Flask deployment mode (run_mode is "DB")
+            else:
                 agentId = kwargs.get("agentId")
                 accountId = kwargs.get("accountId")
                 GenericBotHTTPAPI.agentId = agentId
@@ -144,6 +147,8 @@ class GenericBotHTTPAPI(generic_bot_api.GenericBotAPI):
                 GenericBotHTTPAPI.configJson = bms.getJsonSpec(accountId, agentId)
 
     def getBot(self):
+        accountId = GenericBotHTTPAPI.accountId
+        agentId = GenericBotHTTPAPI.agentId
         configJson = GenericBotHTTPAPI.configJson
         intentModelId = configJson.get("config_json").get("intent_model_id")
         api = None
@@ -153,7 +158,11 @@ class GenericBotHTTPAPI(generic_bot_api.GenericBotAPI):
             api.set_intent_model(intentModelId)
 
         self.bot = generic_bot.GenericBot(
-            kvStore=kvStore, configJson=configJson.get("config_json"), api=api)
+            kvStore=kvStore,
+            configJson=configJson.get("config_json"),
+            api=api,
+            accountId=accountId,
+            agentId=agentId)
         return self.bot
 
 @app.route("/run_agent", methods=["GET"])
