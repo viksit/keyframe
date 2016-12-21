@@ -21,9 +21,15 @@ from keyframe import store_api
 from keyframe import generic_bot
 from keyframe import generic_bot_api
 
-logging.basicConfig()
-log = logging.getLogger()
-log.setLevel(10)
+log = logging.getLogger(__name__)
+ch = logging.StreamHandler(sys.stdout)
+ch.setLevel(logging.DEBUG)
+logformat = "[%(levelname)1.1s %(asctime)s %(name)s] %(message)s"
+formatter = logging.Formatter(logformat)
+ch.setFormatter(formatter)
+log.addHandler(ch)
+log.setLevel(logging.DEBUG)
+log.propagate = False
 
 # apicfg = {
 #     "account_id": "1so4xiiNq29ElrbiONSsrS",
@@ -114,7 +120,7 @@ class GenericCmdlineHandler(BotCmdLineHandler):
 # Deployment for lambda
 
 app = Flask(__name__)
-
+app.config['DEBUG'] = True
 
 class GenericBotHTTPAPI(generic_bot_api.GenericBotAPI):
 
@@ -140,16 +146,20 @@ class GenericBotHTTPAPI(generic_bot_api.GenericBotAPI):
 
             # We're in Flask deployment mode (run_mode is "DB")
             else:
+                log.info("Running in flask deployment mode")
                 agentId = kwargs.get("agentId")
                 accountId = kwargs.get("accountId")
                 GenericBotHTTPAPI.agentId = agentId
                 GenericBotHTTPAPI.accountId = accountId
                 GenericBotHTTPAPI.configJson = bms.getJsonSpec(accountId, agentId)
+                log.info("(::) json config spec: %s", GenericBotHTTPAPI.configJson)
 
     def getBot(self):
         accountId = GenericBotHTTPAPI.accountId
         agentId = GenericBotHTTPAPI.agentId
         configJson = GenericBotHTTPAPI.configJson
+        log.info("(::) agentId: %s, accountId: %s", agentId, accountId)
+
         intentModelId = configJson.get("config_json").get("intent_model_id")
         api = None
         log.debug("intent_model_id: %s", intentModelId)
@@ -165,7 +175,7 @@ class GenericBotHTTPAPI(generic_bot_api.GenericBotAPI):
             agentId=agentId)
         return self.bot
 
-@app.route("/run_agent", methods=["GET"])
+@app.route("/run_agent", methods=["GET", "POST"])
 def run_agent():
     accountId = request.args.get("account_id", None)
     agentId = request.args.get("agent_id", None)
