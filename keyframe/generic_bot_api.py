@@ -34,9 +34,6 @@ class GenericBotAPI(bot_api.BotAPI):
     def __init__(self, *args, **kwargs):
         super(GenericBotAPI, self).__init__(*args, **kwargs)
 
-    def getBotJsonSpecFromDB(self):
-        pass
-
     def getBot(self):
         return self.bot
 

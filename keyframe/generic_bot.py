@@ -75,8 +75,6 @@ class GenericBot(keyframe.base.BaseBot):
                 actionObjectSpecJson,
                 intentStr, canonicalMsg, botState,
                 userProfile, requestState, self.api, self.channelClient)
-
         return actionObjectCls.createActionObject(
             intentStr, canonicalMsg, botState,
             userProfile, requestState, self.api, self.channelClient)
-
