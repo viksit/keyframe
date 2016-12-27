@@ -128,9 +128,9 @@ class ChannelClientFacebook(ChannelClient):
         self.responses.clear()
 
 
-class ChannelClientKeepResponses(ChannelClient):
+class ChannelClientRESTAPI(ChannelClient):
     def __init__(self, config=None):
-        log.info("ChannelClientKeepResponses.__init__(%s)", locals())
+        log.info("ChannelClientRESTAPI.__init__(%s)", locals())
         self.config = config
         self.responses = collections.deque()
 
@@ -147,8 +147,9 @@ class ChannelClientKeepResponses(ChannelClient):
         self.responses.append(canonicalResponse)
 
     def getResponses(self):
-        ret = [r for r in self.responses]
-        log.info("getResponses called, returning: %s", ret)
+        ret = [r.toJSON() for r in self.responses]
+        print(">> getResponses called, returning: %s", ret)
+        print(">> response type: %s", type(ret))
         return ret
 
     def popResponses(self):
@@ -163,7 +164,7 @@ class ChannelClientKeepResponses(ChannelClient):
 channelClientMap = {
     messages.CHANNEL_CMDLINE:ChannelClientCmdline,
     messages.CHANNEL_HTTP_REQUEST_RESPONSE:
-    ChannelClientKeepResponses,
+    ChannelClientRESTAPI,
     messages.CHANNEL_FB:ChannelClientFacebook
 }
 
