@@ -148,8 +148,7 @@ class ChannelClientRESTAPI(ChannelClient):
 
     def getResponses(self):
         ret = [r.toJSON() for r in self.responses]
-        print(">> getResponses called, returning: %s", ret)
-        print(">> response type: %s", type(ret))
+        log.info("getResponses called, returning: %s", ret)
         return ret
 
     def popResponses(self):
