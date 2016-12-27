@@ -1,5 +1,4 @@
 import os, sys
-#import psycopg2
 import json
 import logging
 
@@ -17,27 +16,27 @@ TYPE_DYNAMODB = "type-dynamodb"
 TYPE_LOCALFILE = "type-localfile"
 TYPE_INMEMORY = "type-inmemory"
 
-def get_kv_store(type, config):
-    if not type:
-        type = TYPE_LOCALFILE
-    if type == TYPE_S3:
+def get_kv_store(kvstype, config):
+    if not kvstype:
+        kvstype = TYPE_LOCALFILE
+    if kvstype == TYPE_S3:
         conn = S3Connection(
             aws_access_key_id=config.AWS_ACCESS_KEY_ID,
             aws_secret_access_key=config.AWS_SECRET_ACCESS_KEY)
         b = conn.get_bucket(config.KV_STORE_S3_BUCKET)
         return S3KVStore(b)
-    elif type == TYPE_DYNAMODB:
+    elif kvstype == TYPE_DYNAMODB:
         dbconn = boto.dynamodb.connect_to_region(
             config.DYNAMODB_AWS_REGION,
             aws_access_key_id=config.AWS_ACCESS_KEY_ID,
             aws_secret_access_key=config.AWS_SECRET_ACCESS_KEY)
         return DynamoKVStore(dbconn)
-    elif type == TYPE_LOCALFILE:
+    elif kvstype == TYPE_LOCALFILE:
         return LocalFileKVStore()
-    elif type == TYPE_INMEMORY:
+    elif kvstype == TYPE_INMEMORY:
         return InMemoryKVStore()
     else:
-        raise Exception("unknown kvstore: %s", type)
+        raise Exception("unknown kvstore: %s", kvstype)
 
 class KVStoreError(Exception):
     pass

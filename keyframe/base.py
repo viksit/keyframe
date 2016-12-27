@@ -214,7 +214,7 @@ class BaseBot(object):
 
         defaultIntent = None
         for intentObj in self.intentEvalSet:
-            log.debug("intentObj: %s", intentObj)
+            # log.debug("intentObj: %s", intentObj)
             if isinstance(intentObj, dsl.DefaultIntent):
                 defaultIntent = intentObj
                 continue
