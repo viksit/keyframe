@@ -2,7 +2,7 @@ from __future__ import print_function
 import sys, os
 from os.path import expanduser, join
 from flask import Flask, request, Response
-from flask import Flask, current_app
+from flask import Flask, current_app, jsonify
 
 import json
 import logging
@@ -199,7 +199,7 @@ def run_agent():
     r = GenericBotHTTPAPI.requestHandler(
         event=event,
         context={})
-    return Response(str(r)), 200
+    return jsonify(r)
 
 @app.route("/ping", methods=['GET', 'POST'])
 def ping():

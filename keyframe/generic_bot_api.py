@@ -65,4 +65,4 @@ class GenericBotAPI(bot_api.BotAPI):
         botAPI.handleMsg(channelMsg)
         resp = channelClient.popResponses()
         log.info("BotAPI.requestHandler returning: %s", resp)
-        return str(resp)
+        return resp
