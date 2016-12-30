@@ -1,6 +1,6 @@
 from __future__ import print_function
 import logging
-
+import urlparse
 import messages
 import slot_fill
 import copy
@@ -8,7 +8,9 @@ import misc
 import uuid
 from collections import defaultdict
 import sys
-
+from jinja2 import Template
+import requests
+import json
 import constants
 import actions
 import generic_slot
@@ -32,10 +34,47 @@ class GenericActionObject(actions.ActionObject):
         super(GenericActionObject, self).__init__(**kwargs)
         self.msg = None
 
+    def fetchWebhook(self, webhook, filledSlots):
+        # To render a templatized url with custom parameters
+        url = webhook.get("api_url")
+        custom = webhook.get("api_params", "{}")
+        print(":::::::::: custom: ", custom)
+        custom = json.loads(custom) # convert to dict
+        entities = filledSlots
+
+        # Response
+        urlTemplate = Template(url)
+        templatedURL = urlTemplate.render({"custom": custom, "entities": entities})
+        log.debug("URL to fetch: %s" % (templatedURL,))
+        urlPieces = urlparse.urlparse(templatedURL)
+        log.debug("urlPieces: %s" % (urlPieces,))
+        response = {}
+        if len(urlPieces.scheme) > 0 and len(urlPieces.netloc) > 0:
+            response = requests.get(templatedURL)
+            log.info("response (%s): %s" % (type(response), response.json()))
+        else:
+            log.info("something was wrong with the api url")
+
+        # We've called the webhook with params, now take response
+        # And make it available to the text response
+
+        r = webhook.get("response_text")
+        textResponseTemplate = Template(r)
+        renderedResponse = textResponseTemplate.render({
+            "entities": filledSlots,
+            "response": response.json()
+        })
+        return renderedResponse
+
     def process(self):
-        # TODO: put names from json config.
-        msg = self.msg.format(**self.filledSlots)
-        return self.respond(msg)
+        resp = ""
+        if len(self.webhook.items()):
+            resp = self.fetchWebhook(self.webhook, self.filledSlots)
+        else:
+            responseTemplate = Template(self.msg)
+            resp = responseTemplate.render(self.filledSlots)
+        # Final response
+        return self.respond(resp)
 
     def getSlots(self):
         raise Exception("This should not be used")
@@ -85,5 +124,6 @@ class GenericActionObject(actions.ActionObject):
         actionObject.channelClient = channelClient
         actionObject.requestState = requestState
         actionObject.originalIntentStr = intentStr
+        actionObject.webhook = specJson.get("webhook")
         log.debug("createActionObject: %s", actionObject)
         return actionObject

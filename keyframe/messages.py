@@ -71,8 +71,9 @@ class CanonicalResponse(object):
         self.responseElements = responseElements
 
     def __repr__(self):
-        return "CanonicalResponse(channel=%s, userId=%s, responseElements=%s)" % \
+        res = "CanonicalResponse(channel=%s, userId=%s, responseElements=%s)" % \
             (self.channel, self.userId, self.responseElements)
+        return res.encode("utf-8")
 
     def toJSON(self):
         return {
@@ -99,8 +100,9 @@ class ResponseElement(object):
         self.responseType = responseType
 
     def __repr__(self):
-        return "ResponseElement(type=%s, responseType=%s, text=%s, carousel=%s)" % \
+        res = "ResponseElement(type=%s, responseType=%s, text=%s, carousel=%s)" % \
             (self.type, self.responseType, self.text, self.carousel)
+        return res.encode("utf-8")
 
     def toJSON(self):
         return {
