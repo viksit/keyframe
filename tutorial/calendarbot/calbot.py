@@ -63,7 +63,6 @@ class GreetingActionObject(ActionObject):
 @bot.intent(IntentModel.create)
 class CreateIntentActionObject(ActionObject):
 
-    @bot.slot("create", ["person", "optional", "PERSON"])
     class PersonSlot(Slot):
 
         # TODO(viksit): right now, all slots need to have these 4 things
@@ -88,7 +87,6 @@ class CreateIntentActionObject(ActionObject):
         def prompt(self):
             return "who do you want to set up the meeting with?"
 
-    @bot.slot("create", ["time", "optional", "DATE"])
     class DateSlot(Slot):
         entity = EntityModel.mydate
         parseOriginal = True
@@ -99,7 +97,6 @@ class CreateIntentActionObject(ActionObject):
             return "when do you want the meeting to be set up?"
 
 
-    @bot.slot("create", ["city", "optional", "GPE"])
     class CitySlot(Slot):
         entity = EntityModel.mycity
         parseOriginal = True
@@ -110,7 +107,6 @@ class CreateIntentActionObject(ActionObject):
             return "which city do you want to meet in?"
 
 
-    @bot.slot("create", ["bank", "optional", "ORG"])
     class BankSlot(Slot):
         entity = EntityModel.mybank
         parseOriginal = True
