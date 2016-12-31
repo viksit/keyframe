@@ -8,6 +8,7 @@ import codecs
 
 import messages
 import fb
+from slackclient import SlackClient
 
 log = logging.getLogger(__name__)
 
@@ -50,6 +51,7 @@ class ChannelClientCmdline(ChannelClient):
     def sendResponse(self, canonicalResponse):
         for e in canonicalResponse.responseElements:
             print("\n\t>> ", e, "\n")
+
 
 
 class ChannelClientFacebook(ChannelClient):
@@ -128,6 +130,55 @@ class ChannelClientFacebook(ChannelClient):
         self.responses.clear()
 
 
+# channel_slack will contain helper functions for this to work
+# for now we put this here.
+
+class ChannelClientSlack(ChannelClient):
+    def __init__(self, config=None):
+        log.info("Init ChannelClientSlack.__init__(%s)", locals())
+        self.config = config
+        self.responses = collections.deque()
+        self.userId = config.CHANNEL_META.get("user_id")
+        self.teamId = config.CHANNEL_META.get("team_id")
+        self.botToken = config.CHANNEL_META.get("bot_token")
+
+    def extract(self, channelMsg):
+        log.info("extract(%s)", channelMsg)
+        return messages.CanonicalMsg(
+            channel=channelMsg.channel,
+            httpType=channelMsg.httpType,
+            userId=self.userId,
+            text=channelMsg.body.get("event", {}).get("text"))
+
+    def sendResponse(self, canonicalResponse):
+        slackClient = SlackClient(self.botToken)
+        new_dm = slackClient.api_call(
+            "im.open",
+            user=self.userId)
+        dm_id = new_dm["channel"]["id"]
+        for e in canonicalResponse.responseElements:
+            slackClient.api_call("chat.postMessage",
+                                 channel=dm_id,
+                                 username="concierge",
+                                 icon_emoji=":robot_face:",
+                                 text=e.text)
+            log.info("sendResponse(%s)", canonicalResponse)
+            self.responses.append(canonicalResponse)
+
+    def getResponses(self):
+        ret = [r.toJSON() for r in self.responses]
+        log.info("getResponses called, returning: %s", ret)
+        return ret
+
+    def popResponses(self):
+        ret = self.getResponses()
+        self.clearResponses()
+        return ret
+
+    def clearResponses(self):
+        self.responses.clear()
+
+
 class ChannelClientRESTAPI(ChannelClient):
     def __init__(self, config=None):
         log.info("ChannelClientRESTAPI.__init__(%s)", locals())
@@ -161,10 +212,10 @@ class ChannelClientRESTAPI(ChannelClient):
 
 
 channelClientMap = {
-    messages.CHANNEL_CMDLINE:ChannelClientCmdline,
-    messages.CHANNEL_HTTP_REQUEST_RESPONSE:
-    ChannelClientRESTAPI,
-    messages.CHANNEL_FB:ChannelClientFacebook
+    messages.CHANNEL_CMDLINE: ChannelClientCmdline,
+    messages.CHANNEL_HTTP_REQUEST_RESPONSE: ChannelClientRESTAPI,
+    messages.CHANNEL_FB: ChannelClientFacebook,
+    messages.CHANNEL_SLACK: ChannelClientSlack
 }
 
 def getChannelClient(channel, requestType, config=None):

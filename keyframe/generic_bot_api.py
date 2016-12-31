@@ -54,10 +54,13 @@ class GenericBotAPI(bot_api.BotAPI):
             httpType=event.get("request-type"),
             body=event.get("body"))
 
+        cfg = config.Config()
+        cfg.CHANNEL_META = event.get("channel-meta")
+
         channelClient = channel_client.getChannelClient(
             channel=event.get("channel"),
             requestType=event.get("request-type"),
-            config=config.Config())
+            config=cfg)
 
         botAPI = cls(
             channelClient=channelClient

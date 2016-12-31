@@ -58,7 +58,7 @@ class GenericActionObject(actions.ActionObject):
         # We've called the webhook with params, now take response
         # And make it available to the text response
 
-        r = webhook.get("response_text")
+        r = webhook.get("response_text", {})
         textResponseTemplate = Template(r)
         renderedResponse = textResponseTemplate.render({
             "entities": filledSlots,
@@ -68,7 +68,7 @@ class GenericActionObject(actions.ActionObject):
 
     def process(self):
         resp = ""
-        if len(self.webhook.items()):
+        if self.webhook and len(self.webhook.items()):
             resp = self.fetchWebhook(self.webhook, self.filledSlots)
         else:
             responseTemplate = Template(self.msg)

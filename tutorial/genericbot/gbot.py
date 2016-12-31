@@ -2,12 +2,13 @@ from __future__ import print_function
 import sys, os
 from os.path import expanduser, join
 from flask import Flask, request, Response
-from flask import Flask, current_app, jsonify
-
+from flask import Flask, current_app, jsonify, make_response
+import yaml
 import json
 import logging
 
 from pymyra.api import client
+
 
 from keyframe.cmdline import BotCmdLineHandler
 from keyframe.base import BaseBot
@@ -200,6 +201,127 @@ def run_agent():
         event=event,
         context={})
     return jsonify(r)
+
+
+
+# Slack
+
+class Message(object):
+    """
+    Instanciates a Message object to create and manage
+    Slack onboarding messages.
+    """
+    def __init__(self):
+        super(Message, self).__init__()
+        self.channel = ""
+        self.timestamp = ""
+        self.text = ("Welcome to Slack! We're so glad you're here. "
+                     "\nGet started by completing the steps below.")
+        self.emoji_attachment = {}
+        self.pin_attachment = {}
+        self.share_attachment = {}
+        self.attachments = [self.emoji_attachment,
+                            self.pin_attachment,
+                            self.share_attachment]
+
+    def create_attachments(self):
+        """
+        Open JSON message attachments file and create attachments for
+        onboarding message. Saves a dictionary of formatted attachments on
+        the bot object.
+        """
+        with open('welcome.json') as json_file:
+            json_dict = yaml.safe_load(json_file)
+            json_attachments = json_dict["attachments"]
+            [self.attachments[i].update(json_attachments[i]) for i
+             in range(len(json_attachments))]
+
+
+# Mapping of team -> {teamid, bottoken}
+# We'll map accountId and secret/agent to the team id/bot token in dynamodb
+# 3oPxV9oFXxzHYxuvpy56a9 c504f1c49182b50abb14ee4cb2a75e83bfe81149 70aab44c87e84dd1843c8f15436616e1
+botmetalocal = {
+    "T06SXL7GV": {
+        "team_id": "T06SXL7GV",
+        "bot_token": "xoxb-121415322561-hkR3eLghiCpVlgMZ5DrxExNh",
+        "concierge_meta": {
+            "account_id": "3oPxV9oFXxzHYxuvpy56a9",
+            "account_secret": "c504f1c49182b50abb14ee4cb2a75e83bfe81149",
+            "agent_id": "70aab44c87e84dd1843c8f15436616e1"
+        }
+    }
+}
+
+# TODO(viksit): rename this to something better.
+@app.route("/listening", methods=["GET", "POST"])
+def run_agent_slack():
+    print("gello")
+    # TODO(viksit): see notes for refactor
+    slackEvent = request.json
+    print(slackEvent)
+    if "event" not in slackEvent:
+        return make_response("[NO EVENT IN SLACK REQUEST]", 404, {"X-Slack-No-Retry": 1})
+
+    event = slackEvent["event"]
+    # ignore bot message notification
+    if "subtype" in event:
+        if event["subtype"] == "bot_message":
+            message = "Ignoring the bot message notification"
+            # Return a helpful error message
+            return make_response(message, 200, {"X-Slack-No-Retry": 1})
+
+    eventType = slackEvent["event"]["type"]
+    if eventType != "message":
+        return make_response("Ignore event that is not of type 'message'", 200, {"X-Slack-No-Retry": 1})
+
+    messageText = slackEvent.get("event", {}).get("text", None)
+    if not messageText:
+        return make_response("[NO MESSAGE IN SLACK REQUEST]",
+                             404,
+                             {"X-Slack-No-Retry": 1})
+
+    # Process this message from slack
+    userId = slackEvent["event"].get("user")
+    teamId = slackEvent["team_id"]
+    botToken = None
+
+    if teamId in botmetalocal:
+        botToken = botmetalocal.get(teamId).get("bot_token")
+
+    assert botToken is not None, "This team is not registered with Concierge"
+
+    # Myra concierge information
+    conciergeMeta = botmetalocal.get(teamId).get("concierge_meta")
+    accountId = conciergeMeta.get("account_id")
+    accountSecret = conciergeMeta.get("account_secret")
+    agentId = conciergeMeta.get("agent_id")
+
+    GenericBotHTTPAPI.fetchBotJsonSpec(
+        accountId=accountId,
+        agentId=agentId,
+        accountSecret=accountSecret
+    )
+
+    # The bot should be created in the getBot() function
+    # Thus we need the db call to happen before this
+
+    event = {
+        "channel": messages.CHANNEL_SLACK,
+        "request-type": request.method,
+        "body": request.json,
+        "channel-meta": {
+            "user_id": userId,
+            "team_id": teamId,
+            "bot_token": botToken
+        }
+    }
+    r = GenericBotHTTPAPI.requestHandler(
+        event=event,
+        context={})
+    print(r)
+    return make_response("NOOP", 200, {"X-Slack-No-Retry": 1})
+
+# End slack code
 
 @app.route("/ping", methods=['GET', 'POST'])
 def ping():
