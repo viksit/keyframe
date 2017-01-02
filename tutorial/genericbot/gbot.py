@@ -245,11 +245,20 @@ botmetalocal = {
         "team_id": "T06SXL7GV",
         "bot_token": "xoxb-121415322561-hkR3eLghiCpVlgMZ5DrxExNh",
         "concierge_meta": {
-            "account_id": "3oPxV9oFXxzHYxuvpy56a9",
-            "account_secret": "c504f1c49182b50abb14ee4cb2a75e83bfe81149",
-            "agent_id": "70aab44c87e84dd1843c8f15436616e1"
+            "account_id": "BIRsNx4aBt9nNG6TmXudl",
+            "account_secret": "f947dee60657b7df99cceaecc80dd4d644a5e3bd",
+            "agent_id": "a7e4b5d749c74a8bb15e35a12a1bc5c6"
         }
-    }
+    },
+    # "T06SXL7GV": {
+    #     "team_id": "T06SXL7GV",
+    #     "bot_token": "xoxb-121415322561-hkR3eLghiCpVlgMZ5DrxExNh",
+    #     "concierge_meta": {
+    #         "account_id": "3oPxV9oFXxzHYxuvpy56a9",
+    #         "account_secret": "c504f1c49182b50abb14ee4cb2a75e83bfe81149",
+    #         "agent_id": "70aab44c87e84dd1843c8f15436616e1"
+    #     }
+    # }
 }
 
 # TODO(viksit): rename this to something better.
@@ -318,7 +327,6 @@ def run_agent_slack():
     r = GenericBotHTTPAPI.requestHandler(
         event=event,
         context={})
-    print(r)
     return make_response("NOOP", 200, {"X-Slack-No-Retry": 1})
 
 # End slack code

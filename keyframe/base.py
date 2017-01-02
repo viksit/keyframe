@@ -1,5 +1,6 @@
 from __future__ import print_function
 import logging
+import json
 
 import messages
 import slot_fill
@@ -106,7 +107,6 @@ class BaseBot(object):
     # Channel and I/O related functions
     def setChannelClient(self, cc):
         self.channelClient = cc
-
 
 
     def createAndSendTextResponse(self, canonicalMsg, text, responseType=None):
@@ -242,6 +242,44 @@ class BaseBot(object):
             userProfile, requestState, self.api, self.channelClient)
 
 
+    def _handleBotCmd(self, canonicalMsg, botState, userProfile, requestState):
+        msg = canonicalMsg.text.lower()
+        respText = "This command wasn't found"
+        if msg.startswith("botcmd help"):
+            helpMsg = "botcmd <clear/show> <profile/state>"
+            respText = helpMsg
+
+        if msg.find("clear profile") > -1:
+            userProfile.clear()
+            respText = "user profile has been cleared"
+
+        if msg.find("show state") > -1:
+            botState = self.getBotState(
+                userId=canonicalMsg.userId,
+                channel=canonicalMsg.channel)
+            respText = botState.toJSONObject()
+
+        if msg.find("clear state") > -1:
+            botState = self.getBotState(
+                userId=canonicalMsg.userId,
+                channel=canonicalMsg.channel)
+            print("botstate pre: ", botState)
+            botState.clear()
+            self.putBotState(
+                userId=canonicalMsg.userId,
+                channel=canonicalMsg.channel,
+                botState=self.botStateClass()
+            )
+            print("botstate post: ", botState)
+            respText = "bot state has been cleared"
+
+        self.createAndSendTextResponse(
+            canonicalMsg,
+            respText,
+            messages.ResponseElement.RESPONSE_TYPE_RESPONSE)
+        return constants.BOT_REQUEST_STATE_PROCESSED
+
+
     def handle(self, **kwargs):
 
         """
@@ -256,20 +294,23 @@ class BaseBot(object):
         Before we initialize the action object we check if there's a version already stored.
         If there isn't, then we do a new one, else we retrieve it from the old one.
 
+        If we see botcmd, then handle as a botcmd action rather than going through intent/keyword
+        action.
+
         """
         canonicalMsg = kwargs.get("canonicalMsg")
-
-        # TODO(viksit): Don't run API by default
-        # We do this right now since we need apiresult in our main
-        # slot fill function.
-        # This should be controlled by APIEntity() or something.
-
         botState = kwargs.get("botState")
         userProfile = kwargs.get("userProfile")
 
+        print("userProfile: ", userProfile)
         botState.setDebug(self.debug)
-
         requestState = constants.BOT_REQUEST_STATE_NEW
+
+        # Check for a bot command
+        msg = canonicalMsg.text.lower()
+        if msg.startswith("botcmd"):
+            return self._handleBotCmd(canonicalMsg, botState, userProfile, requestState)
+
         waitingActionJson = botState.getWaiting()
         log.debug("waitingActionJson: %s", waitingActionJson)
         if waitingActionJson:

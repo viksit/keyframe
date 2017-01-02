@@ -25,6 +25,11 @@ class BotState(object):
     def setDebug(self, debug):
         self.debug = debug
 
+    def clear(self):
+        self.waiting = None
+        self._lastResult = None
+        self.changed = False
+
     def getWaiting(self):
         """Get an action object waiting for input, remove it
         from waiting, and return it (like a pop except this is not a stack).

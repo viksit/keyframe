@@ -105,6 +105,8 @@ class ActionObject(object):
         actionObject.channelClient = channelClient
         actionObject.requestState = requestState
         actionObject.originalIntentStr = intentStr
+        actionObject.userProfile = userProfile
+        actionObject.botState = botState
         log.debug("createActionObject: %s", actionObject)
         return actionObject
 
