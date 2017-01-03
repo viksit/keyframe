@@ -42,6 +42,48 @@ kvStore = store_api.get_kv_store(
     # store_api.TYPE_INMEMORY,
     config.Config())
 
+"""
+Agent Deployment Store
+
+For Slack:
+    key:
+        channelname.teamId
+
+    dynamodbstore = {
+          slack.T06SXL7GV = {
+              "team_id": "T06SXL7GV",
+                "bot_token": "xoxb-121415322561-hkR3eLghiCpVlgMZ5DrxExNh",
+                "concierge_meta": {
+                    "account_id": "BIRsNx4aBt9nNG6TmXudl",
+                    "account_secret": "f947dee60657b7df99cceaecc80dd4d644a5e3bd",
+                    "agent_id": "a7e4b5d749c74a8bb15e35a12a1bc5c6"
+                }
+            }
+        }
+"""
+
+class AgentDeploymentStore(object):
+
+    def __init__(self, kvStore=None):
+        self.kvStore = kvStore
+
+    def _getKey(self, teamId, channel):
+        k = "agentdeploy.%s.%s" % (channel, teamId)
+        return k
+
+    def getJsonSpec(self, teamId, channel):
+        """
+        Should return a python dict
+        """
+        k = self._getKey(teamId, channel)
+        return json.loads(self.kvStore.get_json(k))
+
+    def putJsonSpec(self, teamId, channel, jsonSpec):
+        """
+        Input is a python dict, and stores it as json
+        """
+        k = self._getKey(teamId, channel)
+        self.kvStore.put_json(k, json.dumps(jsonSpec))
 
 
 """
@@ -240,34 +282,51 @@ class Message(object):
 # Mapping of team -> {teamid, bottoken}
 # We'll map accountId and secret/agent to the team id/bot token in dynamodb
 # 3oPxV9oFXxzHYxuvpy56a9 c504f1c49182b50abb14ee4cb2a75e83bfe81149 70aab44c87e84dd1843c8f15436616e1
-botmetalocal = {
-    "T06SXL7GV": {
-        "team_id": "T06SXL7GV",
-        "bot_token": "xoxb-121415322561-hkR3eLghiCpVlgMZ5DrxExNh",
-        "concierge_meta": {
-            "account_id": "BIRsNx4aBt9nNG6TmXudl",
-            "account_secret": "f947dee60657b7df99cceaecc80dd4d644a5e3bd",
-            "agent_id": "a7e4b5d749c74a8bb15e35a12a1bc5c6"
-        }
-    },
-    # "T06SXL7GV": {
-    #     "team_id": "T06SXL7GV",
-    #     "bot_token": "xoxb-121415322561-hkR3eLghiCpVlgMZ5DrxExNh",
-    #     "concierge_meta": {
-    #         "account_id": "3oPxV9oFXxzHYxuvpy56a9",
-    #         "account_secret": "c504f1c49182b50abb14ee4cb2a75e83bfe81149",
-    #         "agent_id": "70aab44c87e84dd1843c8f15436616e1"
-    #     }
-    # }
-}
+# botmetalocal = {
+#     "slack.T06SXL7GV": {
+#         "team_id": "T06SXL7GV",
+#         "bot_token": "xoxb-121415322561-hkR3eLghiCpVlgMZ5DrxExNh",
+#         "concierge_meta": {
+#             "account_id": "BIRsNx4aBt9nNG6TmXudl",
+#             "account_secret": "f947dee60657b7df99cceaecc80dd4d644a5e3bd",
+#             "agent_id": "a7e4b5d749c74a8bb15e35a12a1bc5c6"
+#         }
+#     },
+#     # "T06SXL7GV": {
+#     #     "team_id": "T06SXL7GV",
+#     #     "bot_token": "xoxb-121415322561-hkR3eLghiCpVlgMZ5DrxExNh",
+#     #     "concierge_meta": {
+#     #         "account_id": "3oPxV9oFXxzHYxuvpy56a9",
+#     #         "account_secret": "c504f1c49182b50abb14ee4cb2a75e83bfe81149",
+#     #         "agent_id": "70aab44c87e84dd1843c8f15436616e1"
+#     #     }
+#     # }
+# }
+ads = AgentDeploymentStore(kvStore=kvStore)
+
 
 # TODO(viksit): rename this to something better.
 @app.route("/listening", methods=["GET", "POST"])
 def run_agent_slack():
-    print("gello")
+
     # TODO(viksit): see notes for refactor
     slackEvent = request.json
     print(slackEvent)
+
+    if "challenge" in slackEvent:
+        return make_response(slackEvent["challenge"], 200, {
+            "content_type": "application/json"
+        })
+
+    # Specific to concierge
+    slackVerificationToken = "Avr8oGeFjTX2PJdJ1NKurE6V"
+    if slackVerificationToken != slackEvent.get("token"):
+        message = "Invalid Slack verification token: %s \npyBot has: \
+                   %s\n\n" % (slackEvent["token"], slackVerificationToken)
+        # By adding "X-Slack-No-Retry" : 1 to our response headers, we turn off
+        # Slack's automatic retries during development.
+        make_response(message, 403, {"X-Slack-No-Retry": 1})
+
     if "event" not in slackEvent:
         return make_response("[NO EVENT IN SLACK REQUEST]", 404, {"X-Slack-No-Retry": 1})
 
@@ -294,13 +353,14 @@ def run_agent_slack():
     teamId = slackEvent["team_id"]
     botToken = None
 
-    if teamId in botmetalocal:
-        botToken = botmetalocal.get(teamId).get("bot_token")
+    #botToken = botmetalocal.get("slack." + str(teamId)).get("bot_token")
+    agentDeploymentMeta = ads.getJsonSpec(teamId, "slack")
+    botToken = agentDeploymentMeta.get("bot_token")
 
     assert botToken is not None, "This team is not registered with Concierge"
 
     # Myra concierge information
-    conciergeMeta = botmetalocal.get(teamId).get("concierge_meta")
+    conciergeMeta = agentDeploymentMeta.get("concierge_meta")
     accountId = conciergeMeta.get("account_id")
     accountSecret = conciergeMeta.get("account_secret")
     agentId = conciergeMeta.get("agent_id")
