@@ -86,7 +86,8 @@ class GenericActionObject(actions.ActionObject):
             "FREETEXT": dsl.FreeTextEntity,
             "LOCATION": dsl.LocationEntity,
             "DATE": dsl.DateEntity,
-            "ORGANIZATION": dsl.OrgEntity
+            "ORGANIZATION": dsl.OrgEntity,
+            "PHONE": dsl.PhoneRegexEntity
         }
         if entityType in mapping:
             return mapping.get(entityType)
