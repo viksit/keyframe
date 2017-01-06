@@ -36,6 +36,8 @@ class Slot(object):
         self.state = Slot.SLOT_STATE_NEW
         ## self.required = False
 
+        self.apiResult = None
+
     def toJSONObject(self):
         return {
             "className": self.__class__.__name__,
@@ -84,10 +86,13 @@ class Slot(object):
         self.canonicalMsg = canonicalMsg
 
         # TODO(viksit): Make this cleaner
-        if self.parseOriginal is True:
-            assert self.apiResult is not None
-        if self.parseResponse is True:
-            assert self.apiResult is not None
+        # We may want to interpret the response via an entity matcher
+        # but this may be a regex entity or a non api entity as well.
+        # This is not required.
+        # if self.parseOriginal is True:
+        #     assert self.apiResult is not None
+        # if self.parseResponse is True:
+        #     assert self.apiResult is not None
 
         fillResult = None
         if self.state == Slot.SLOT_STATE_NEW:
@@ -112,7 +117,7 @@ class Slot(object):
             # If we want the incoming response to be put through an entity extractor
             if self.parseResponse is True:
                 log.debug("parse response is true")
-                fillResult = self._extractSlotFromSentence(canonicalMsg)
+                fillResult = self._extractSlotFromSentence(canonicalMsg.text)
                 if fillResult:
                     self.value = fillResult
                     self.filled = True
@@ -149,8 +154,7 @@ class Slot(object):
         The return value of this is what we give to the result
         """
         res = None
-        log.info("_extractSlotFromSentence: %s", self.name)
-        assert self.apiResult is not None, "Failure in Myra API call"
+        log.info("_extractSlotFromSentence: %s with entity: %s", self.name, self.entity)
         res = self.entity.entity_extract_fn(text=text, apiResult=self.apiResult)
         if res:
             log.info("(a) Slot was filled in this sentence")

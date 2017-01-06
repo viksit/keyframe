@@ -1,4 +1,5 @@
 from keyframe.dsl import BaseModel, KeywordIntent, APIIntent, RegexIntent, PersonEntity, FreeTextEntity
+from keyframe.dsl import PhoneRegexEntity
 
 class IntentModel(BaseModel):
 
@@ -17,9 +18,10 @@ class EntityModel(BaseModel):
 
     user = FreeTextEntity(label="user")
     person = FreeTextEntity(label="person")
-    mydate = FreeTextEntity(label="date")
-    mycity = FreeTextEntity(label="city")
-    mybank = FreeTextEntity(label="bank")
+    mydate = FreeTextEntity(label="mydate")
+    mycity = FreeTextEntity(label="mycity")
+    mybank = FreeTextEntity(label="mybank")
+    myphone = PhoneRegexEntity(label="myphone")
 
     class Meta:
         description = "My even more fun entity model"

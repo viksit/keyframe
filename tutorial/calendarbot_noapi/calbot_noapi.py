@@ -40,6 +40,15 @@ class DigitActionObject(ActionObject):
 @bot.intent(IntentModel.greeting)
 class GreetingActionObject(ActionObject):
 
+    class PhoneSlot(Slot):
+        entity = EntityModel.myphone
+        required = "optional"
+        parseResponse = True
+        parseOriginal = False
+
+        def prompt(self):
+            return "Whats your phone number yo?"
+
     class UserSlot(Slot):
         entity = EntityModel.user
         required = "optional"
@@ -50,8 +59,8 @@ class GreetingActionObject(ActionObject):
             return "Who are you?"
 
     def process(self):
-        print("slots: ", self.slotObjects)
-        resp = "Hi there, %s!" % (self.slotObjects[0].value)
+        print("slots: ", self.filledSlots)
+        resp = "Hi there, {user_slot}, your phone is {phone_slot}!".format(**self.filledSlots)
         return self.respond(resp)
 
 

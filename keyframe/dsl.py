@@ -152,6 +152,42 @@ class RegexEntity(BaseEntity):
         text = kwargs.get("text")
         return re.findall(self.regex, " " + text + " ")
 
+
+class PhoneRegexEntity(BaseEntity):
+    """
+    Accepts anything as input. Returns a phone number (the first one),
+    if found.
+    """
+    _params = {}
+
+    def __init__(self, **kwargs):
+        super(PhoneRegexEntity, self).__init__(**kwargs)
+        phonePattern = re.compile(r'''
+        # don't match beginning of string, number can start anywhere
+        (\d{3})     # area code is 3 digits (e.g. '800')
+        \D*         # optional separator is any number of non-digits
+        (\d{3})     # trunk is 3 digits (e.g. '555')
+        \D*         # optional separator
+        (\d{4})     # rest of number is 4 digits (e.g. '1212')
+        \D*         # optional separator
+        (\d*)       # extension is optional and can be any number of digits
+        $           # end of string
+        ''', re.VERBOSE)
+        self.regex = phonePattern
+        assert self.regex is not None, "Did you initialize %s with a regex=expression?" % self.label
+        self.entityType = "PHONE"
+
+    def entity_extract_fn(self, **kwargs):
+        text = kwargs.get("text")
+        groups = re.findall(self.regex, " " + text + " ")
+        if len(groups):
+            groups = filter(lambda x: len(x), groups[0])
+            # We should now have a phone number in here.
+            # join it.
+            res = "-".join(groups)
+            return res
+        return None
+
 # Entities that we get from the API.
 class APIEntity(BaseEntity):
 
@@ -160,7 +196,6 @@ class APIEntity(BaseEntity):
         self.needsAPICall = True
 
     def entity_extract_fn(self, **kwargs):
-
 
         apiResult = kwargs.get("apiResult", None)
         assert apiResult is not None, "apiResult is None in extract_entity_fn"
