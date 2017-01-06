@@ -21,6 +21,8 @@ class BaseField(object):
     def __init__(self, **kwargs):
         self.label = kwargs.get("label") # name
         self.field_type = re.sub(r"(.)([A-Z])", r"\1_\2", self.__class__.__name__).lower()
+        # Only relevant for certain kinds of inherited classes of type APIIntent
+        self.apiResult = None
 
     def field_eval_fn(self, **kwargs):
         """
@@ -86,6 +88,7 @@ class APIIntent(BaseField):
         canonicalMsg = kwargs.get("canonicalMsg")
         assert myraAPI is not None, "Have you registered an API object?"
         apiResult = myraAPI.get(canonicalMsg.text)
+        self.apiResult = apiResult
         intentStr = apiResult.intent.label
         return intentStr == self.label
 

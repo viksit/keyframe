@@ -224,7 +224,8 @@ class ActionObject(object):
         cr = messages.createTextResponse(
             self.canonicalMsg,
             text,
-            responseType)
+            responseType,
+            self.apiResult)
 
         self.channelClient.sendResponse(cr)
         return constants.BOT_REQUEST_STATE_PROCESSED

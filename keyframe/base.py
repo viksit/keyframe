@@ -223,6 +223,7 @@ class BaseBot(object):
                     canonicalMsg = canonicalMsg):
                 intentStr = intentObj.label
                 log.debug("found intentStr: %s", intentStr)
+                log.debug("api Result: %s", intentObj.apiResult)
                 break
         # No non-default intent detected.
         if not intentStr and defaultIntent:
@@ -263,14 +264,14 @@ class BaseBot(object):
             botState = self.getBotState(
                 userId=canonicalMsg.userId,
                 channel=canonicalMsg.channel)
-            print("botstate pre: ", botState)
+            log.debug("botstate pre: %s", botState)
             botState.clear()
             self.putBotState(
                 userId=canonicalMsg.userId,
                 channel=canonicalMsg.channel,
                 botState=self.botStateClass()
             )
-            print("botstate post: ", botState)
+            log.debug("botstate post: %s", botState)
             respText = "bot state has been cleared"
 
         self.createAndSendTextResponse(
@@ -302,7 +303,7 @@ class BaseBot(object):
         botState = kwargs.get("botState")
         userProfile = kwargs.get("userProfile")
 
-        print("userProfile: ", userProfile)
+        log.debug("userProfile: %s", userProfile)
         botState.setDebug(self.debug)
         requestState = constants.BOT_REQUEST_STATE_NEW
 

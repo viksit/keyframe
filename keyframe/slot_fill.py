@@ -143,7 +143,8 @@ class Slot(object):
         cr = messages.createTextResponse(
             self.canonicalMsg,
             msg,
-            responseType)
+            responseType,
+            self.apiResult)
         channelClient.sendResponse(cr)
 
     def _extractSlotFromSentence(self, text):
