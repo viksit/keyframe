@@ -49,6 +49,16 @@ class GreetingActionObject(ActionObject):
         def prompt(self):
             return "Whats your phone number yo?"
 
+    class EmailSlot(Slot):
+        entity = EntityModel.myemail
+        required = "optional"
+        parseResponse = True
+        parseOriginal = False
+
+        def prompt(self):
+            return "and whats your email?"
+
+
     class UserSlot(Slot):
         entity = EntityModel.user
         required = "optional"
@@ -60,7 +70,7 @@ class GreetingActionObject(ActionObject):
 
     def process(self):
         print("slots: ", self.filledSlots)
-        resp = "Hi there, {user_slot}, your phone is {phone_slot}!".format(**self.filledSlots)
+        resp = "Hi there, {user_slot}, your phone is {phone_slot} and your email is {email_slot}!".format(**self.filledSlots)
         return self.respond(resp)
 
 

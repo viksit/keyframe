@@ -1,5 +1,5 @@
 from keyframe.dsl import BaseModel, KeywordIntent, APIIntent, RegexIntent, PersonEntity, FreeTextEntity
-from keyframe.dsl import PhoneRegexEntity
+from keyframe.dsl import PhoneRegexEntity, EmailRegexEntity
 
 class IntentModel(BaseModel):
 
@@ -22,6 +22,8 @@ class EntityModel(BaseModel):
     mycity = FreeTextEntity(label="mycity")
     mybank = FreeTextEntity(label="mybank")
     myphone = PhoneRegexEntity(label="myphone")
+    myemail = EmailRegexEntity(label="myemail")
+
 
     class Meta:
         description = "My even more fun entity model"

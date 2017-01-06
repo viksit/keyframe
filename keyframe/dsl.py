@@ -152,6 +152,29 @@ class RegexEntity(BaseEntity):
         text = kwargs.get("text")
         return re.findall(self.regex, " " + text + " ")
 
+class EmailRegexEntity(BaseEntity):
+    """
+    Accepts anything as input. Returns a email number (the first one),
+    if found.
+    """
+    _params = {}
+
+    def __init__(self, **kwargs):
+        super(EmailRegexEntity, self).__init__(**kwargs)
+        emailPattern = re.compile(r'[\w\-][\w\-\.\+]+@[\w\-][\w\-\.]+[a-zA-Z]{1,4}')
+        self.regex = emailPattern
+        assert self.regex is not None, "Did you initialize %s with a regex=expression?" % self.label
+        self.entityType = "EMAIL"
+
+    def entity_extract_fn(self, **kwargs):
+        text = kwargs.get("text")
+        groups = re.findall(self.regex, " " + text + " ")
+        if len(groups):
+            res = groups[0]
+            # We should now have an email in here.
+            return res
+        return None
+
 
 class PhoneRegexEntity(BaseEntity):
     """
