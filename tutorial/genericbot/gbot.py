@@ -311,7 +311,6 @@ def run_agent_slack():
 
     # TODO(viksit): see notes for refactor
     slackEvent = request.json
-    print(slackEvent)
 
     if "challenge" in slackEvent:
         return make_response(slackEvent["challenge"], 200, {

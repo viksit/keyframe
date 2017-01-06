@@ -14,7 +14,7 @@ import json
 import constants
 import actions
 import generic_slot
-
+import dsl
 from six import iteritems, add_metaclass
 
 
@@ -38,7 +38,6 @@ class GenericActionObject(actions.ActionObject):
         # To render a templatized url with custom parameters
         url = webhook.get("api_url")
         custom = webhook.get("api_params", "{}")
-        print(":::::::::: custom: ", custom)
         custom = json.loads(custom) # convert to dict
         entities = filledSlots
 
@@ -79,42 +78,71 @@ class GenericActionObject(actions.ActionObject):
     def getSlots(self):
         raise Exception("This should not be used")
 
+
+    # TODO(viksit): make this more centralized.
+    def getEntityClassFromType(self, entityType):
+        mapping = {
+            "PERSON": dsl.PersonEntity,
+            "FREETEXT": dsl.FreeTextEntity,
+            "LOCATION": dsl.LocationEntity,
+            "DATE": dsl.DateEntity,
+            "ORGANIZATION": dsl.OrgEntity
+        }
+        if entityType in mapping:
+            return mapping.get(entityType)
+        return mapping.get("FREETEXT")
+
     @classmethod
     def createActionObject(cls, specJson, intentStr, canonicalMsg, botState,
                            userProfile, requestState, api, channelClient,
                            actionObjectParams={}):
         log.debug("createActionObject(%s)", locals())
+
         # Create a GenericActionObject using specJson
         actionObject = cls()
-        # TODO: Use specJson. Right now just hard-code.
         actionObject.msg = specJson.get("text")
         assert actionObject.msg, "No text field in json: %s" % (specJson,)
+
         slots = specJson.get("slots", [])
         slotObjects = []
         runAPICall = False
         for slotSpec in slots:
             gc = generic_slot.GenericSlot()
-            gc.entity = getattr(gc, "entity")
-            gc.required = slotSpec.get("required")
-            if not gc.required:
-                log.debug("slotSpec does not specify required - getting default")
-                gc.required = getattr(gc, "required")
-            gc.parseOriginal = slotSpec.get("parse_original")
-            if not gc.parseOriginal:
-                log.debug("slotSpec does not specify parseOriginal - getting default")
-                gc.parseOriginal = getattr(gc, "parseOriginal")
-            gc.parseResponse = slotSpec.get("parse_response")
-            if not gc.parseResponse:
-                log.debug("slotSpec does not specify parseResponse - getting default")
-                gc.parseResponse = getattr(gc, "parseResponse")
+            required = slotSpec.get("required")
+            if not required:
+                required = getattr(gc, "required")
+                log.debug("slotSpec does not specify required - getting default: %s", required)
+            gc.required = required
+
+            parseOriginal = slotSpec.get("parse_original")
+            if not parseOriginal:
+                parseOriginal = getattr(gc, "parseOriginal")
+                log.debug("slotSpec does not specify parseOriginal - getting default :%s", parseOriginal)
+            gc.parseOriginal = parseOriginal
+
+            parseResponse = slotSpec.get("parse_response")
+            if not parseResponse:
+                parseResponse = getattr(gc, "parseResponse")
+                log.debug("slotSpec does not specify parseResponse - getting default: %s", parseResponse)
+            gc.parseResponse = parseResponse
+
             gc.promptMsg = slotSpec.get("prompt")
             assert gc.promptMsg, "slot %s must have a prompt" % (slotSpec,)
+
             gc.name = slotSpec.get("name")
             assert gc.name, "slot %s must have a name" % (slotSpec,)
+
+            entityType = slotSpec.get("entity_type")
+            # If the entity type is not FREETEXT, this should be true
+            # override
+            if entityType != "FREETEXT":
+                gc.parseResponse = True
+            gc.entity = actionObject.getEntityClassFromType(entityType)(label=gc.name)
             slotObjects.append(gc)
             if gc.entity.needsAPICall:
                 runAPICall = True
 
+        # Maintain indent
         actionObject.slotObjects = slotObjects
         if runAPICall:
             apiResult = api.get(canonicalMsg.text)
@@ -126,4 +154,5 @@ class GenericActionObject(actions.ActionObject):
         actionObject.originalIntentStr = intentStr
         actionObject.webhook = specJson.get("webhook")
         log.debug("createActionObject: %s", actionObject)
+        # Action object now contains all the information needed to resolve this action
         return actionObject
