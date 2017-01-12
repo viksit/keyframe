@@ -37,7 +37,7 @@ REALM = "dev"
 # TODO:
 # Initialize via a configuration file
 kvStore = store_api.get_kv_store(
-    # store_api.TYPE_LOCALFILE,
+    #store_api.TYPE_LOCALFILE,
     store_api.TYPE_DYNAMODB,
     # store_api.TYPE_INMEMORY,
     config.Config())
@@ -130,12 +130,12 @@ class GenericCmdlineHandler(BotCmdLineHandler):
             requestType=None,
             config=cf)
 
+        accountId = self.kwargs.get("accountId")
+        accountSecret = self.kwargs.get("accountSecret")
         configJson = self.kwargs.get("config_json")
         bms = BotMetaStore(kvStore=kvStore)
         if not len(configJson.keys()):
             agentId = self.kwargs.get("agentId")
-            accountId = self.kwargs.get("accountId")
-            accountSecret = self.kwargs.get("accountSecret")
             configJson = bms.getJsonSpec(accountId, agentId)
 
         intentModelId = configJson.get("config_json").get("intent_model_id")
@@ -180,7 +180,7 @@ class GenericBotHTTPAPI(generic_bot_api.GenericBotAPI):
             if "run_mode" in current_app.config and \
                current_app.config["run_mode"] == "file":
                 log.info("(++) Running in file mode")
-                GenericBotHTTPAPI.configJson = current_app.config["config_json"]
+                GenericBotHTTPAPI.configJson = current_app.config
 
             # We're in Flask deployment mode (run_mode is "DB")
             else:
@@ -400,7 +400,7 @@ def ping():
 
 
 if __name__ == "__main__":
-    usage = "gbot.py [cmd/http] [file/db] [file: <path to json spec> / remote: <accountId> <accountSecret> <agentId>]"
+    usage = "gbot.py [cmd/http] [file/db] [file: <accountId> <accountSecret> <path to json spec> / db: <accountId> <accountSecret> <agentId>]"
     assert len(sys.argv) > 2, usage
 
     d = {}
@@ -409,21 +409,23 @@ if __name__ == "__main__":
 
     print("(++) cmd: ", cmd, ", runtype: ", runtype)
     jsonFile = None
-    accountId = None
     agentId = None
-    accountSecret = None
+
+    accountId = sys.argv[3]
+    accountSecret = sys.argv[4]
 
     if runtype == "file":
-        jsonFile = sys.argv[3]
+        jsonFile = sys.argv[5]
         if os.path.isfile(jsonFile):
             configJson = json.loads(open(jsonFile).read())
-            d['config_json'] = configJson
+            #d['config_json'] = configJson
+            d = configJson
         else:
             print("%s is not a valid json bot configuration file" %
                   jsonFile, file=sys.stderr)
+            sys.exit(1)
+        log.info("config_json: %s", d['config_json'])
     elif runtype == "db":
-        accountId = sys.argv[3]
-        accountSecret = sys.argv[4]
         agentId = sys.argv[5]
 
     if cmd == "cmd":

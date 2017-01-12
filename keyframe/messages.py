@@ -83,6 +83,31 @@ class CanonicalResponse(object):
             "responseElements": map(lambda x: x.toJSON(), self.responseElements)
         }
 
+class ResponseMeta(object):
+    def __init__(self, apiResult=None, newIntent=None):
+        self.apiResult = apiResult
+        self.newIntent = newIntent
+
+    def __repr__(self):
+        return "ResponseMeta(apiResult=%s, newIntent=%s)" % (
+            self.apiResult, self.newIntent)
+
+    def toJson(self):
+        d = None
+        if self.apiResult:
+            intentDict = {}
+            entitiesDict = {}
+            d = {"intent":intentDict, "entities":entitiesDict}
+            i = self.apiResult.intent
+            if i:
+                intentDict["label"] = i.label
+                intentDict["score"] = i.score
+                e = self.apiResult.entities
+                if e:
+                    entitiesDict["entity_dict"] = e.entity_dict
+        return {"apiResult":d,
+                "newIntent":self.newIntent}
+
 class ResponseElement(object):
     TYPE_TEXT = "text"
     TYPE_CAROUSEL = "carousel"
@@ -94,22 +119,22 @@ class ResponseElement(object):
     RESPONSE_TYPE_DEBUG = "debug"
     RESPONSE_TYPE_PRERESPONSE = "preresponse"
 
-    def __init__(self, type, text=None, carousel=None, responseType=None, parseResult=None):
+    def __init__(self, type, text=None, carousel=None, responseType=None, responseMeta=None):
         """
         text: Text response to show user
         carousel: To render a series of images on the channel
         responseType: response/cta/question/debug/preresponse
-        parseResult: raw output of the myra API
+        responseMeta: metadata about the response
         """
         self.type = type
         self.text = text
         self.carousel = carousel
         self.responseType = responseType
-        self.parseResult = parseResult
+        self.responseMeta = responseMeta
 
     def __repr__(self):
-        res = "ResponseElement(type=%s, responseType=%s, text=%s, carousel=%s, parseResult=%s)" % \
-            (self.type, self.responseType, self.text, self.carousel, self.parseResult)
+        res = "ResponseElement(type=%s, responseType=%s, text=%s, carousel=%s, responseMeta=%s)" % \
+            (self.type, self.responseType, self.text, self.carousel, self.responseMeta)
         return res.encode("utf-8")
 
     def toJSON(self):
@@ -118,24 +143,17 @@ class ResponseElement(object):
             "responseType": self.responseType,
             "text": self.text,
             "carousel": self.carousel,
-            "parseResult": self.parseResult
+            "responseMeta": self.responseMeta.toJson()
         }
 
-def createTextResponse(canonicalMsg, text, responseType=None, apiResult=None):
+def createTextResponse(canonicalMsg, text, responseType=None,
+                       responseMeta=None):
 
-    # WIP: Bubble the results of the myra api call into every canonical response
-    # and response elements.
-    # For this, we need to pass the intentObj into actionObject.create(), and also
-    #
-    # TODO(viksit)
-
-    # print(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
-    # print(">>>> API Result: ", apiResult)
-    # print(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>")
     responseElement = ResponseElement(
         type=ResponseElement.TYPE_TEXT,
         text=text,
-        responseType=responseType)
+        responseType=responseType,
+        responseMeta=responseMeta)
     return CanonicalResponse(
         channel=canonicalMsg.channel,
         userId=canonicalMsg.userId,

@@ -51,6 +51,7 @@ class ActionObject(object):
         self.kvStore = kwargs.get("kvStore")
         self.slotObjects = kwargs.get("slotObjects")
         self.filledSlots = {}
+        self.newIntent = kwargs.get("newIntent")
         self.init()
 
     def init(self):
@@ -65,12 +66,13 @@ class ActionObject(object):
     @classmethod
     def createActionObject(
             cls, intentStr, canonicalMsg, botState,
-            userProfile, requestState, api, channelClient, actionObjectParams={}):
-
+            userProfile, requestState, api, channelClient, actionObjectParams={},
+            apiResult=None, newIntent=None):
+        log.debug("ActionObject.createActionObject(%s)", locals())
         """
         Create a new action object from the given data
         canonicalMsg, apiResult, intentStr
-        slots, messages, channelClient
+        slots, messages, channelClient, actionObjectParams, apiResult
 
         """
         runAPICall = False
@@ -107,6 +109,8 @@ class ActionObject(object):
         actionObject.originalIntentStr = intentStr
         actionObject.userProfile = userProfile
         actionObject.botState = botState
+        actionObject.apiResult = apiResult
+        actionObject.newIntent = newIntent
         log.debug("createActionObject: %s", actionObject)
         return actionObject
 
@@ -212,10 +216,16 @@ class ActionObject(object):
         pass
 
     def createAndSendTextResponse(self, canonicalMsg, text, responseType=None):
-        cr = messages.createTextResponse(canonicalMsg, text, responseType)
+        log.debug("ActionObject.createAndSendTextResponse(%s)", locals())
+        cr = messages.createTextResponse(
+            canonicalMsg, text, responseType,
+            responseMeta=messages.ResponseMeta(
+                apiResult=self.apiResult,
+                newIntent=self.newIntent))
         self.channelClient.sendResponse(cr)
 
     def respond(self, text, canonicalMsg=None, responseType=None):
+        log.debug("ActionObject.respond(%s)", locals())
         if not canonicalMsg:
             canonicalMsg = self.canonicalMsg
         if not responseType:
@@ -225,7 +235,9 @@ class ActionObject(object):
             self.canonicalMsg,
             text,
             responseType,
-            self.apiResult)
+            responseMeta=messages.ResponseMeta(
+                apiResult=self.apiResult,
+                newIntent=self.newIntent))
 
         self.channelClient.sendResponse(cr)
         return constants.BOT_REQUEST_STATE_PROCESSED

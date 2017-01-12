@@ -97,8 +97,9 @@ class GenericActionObject(actions.ActionObject):
     @classmethod
     def createActionObject(cls, specJson, intentStr, canonicalMsg, botState,
                            userProfile, requestState, api, channelClient,
-                           actionObjectParams={}):
-        log.debug("createActionObject(%s)", locals())
+                           actionObjectParams={},
+                           apiResult=None, newIntent=None):
+        log.debug("GenericActionObject.createActionObject(%s)", locals())
 
         # Create a GenericActionObject using specJson
         actionObject = cls()
@@ -109,7 +110,8 @@ class GenericActionObject(actions.ActionObject):
         slotObjects = []
         runAPICall = False
         for slotSpec in slots:
-            gc = generic_slot.GenericSlot()
+            gc = generic_slot.GenericSlot(
+                apiResult=apiResult, newIntent=newIntent)
             required = slotSpec.get("required")
             if not required:
                 required = getattr(gc, "required")
@@ -146,6 +148,8 @@ class GenericActionObject(actions.ActionObject):
 
         # Maintain indent
         actionObject.slotObjects = slotObjects
+        actionObject.apiResult = apiResult
+        actionObject.newIntent = newIntent
         if runAPICall:
             apiResult = api.get(canonicalMsg.text)
             actionObject.apiResult = apiResult
