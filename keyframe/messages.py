@@ -84,15 +84,16 @@ class CanonicalResponse(object):
         }
 
 class ResponseMeta(object):
-    def __init__(self, apiResult=None, newIntent=None):
+    def __init__(self, apiResult=None, newIntent=None, intentStr=None):
         self.apiResult = apiResult
         self.newIntent = newIntent
+        self.intentStr = intentStr
 
     def __repr__(self):
-        return "ResponseMeta(apiResult=%s, newIntent=%s)" % (
-            self.apiResult, self.newIntent)
+        return "ResponseMeta(apiResult=%s, newIntent=%s, intentStr=%s)" % (
+            self.apiResult, self.newIntent, self.intentStr)
 
-    def toJson(self):
+    def toJSON(self):
         d = None
         if self.apiResult:
             intentDict = {}
@@ -106,7 +107,8 @@ class ResponseMeta(object):
                 if e:
                     entitiesDict["entity_dict"] = e.entity_dict
         return {"apiResult":d,
-                "newIntent":self.newIntent}
+                "newIntent":self.newIntent,
+                "intentStr":self.intentStr}
 
 class ResponseElement(object):
     TYPE_TEXT = "text"
@@ -143,7 +145,7 @@ class ResponseElement(object):
             "responseType": self.responseType,
             "text": self.text,
             "carousel": self.carousel,
-            "responseMeta": self.responseMeta.toJson()
+            "responseMeta": self.responseMeta.toJSON()
         }
 
 def createTextResponse(canonicalMsg, text, responseType=None,

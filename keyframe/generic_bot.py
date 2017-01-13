@@ -53,6 +53,7 @@ class GenericBot(keyframe.base.BaseBot):
             "userId": userId,
             "channel": channel
         })
+        log.debug("GenericBot: returning botstate key: %s", k)
         return k
 
     def configFromJson(self):

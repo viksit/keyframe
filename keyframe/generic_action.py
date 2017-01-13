@@ -111,7 +111,7 @@ class GenericActionObject(actions.ActionObject):
         runAPICall = False
         for slotSpec in slots:
             gc = generic_slot.GenericSlot(
-                apiResult=apiResult, newIntent=newIntent)
+                apiResult=apiResult, newIntent=newIntent, intentStr=intentStr)
             required = slotSpec.get("required")
             if not required:
                 required = getattr(gc, "required")

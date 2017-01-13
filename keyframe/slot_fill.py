@@ -26,7 +26,7 @@ class Slot(object):
 
     # TODO(viksit): overwrite the instance variables from the class variable
 
-    def __init__(self, apiResult=None, newIntent=None):
+    def __init__(self, apiResult=None, newIntent=None, intentStr=None):
         # If there are multiple slots with the same class, the slot definition
         # will have to override this and give some names.
         self.name = re.sub(r"(.)([A-Z])", r"\1_\2", self.__class__.__name__).lower()
@@ -38,6 +38,7 @@ class Slot(object):
 
         self.apiResult = apiResult
         self.newIntent = newIntent
+        self.intentStr = intentStr
 
     def toJSONObject(self):
         return {
@@ -147,7 +148,8 @@ class Slot(object):
             responseType,
             responseMeta=messages.ResponseMeta(
                 apiResult=self.apiResult,
-                newIntent=self.newIntent))
+                newIntent=self.newIntent,
+                intentStr=self.intentStr))
         channelClient.sendResponse(cr)
 
     def _extractSlotFromSentence(self, text):

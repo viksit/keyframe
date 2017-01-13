@@ -91,9 +91,11 @@ class BaseBot(object):
     def _botStateKey(self, userId, channel):
         k = "botstate.%s.%s.%s.%s" % (
             self.__class__.__name__, self.name, userId, channel)
+        log.debug("BaseBot: returning botstate key: %s", k)
         return k
 
     def getBotState(self, userId, channel):
+        log.debug("getBotState(%s)", locals())
         k = self._botStateKey(userId, channel)
         jsonObject = self.kvStore.get_json(k)
         if not jsonObject:

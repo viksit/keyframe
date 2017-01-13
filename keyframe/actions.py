@@ -72,7 +72,7 @@ class ActionObject(object):
         """
         Create a new action object from the given data
         canonicalMsg, apiResult, intentStr
-        slots, messages, channelClient, actionObjectParams, apiResult
+        slots, messages, channelClient, actionObjectParams, apiResult, newIntent
 
         """
         runAPICall = False
@@ -221,7 +221,8 @@ class ActionObject(object):
             canonicalMsg, text, responseType,
             responseMeta=messages.ResponseMeta(
                 apiResult=self.apiResult,
-                newIntent=self.newIntent))
+                newIntent=self.newIntent,
+                intentStr=self.originalIntentStr))
         self.channelClient.sendResponse(cr)
 
     def respond(self, text, canonicalMsg=None, responseType=None):
@@ -237,7 +238,8 @@ class ActionObject(object):
             responseType,
             responseMeta=messages.ResponseMeta(
                 apiResult=self.apiResult,
-                newIntent=self.newIntent))
+                newIntent=self.newIntent,
+                intentStr=self.originalIntentStr))
 
         self.channelClient.sendResponse(cr)
         return constants.BOT_REQUEST_STATE_PROCESSED
