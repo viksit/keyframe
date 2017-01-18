@@ -104,8 +104,10 @@ class GenericActionObject(actions.ActionObject):
         # Create a GenericActionObject using specJson
         actionObject = cls()
         actionObject.msg = specJson.get("text")
-        assert actionObject.msg, "No text field in json: %s" % (specJson,)
-
+        # TODO: This has to be enforced in the UI.
+        #assert actionObject.msg, "No text field in json: %s" % (specJson,)
+        if not actionObject.msg:
+            actionObject.msg = "<No msg provided by agent spec.>"
         slots = specJson.get("slots", [])
         slotObjects = []
         runAPICall = False

@@ -102,14 +102,19 @@ class BotMetaStore(object):
 
     def _botMetaKey(self, accountId, agentId):
         k = "botmeta.%s.%s" % (accountId, agentId)
+        log.debug("k: %s", k)
         return k
 
     def getJsonSpec(self, accountId, agentId):
         """
         Should return a python dict
         """
+        log.debug("BotMetaStore.getJsonSpec(%s)", locals())
         k = self._botMetaKey(accountId, agentId)
-        return json.loads(self.kvStore.get_json(k))
+        js = self.kvStore.get_json(k)
+        if not js:
+            return None
+        return json.loads(js)
 
     def putJsonSpec(self, accountId, agentId, jsonSpec):
         """
@@ -192,8 +197,11 @@ class GenericBotHTTPAPI(generic_bot_api.GenericBotAPI):
                 GenericBotHTTPAPI.agentId = agentId
                 GenericBotHTTPAPI.accountId = accountId
                 GenericBotHTTPAPI.accountSecret = accountSecret
-                GenericBotHTTPAPI.configJson = bms.getJsonSpec(accountId, agentId)
+                js = bms.getJsonSpec(accountId, agentId)
+                GenericBotHTTPAPI.configJson = js
                 log.info("(::) json config spec: %s", GenericBotHTTPAPI.configJson)
+                if not js:
+                    raise Exception("Json spec not found for %s", kwargs)
 
     def getBot(self):
         accountId = GenericBotHTTPAPI.accountId
