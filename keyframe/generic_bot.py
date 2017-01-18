@@ -53,6 +53,7 @@ class GenericBot(keyframe.base.BaseBot):
             "userId": userId,
             "channel": channel
         })
+        log.debug("GenericBot: returning botstate key: %s", k)
         return k
 
     def configFromJson(self):
@@ -82,7 +83,8 @@ class GenericBot(keyframe.base.BaseBot):
 
     def createActionObject(self, actionObjectCls, intentStr,
                            canonicalMsg, botState,
-                           userProfile, requestState):
+                           userProfile, requestState,
+                           apiResult=None, newIntent=None):
         log.debug("GenericBot.createActionObject(%s) called", locals())
         if actionObjectCls == keyframe.generic_action.GenericActionObject:
             actionObjectSpecJson = self.specJson.get(
@@ -92,7 +94,9 @@ class GenericBot(keyframe.base.BaseBot):
             return actionObjectCls.createActionObject(
                 actionObjectSpecJson,
                 intentStr, canonicalMsg, botState,
-                userProfile, requestState, self.api, self.channelClient)
+                userProfile, requestState, self.api, self.channelClient,
+                apiResult=apiResult, newIntent=newIntent)
         return actionObjectCls.createActionObject(
             intentStr, canonicalMsg, botState,
-            userProfile, requestState, self.api, self.channelClient)
+            userProfile, requestState, self.api, self.channelClient,
+            apiResult=apiResult, newIntent=newIntent)

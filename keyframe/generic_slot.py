@@ -2,8 +2,10 @@ import slot_fill
 import keyframe.dsl
 
 class GenericSlot(slot_fill.Slot):
-    def __init__(self, promptMsg=None):
-        super(GenericSlot, self).__init__()
+    def __init__(self, apiResult=None, newIntent=None,
+                 promptMsg=None, intentStr=None):
+        super(GenericSlot, self).__init__(
+            apiResult=apiResult, newIntent=newIntent, intentStr=intentStr)
         self.promptMsg = promptMsg
 
     # TODO(viksit): This should be defined via the JSON spec file.

@@ -97,19 +97,23 @@ class GenericActionObject(actions.ActionObject):
     @classmethod
     def createActionObject(cls, specJson, intentStr, canonicalMsg, botState,
                            userProfile, requestState, api, channelClient,
-                           actionObjectParams={}):
-        log.debug("createActionObject(%s)", locals())
+                           actionObjectParams={},
+                           apiResult=None, newIntent=None):
+        log.debug("GenericActionObject.createActionObject(%s)", locals())
 
         # Create a GenericActionObject using specJson
         actionObject = cls()
         actionObject.msg = specJson.get("text")
-        assert actionObject.msg, "No text field in json: %s" % (specJson,)
-
+        # TODO: This has to be enforced in the UI.
+        #assert actionObject.msg, "No text field in json: %s" % (specJson,)
+        if not actionObject.msg:
+            actionObject.msg = "<No msg provided by agent spec.>"
         slots = specJson.get("slots", [])
         slotObjects = []
         runAPICall = False
         for slotSpec in slots:
-            gc = generic_slot.GenericSlot()
+            gc = generic_slot.GenericSlot(
+                apiResult=apiResult, newIntent=newIntent, intentStr=intentStr)
             required = slotSpec.get("required")
             if not required:
                 required = getattr(gc, "required")
@@ -146,6 +150,8 @@ class GenericActionObject(actions.ActionObject):
 
         # Maintain indent
         actionObject.slotObjects = slotObjects
+        actionObject.apiResult = apiResult
+        actionObject.newIntent = newIntent
         if runAPICall:
             apiResult = api.get(canonicalMsg.text)
             actionObject.apiResult = apiResult

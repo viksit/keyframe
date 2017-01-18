@@ -91,9 +91,11 @@ class BaseBot(object):
     def _botStateKey(self, userId, channel):
         k = "botstate.%s.%s.%s.%s" % (
             self.__class__.__name__, self.name, userId, channel)
+        log.debug("BaseBot: returning botstate key: %s", k)
         return k
 
     def getBotState(self, userId, channel):
+        log.debug("getBotState(%s)", locals())
         k = self._botStateKey(userId, channel)
         jsonObject = self.kvStore.get_json(k)
         if not jsonObject:
@@ -211,7 +213,7 @@ class BaseBot(object):
         # For now, simply go through the list and return the first one that comes up.
         # In the future, we could do something different.
         # If no intents are matched we just return whatever is mapped to a default intent.
-
+        apiResult = None
         defaultIntent = None
         for intentObj in self.intentEvalSet:
             # log.debug("intentObj: %s", intentObj)
@@ -222,6 +224,7 @@ class BaseBot(object):
                     myraAPI = self.api, # If no API is passed to bot, this will be None
                     canonicalMsg = canonicalMsg):
                 intentStr = intentObj.label
+                apiResult = intentObj.apiResult
                 log.debug("found intentStr: %s", intentStr)
                 log.debug("api Result: %s", intentObj.apiResult)
                 break
@@ -233,14 +236,17 @@ class BaseBot(object):
         actionObjectCls = self.intentActions.get(intentStr, None)
 
         assert actionObjectCls is not None, "No action objects were registered for this intent"
-        return (intentStr, actionObjectCls)
+        return (intentStr, actionObjectCls, apiResult)
 
     def createActionObject(self, actionObjectCls, intentStr,
                            canonicalMsg, botState,
-                           userProfile, requestState):
+                           userProfile, requestState,
+                           apiResult=None, newIntent=None):
+        log.debug("BaseBot.createActionObject(%s)", locals())
         return actionObjectCls.createActionObject(
             intentStr, canonicalMsg, botState,
-            userProfile, requestState, self.api, self.channelClient)
+            userProfile, requestState, self.api, self.channelClient,
+            apiResult=apiResult, newIntent=newIntent)
 
 
     def _handleBotCmd(self, canonicalMsg, botState, userProfile, requestState):
@@ -319,7 +325,8 @@ class BaseBot(object):
             actionObjectCls = self.intentActions.get(intentStr)
             actionObject = self.createActionObject(
                 actionObjectCls, intentStr,
-                canonicalMsg, botState, userProfile, requestState)
+                canonicalMsg, botState, userProfile,
+                requestState, newIntent=False)
             actionObject.populateFromJson(waitingActionJson)
             #self.sendDebugResponse(botState, canonicalMsg)
             requestState = actionObject.processWrapper(botState)
@@ -327,12 +334,12 @@ class BaseBot(object):
         if requestState != constants.BOT_REQUEST_STATE_PROCESSED:
             log.debug("requestState: %s", requestState)
             log.debug("botState: %s", botState)
-            intentStr, actionObjectCls = self._getActionObjectFromIntentHandlers(canonicalMsg)
+            intentStr, actionObjectCls, apiResult = self._getActionObjectFromIntentHandlers(canonicalMsg)
             log.debug("GetActionObjectFromIntentHandlers: intent: %s cls: %s", intentStr, actionObjectCls)
             actionObject = self.createActionObject(
                 actionObjectCls,
                 intentStr, canonicalMsg, botState, userProfile,
-                requestState)
+                requestState, apiResult=apiResult, newIntent=True)
             log.debug("actionObject: %s", actionObject)
             #self.sendDebugResponse(botState, canonicalMsg)
             requestState = actionObject.processWrapper(botState)
