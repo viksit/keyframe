@@ -32,7 +32,7 @@ log.addHandler(ch)
 log.setLevel(logging.DEBUG)
 log.propagate = False
 
-REALM = "dev"
+REALM = os.environ.get("STAGE","dev")
 
 # TODO:
 # Initialize via a configuration file
@@ -403,6 +403,8 @@ def ping():
     print("Received ping")
     resp = json.dumps({
         "status": "OK",
+        "env.STAGE":os.environ.get("STAGE"),
+        "REALM":REALM
     })
     return Response(resp), 200
 

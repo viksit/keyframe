@@ -3,4 +3,12 @@
         "s3_bucket": "ml-lambda-dev-1",
         "app_function": "gbot.app"
     }
+    "prod": {
+        "s3_bucket": "ml-lambda-prod-1",
+        "app_function": "gbot.app"
+    }
+    "test": {
+        "s3_bucket": "ml-lamdba-test-1",
+        "app_function": "gbot.app"
+    }
 }
