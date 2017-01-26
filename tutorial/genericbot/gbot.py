@@ -6,6 +6,7 @@ from flask import Flask, current_app, jsonify, make_response
 import yaml
 import json
 import logging
+import urlparse
 
 from pymyra.api import client
 
@@ -312,6 +313,25 @@ class Message(object):
 # }
 ads = AgentDeploymentStore(kvStore=kvStore)
 
+@app.route("/fb", methods=["GET", "POST"])
+def run_agent_fb():
+    log.debug(request.url)
+    if request.method == "GET":
+        pr = urlparse.urlparse(request.url)
+        url_params = urlparse.parse_qs(pr.query)
+        if url_params.has_key("hub.challenge"):
+            return url_params.get("hub.challenge")[0]
+        else:
+            log.warn("Got unknown request: %s", request.url)
+            return
+    elif request.method == "POST":
+        ret = handle_fb_request(request)
+
+    return "ok"
+
+def handle_fb_request(request):
+    # TODO(nishant)
+    return None
 
 # TODO(viksit): rename this to something better.
 @app.route("/listening", methods=["GET", "POST"])
@@ -358,6 +378,7 @@ def run_agent_slack():
     # Process this message from slack
     userId = slackEvent["event"].get("user")
     teamId = slackEvent["team_id"]
+    #teamChannel = event["channel"]
     botToken = None
 
     #botToken = botmetalocal.get("slack." + str(teamId)).get("bot_token")
@@ -389,6 +410,7 @@ def run_agent_slack():
             "user_id": userId,
             "team_id": teamId,
             "bot_token": botToken
+            #"team_channel": teamChannel
         }
     }
     r = GenericBotHTTPAPI.requestHandler(
