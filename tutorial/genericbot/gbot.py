@@ -29,7 +29,8 @@ logformat = "[%(levelname)1.1s %(asctime)s %(name)s] %(message)s"
 formatter = logging.Formatter(logformat)
 ch.setFormatter(formatter)
 log.addHandler(ch)
-log.setLevel(logging.DEBUG)
+LOG_LEVEL = int(os.getenv("LOG_LEVEL", 10))
+log.setLevel(LOG_LEVEL)
 log.propagate = False
 
 REALM = os.environ.get("STAGE","dev")
@@ -312,8 +313,11 @@ class Message(object):
 # }
 ads = AgentDeploymentStore(kvStore=kvStore)
 
-SLACK_BOT_ID = "U3KC79GGH"
+# By default get dev settings.
+SLACK_BOT_ID = os.getenv("SLACK_BOT_ID", "U3KC79GGH")
 slack_bot_msg_ref = "<@%s>" % (SLACK_BOT_ID,)
+SLACK_VERIFICATION_TOKEN = os.getenv(
+    "SLACK_VERIFICATION_TOKEN", "Avr8oGeFjTX2PJdJ1NKurE6V")
 
 # TODO(viksit): rename this to something better.
 @app.route("/listening", methods=["GET", "POST"])
@@ -321,20 +325,20 @@ def run_agent_slack():
 
     # TODO(viksit): see notes for refactor
     slackEvent = request.json
+    if not slackEvent:
+        return make_response("invalid payload", 400)
+
     log.debug("request.json: %s", slackEvent)
     if "challenge" in slackEvent:
         return make_response(slackEvent["challenge"], 200, {
             "content_type": "application/json"
         })
 
-    # Specific to concierge
-    slackVerificationToken = "Avr8oGeFjTX2PJdJ1NKurE6V"
-    if slackVerificationToken != slackEvent.get("token"):
-        message = "Invalid Slack verification token: %s \npyBot has: \
-                   %s\n\n" % (slackEvent["token"], slackVerificationToken)
+    if SLACK_VERIFICATION_TOKEN != slackEvent.get("token"):
+        log.warn("Invalid slack verification token: %s", slackEvent.get("token"))
         # By adding "X-Slack-No-Retry" : 1 to our response headers, we turn off
         # Slack's automatic retries during development.
-        make_response(message, 403, {"X-Slack-No-Retry": 1})
+        make_response("Invalid verification token", 403, {"X-Slack-No-Retry": 1})
 
     if "event" not in slackEvent:
         return make_response("[NO EVENT IN SLACK REQUEST]", 404, {"X-Slack-No-Retry": 1})
@@ -413,6 +417,18 @@ def run_agent_slack():
     return make_response("NOOP", 200, {"X-Slack-No-Retry": 1})
 
 # End slack code
+
+# TODO: Remove this 
+@app.route("/anxoivch8wxoiu8dvhwnwo93", methods=['GET', 'POST'])
+def debug_obfuscated():
+    log.info(request.url)
+    resp = json.dumps({
+        "SLACK_BOT_ID":SLACK_BOT_ID,
+        "SLACK_VERIFICATION_TOKEN":SLACK_VERIFICATION_TOKEN,
+        "env.STAGE":os.environ.get("STAGE"),
+        "REALM":REALM
+    })
+    return Response(resp), 200
 
 @app.route("/ping", methods=['GET', 'POST'])
 def ping():
