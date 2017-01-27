@@ -312,6 +312,8 @@ class Message(object):
 # }
 ads = AgentDeploymentStore(kvStore=kvStore)
 
+SLACK_BOT_ID = "U3KC79GGH"
+slack_bot_msg_ref = "<@%s>" % (SLACK_BOT_ID,)
 
 # TODO(viksit): rename this to something better.
 @app.route("/listening", methods=["GET", "POST"])
@@ -319,7 +321,7 @@ def run_agent_slack():
 
     # TODO(viksit): see notes for refactor
     slackEvent = request.json
-
+    log.debug("request.json: %s", slackEvent)
     if "challenge" in slackEvent:
         return make_response(slackEvent["challenge"], 200, {
             "content_type": "application/json"
@@ -355,9 +357,22 @@ def run_agent_slack():
                              404,
                              {"X-Slack-No-Retry": 1})
 
+    # We only want to process direct messages or messages addressed to this
+    # bot in a channel.
+    channel = event.get("channel")
+    processMsg = channel.startswith("D")  # This may mean direct msg - use for now.
+    msg = event.get("text", "")
+    hasBotId = msg.find(slack_bot_msg_ref)
+    log.debug("hasBotId: %s", hasBotId)
+    processMsg |= (channel.startswith("C") and hasBotId > -1)
+    log.debug("processMsg: %s", processMsg)
+    if not processMsg:
+        return make_response("Ignore event - not DM or addressed to bot", 200, {"X-Slack-No-Retry": 1})
+
     # Process this message from slack
     userId = slackEvent["event"].get("user")
     teamId = slackEvent["team_id"]
+    msgChannel = event["channel"]
     botToken = None
 
     #botToken = botmetalocal.get("slack." + str(teamId)).get("bot_token")
@@ -388,7 +403,8 @@ def run_agent_slack():
         "channel-meta": {
             "user_id": userId,
             "team_id": teamId,
-            "bot_token": botToken
+            "bot_token": botToken,
+            "msg_channel": msgChannel
         }
     }
     r = GenericBotHTTPAPI.requestHandler(

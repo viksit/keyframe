@@ -141,6 +141,7 @@ class ChannelClientSlack(ChannelClient):
         self.userId = config.CHANNEL_META.get("user_id")
         self.teamId = config.CHANNEL_META.get("team_id")
         self.botToken = config.CHANNEL_META.get("bot_token")
+        self.msgChannel = config.CHANNEL_META.get("msg_channel")
 
     def extract(self, channelMsg):
         log.info("extract(%s)", channelMsg)
@@ -152,14 +153,15 @@ class ChannelClientSlack(ChannelClient):
 
     def sendResponse(self, canonicalResponse):
         slackClient = SlackClient(self.botToken)
-        new_dm = slackClient.api_call(
-            "im.open",
-            user=self.userId)
-        dm_id = new_dm["channel"]["id"]
+        #new_dm = slackClient.api_call(
+        #    "im.open",
+        #    user=self.userId)
+        #dm_id = new_dm["channel"]["id"]
         for e in canonicalResponse.responseElements:
             slackClient.api_call("chat.postMessage",
-                                 channel=dm_id,
-                                 username="concierge",
+                                 channel=self.msgChannel,
+                                 #channel=dm_id,
+                                 #username="concierge",
                                  icon_emoji=":robot_face:",
                                  text=e.text)
             log.info("sendResponse(%s)", canonicalResponse)
