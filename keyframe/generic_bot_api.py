@@ -25,7 +25,6 @@ log.addHandler(ch)
 log.setLevel(logging.DEBUG)
 log.propagate = False
 
-
 class GenericBotAPI(bot_api.BotAPI):
     """
     Class that allows this bot to be called via a flask API. This can be deployed
@@ -54,7 +53,7 @@ class GenericBotAPI(bot_api.BotAPI):
             httpType=event.get("request-type"),
             body=event.get("body"))
 
-        cfg = config.Config()
+        cfg = config.getConfig()
         cfg.CHANNEL_META = event.get("channel-meta")
 
         channelClient = channel_client.getChannelClient(

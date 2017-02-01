@@ -33,15 +33,13 @@ LOG_LEVEL = int(os.getenv("LOG_LEVEL", 10))
 log.setLevel(LOG_LEVEL)
 log.propagate = False
 
-REALM = os.environ.get("STAGE","dev")
-
 # TODO:
 # Initialize via a configuration file
 kvStore = store_api.get_kv_store(
     # store_api.TYPE_LOCALFILE,
     store_api.TYPE_DYNAMODB,
     # store_api.TYPE_INMEMORY,
-    config.Config())
+    config.getConfig())
 
 """
 Agent Deployment Store
@@ -130,7 +128,7 @@ class GenericCmdlineHandler(BotCmdLineHandler):
     def init(self):
         log.debug("GenericCmdlineHandler.init")
         # channel configuration
-        cf = config.Config()
+        cf = config.getConfig()
         channelClient = channel_client.getChannelClient(
             channel=messages.CHANNEL_CMDLINE,
             requestType=None,
@@ -152,7 +150,7 @@ class GenericCmdlineHandler(BotCmdLineHandler):
             apicfg = {
                 "account_id": accountId,
                 "account_secret": accountSecret,
-                "hostname": "api.%s.myralabs.com" % (REALM)
+                "hostname": cfg.MYRA_API_HOSTNAME
             }
             api = client.connect(apicfg)
             api.set_intent_model(intentModelId)
@@ -218,7 +216,7 @@ class GenericBotHTTPAPI(generic_bot_api.GenericBotAPI):
             apicfg = {
                 "account_id": accountId,
                 "account_secret": accountSecret,
-                "hostname": "api.%s.myralabs.com" % (REALM)
+                "hostname": cfg.MYRA_API_HOSTNAME
             }
             api = client.connect(apicfg)
             api.set_intent_model(intentModelId)
@@ -312,12 +310,12 @@ class Message(object):
 #     # }
 # }
 ads = AgentDeploymentStore(kvStore=kvStore)
+cfg = config.getConfig()
 
 # By default get dev settings.
-SLACK_BOT_ID = os.getenv("SLACK_BOT_ID", "U3KC79GGH")
+SLACK_BOT_ID = cfg.SLACK_BOT_ID
 slack_bot_msg_ref = "<@%s>" % (SLACK_BOT_ID,)
-SLACK_VERIFICATION_TOKEN = os.getenv(
-    "SLACK_VERIFICATION_TOKEN", "Avr8oGeFjTX2PJdJ1NKurE6V")
+SLACK_VERIFICATION_TOKEN = cfg.SLACK_VERIFICATION_TOKEN
 
 # TODO(viksit): rename this to something better.
 @app.route("/listening", methods=["GET", "POST"])
@@ -425,8 +423,7 @@ def debug_obfuscated():
     resp = json.dumps({
         "SLACK_BOT_ID":SLACK_BOT_ID,
         "SLACK_VERIFICATION_TOKEN":SLACK_VERIFICATION_TOKEN,
-        "env.STAGE":os.environ.get("STAGE"),
-        "REALM":REALM
+        "env.STAGE":os.environ.get("STAGE")
     })
     return Response(resp), 200
 
@@ -435,8 +432,7 @@ def ping():
     print("Received ping")
     resp = json.dumps({
         "status": "OK",
-        "env.STAGE":os.environ.get("STAGE"),
-        "REALM":REALM
+        "env.STAGE":os.environ.get("STAGE")
     })
     return Response(resp), 200
 

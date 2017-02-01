@@ -25,7 +25,7 @@ kvStore = store_api.get_kv_store(
     #store_api.TYPE_LOCALFILE,
     store_api.TYPE_DYNAMODB,
     #store_api.TYPE_INMEMORY,
-    config.Config())
+    config.getConfig())
 
 
 bot = BaseBot(kvStore=kvStore)
@@ -159,7 +159,7 @@ class DefaultActionObject(ActionObject):
 class CalendarCmdlineHandler(BotCmdLineHandler):
     def init(self):
         # channel configuration
-        cf = config.Config()
+        cf = config.getConfig()
         channelClient = channel_client.getChannelClient(
             channel=messages.CHANNEL_CMDLINE,
             requestType=None,

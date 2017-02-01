@@ -3,16 +3,14 @@
     "s3_bucket": "ml-lambda-dev-1",
     "app_function": "gbot.app",
     "environment_variables": {
-      "SLACK_BOT_ID": "U3KC79GGH",
-      "SLACK_VERIFICATION_TOKEN": "Avr8oGeFjTX2PJdJ1NKurE6V"
+      "REALM":"dev"
     },
   }
   "prod": {
     "s3_bucket": "ml-lambda-prod-1",
     "app_function": "gbot.app"
     "environment_variables": {
-      "SLACK_BOT_ID": "",
-      "SLACK_VERIFICATION_TOKEN": "BweHbKtg9sBuOXXi92dU3e4Z"
+      "REALM":"prod"
     },
   }
   "test": {
