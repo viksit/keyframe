@@ -12,7 +12,7 @@ def getConfig(realm=None):
         return ProdConfig()
     elif realm == "dev":
         return Config()
-    elif realm = "test":
+    elif realm == "test":
         return TestConfig()
     else:
         raise "Unknown REALM: %s" % (realm,)
@@ -46,7 +46,7 @@ class ProdConfig(Config):
     AWS_ACCESS_KEY_ID = "AKIAJL6J66PRRBMABHFQ"
     AWS_SECRET_ACCESS_KEY = "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"
 
-    SLACK_BOT_ID = ""
+    SLACK_BOT_ID = "A3Y82KUCE"
     SLACK_VERIFICATION_TOKEN = "BweHbKtg9sBuOXXi92dU3e4Z"
 
     MYRA_API_HOSTNAME = "api.prod.myralabs.com"

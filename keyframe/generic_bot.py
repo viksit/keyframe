@@ -37,7 +37,7 @@ class GenericBot(keyframe.base.BaseBot):
         self.agentId = kwargs.get("agentId")
         self.accountId = kwargs.get("accountId")
 
-        log.debug("self.specJson: %s", self.specJson)
+        #log.debug("self.specJson: %s", self.specJson)
         self.configFromJson()
 
     def _botStateKey(self, userId, channel):

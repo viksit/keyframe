@@ -140,12 +140,15 @@ class ResponseElement(object):
         return res.encode("utf-8")
 
     def toJSON(self):
+        rm = None
+        if self.responseMeta:
+            rm = self.responseMeta.toJSON()
         return {
             "type": self.type,
             "responseType": self.responseType,
             "text": self.text,
             "carousel": self.carousel,
-            "responseMeta": self.responseMeta.toJSON()
+            "responseMeta": rm
         }
 
 def createTextResponse(canonicalMsg, text, responseType=None,

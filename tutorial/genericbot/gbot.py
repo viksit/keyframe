@@ -5,6 +5,7 @@ from flask import Flask, request, Response
 from flask import Flask, current_app, jsonify, make_response
 import yaml
 import json
+import traceback
 import logging
 
 from pymyra.api import client
@@ -198,7 +199,7 @@ class GenericBotHTTPAPI(generic_bot_api.GenericBotAPI):
                 GenericBotHTTPAPI.accountSecret = accountSecret
                 js = bms.getJsonSpec(accountId, agentId)
                 GenericBotHTTPAPI.configJson = js
-                log.info("(::) json config spec: %s", GenericBotHTTPAPI.configJson)
+                #log.debug("(::) json config spec: %s", GenericBotHTTPAPI.configJson)
                 if not js:
                     raise Exception("Json spec not found for %s", kwargs)
 
@@ -320,11 +321,20 @@ SLACK_VERIFICATION_TOKEN = cfg.SLACK_VERIFICATION_TOKEN
 # TODO(viksit): rename this to something better.
 @app.route("/listening", methods=["GET", "POST"])
 def run_agent_slack():
+    log.info("/listening %s", request.url)
+    # Always make a response. If response is not going to be 200,
+    # then add the no-retry header so slack doesn't keep trying.
+    try:
+        return _run_agent_slack()
+    except:
+        traceback.print_exc()
+        return make_response("Unexpected Error!", 500, {"X-Slack-No-Retry": 1})
 
+def _run_agent_slack():
     # TODO(viksit): see notes for refactor
     slackEvent = request.json
     if not slackEvent:
-        return make_response("invalid payload", 400)
+        return make_response("invalid payload", 400, {"X-Slack-No-Retry": 1})
 
     log.debug("request.json: %s", slackEvent)
     if "challenge" in slackEvent:
@@ -336,7 +346,7 @@ def run_agent_slack():
         log.warn("Invalid slack verification token: %s", slackEvent.get("token"))
         # By adding "X-Slack-No-Retry" : 1 to our response headers, we turn off
         # Slack's automatic retries during development.
-        make_response("Invalid verification token", 403, {"X-Slack-No-Retry": 1})
+        return make_response("Invalid verification token", 403, {"X-Slack-No-Retry": 1})
 
     if "event" not in slackEvent:
         return make_response("[NO EVENT IN SLACK REQUEST]", 404, {"X-Slack-No-Retry": 1})
@@ -345,6 +355,7 @@ def run_agent_slack():
     # ignore bot message notification
     if "subtype" in event:
         if event["subtype"] == "bot_message":
+            log.debug("ignoring event with subtype: bot_message")
             message = "Ignoring the bot message notification"
             # Return a helpful error message
             return make_response(message, 200, {"X-Slack-No-Retry": 1})
@@ -381,7 +392,8 @@ def run_agent_slack():
     agentDeploymentMeta = ads.getJsonSpec(teamId, "slack")
     botToken = agentDeploymentMeta.get("bot_token")
 
-    assert botToken is not None, "This team is not registered with Concierge"
+    if not botToken:
+        raise Exception("This team is not registered with Concierge")
 
     # Myra concierge information
     conciergeMeta = agentDeploymentMeta.get("concierge_meta")
@@ -412,6 +424,7 @@ def run_agent_slack():
     r = GenericBotHTTPAPI.requestHandler(
         event=event,
         context={})
+    log.debug("going to return a 200 status after request is handled")
     return make_response("NOOP", 200, {"X-Slack-No-Retry": 1})
 
 # End slack code
