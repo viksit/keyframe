@@ -26,12 +26,16 @@ class BaseField(object):
 
     def field_eval_fn(self, **kwargs):
         """
-        Must return bool (T/F)
+        Must return {"result":bool, ...}
         """
         pass
 
 
 # Intents
+
+# TODO: What should the UnknownIntent do?
+class UnknownIntent(BaseField):
+    pass
 
 class DefaultIntent(BaseField):
 
@@ -41,7 +45,7 @@ class DefaultIntent(BaseField):
         super(DefaultIntent, self).__init__(**kwargs)
 
     def field_eval_fn(self, **kwargs):
-        return True
+        return {"result":True}
 
 class RegexIntent(BaseField):
 
@@ -55,7 +59,8 @@ class RegexIntent(BaseField):
 
     def field_eval_fn(self, **kwargs):
         canonicalMsg = kwargs.get("canonicalMsg")
-        return bool(len(re.findall(self.regex, " " + canonicalMsg.text + " ")))
+        r = bool(len(re.findall(self.regex, " " + canonicalMsg.text + " ")))
+        return {"result":r}
 
 class KeywordIntent(BaseField):
 
@@ -75,7 +80,7 @@ class KeywordIntent(BaseField):
         log.debug("self.keywords: %s", self.keywords)
         ret = bool(set(canonMsgTokenSet.intersection(self.keywords)))
         log.debug("field_eval_fn returning %s", ret)
-        return ret
+        return {"result":ret}
 
 class APIIntent(BaseField):
     _params = {}
@@ -84,13 +89,22 @@ class APIIntent(BaseField):
         super(APIIntent, self).__init__(**kwargs)
 
     def field_eval_fn(self, **kwargs):
-        myraAPI = kwargs.get("myraAPI")
-        canonicalMsg = kwargs.get("canonicalMsg")
-        assert myraAPI is not None, "Have you registered an API object?"
-        apiResult = myraAPI.get(canonicalMsg.text)
-        self.apiResult = apiResult
-        intentStr = apiResult.intent.label
-        return intentStr == self.label
+        log.debug("APIIntent.field_eval_fn(%s)", locals())
+        apiResult = kwargs.get("apiResult")
+        if not apiResult:
+            myraAPI = kwargs.get("myraAPI")
+            assert myraAPI is not None, "Have you registered an API object?"
+            canonicalMsg = kwargs.get("canonicalMsg")
+            log.debug("calling myraAPI.get")
+            self.apiResult = myraAPI.get(canonicalMsg.text)
+        else:
+            log.debug("apiResult was passed in")
+            self.apiResult = apiResult
+        intentStr = self.apiResult.intent.label
+        log.debug("field_eval_fn intentStr: %s, returning: %s",
+                  intentStr, (intentStr == self.label))
+        r = (intentStr == self.label)
+        return {"result":r, "api_result":self.apiResult}
 
 # Entities
 

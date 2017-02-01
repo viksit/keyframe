@@ -216,17 +216,19 @@ class BaseBot(object):
         apiResult = None
         defaultIntent = None
         for intentObj in self.intentEvalSet:
-            # log.debug("intentObj: %s", intentObj)
+            log.debug("intentObj: %s", intentObj)
             if isinstance(intentObj, dsl.DefaultIntent):
                 defaultIntent = intentObj
                 continue
-            if intentObj.field_eval_fn(
-                    myraAPI = self.api, # If no API is passed to bot, this will be None
-                    canonicalMsg = canonicalMsg):
+            evalRet = intentObj.field_eval_fn(
+                myraAPI = self.api, # If no API is passed to bot, this will be None
+                canonicalMsg = canonicalMsg,
+                apiResult = apiResult)
+            apiResult = evalRet.get("api_result")
+            if evalRet["result"]:
                 intentStr = intentObj.label
-                apiResult = intentObj.apiResult
                 log.debug("found intentStr: %s", intentStr)
-                log.debug("api Result: %s", intentObj.apiResult)
+                log.debug("api Result: %s", apiResult)
                 break
         # No non-default intent detected.
         if not intentStr and defaultIntent:
