@@ -80,6 +80,7 @@ class KVStore(object):
         """
         self.put(key, json.dumps(value))
 
+
 # Useful in unit tests and potentially local testing.
 # Biggest advantage over LocalFileKVStore is for unit tests
 # just create a new store to start with a clean store.
@@ -159,6 +160,9 @@ class DynamoKVStore(KVStore):
             i.delete()
         except DynamoDBKeyNotFoundError as de:
             pass
+
+    def __repr__(self):
+        return "%s()" % (self.__class__,)
 
 class S3KVStore(KVStore):
     def __init__(self, s3Bucket):
