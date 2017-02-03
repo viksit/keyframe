@@ -30,7 +30,7 @@ def get_kv_store(kvstype, config):
             config.DYNAMODB_AWS_REGION,
             aws_access_key_id=config.AWS_ACCESS_KEY_ID,
             aws_secret_access_key=config.AWS_SECRET_ACCESS_KEY)
-        return DynamoKVStore(dbconn)
+        return DynamoKVStore(dbconn, config.KV_STORE_DYNAMODB_TABLE)
     elif kvstype == TYPE_LOCALFILE:
         return LocalFileKVStore()
     elif kvstype == TYPE_INMEMORY:
@@ -132,9 +132,9 @@ class LocalFileKVStore(KVStore):
             os.remove(p)
 
 class DynamoKVStore(KVStore):
-    def __init__(self, dbconn):
+    def __init__(self, dbconn, db_table):
         self.dbconn = dbconn
-        self.kvstore = dbconn.get_table("client_bots_kvstore")
+        self.kvstore = dbconn.get_table(db_table)
 
     def put(self, key, value):
         log.info("DynamoKVStore.put(%s)", locals())

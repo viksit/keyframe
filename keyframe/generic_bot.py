@@ -60,8 +60,10 @@ class GenericBot(keyframe.base.BaseBot):
         log.debug("GenericBot.configFromJson()")
         intents = self.specJson.get("intents")
         for (intentId, intentProperties) in intents.iteritems():
+            log.debug("intentId: %s, intentProperties: %s",
+                      intentId, intentProperties)
             intentType = intentProperties.get("intent_type")
-            if intentType == "api":
+            if intentType == "api" or intentType == "unknown":
                 i = keyframe.dsl.APIIntent(label=intentId)
                 self.intentEvalSet.add(i)
                 self.intentActions[intentId] = keyframe.generic_action.GenericActionObject

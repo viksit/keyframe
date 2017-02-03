@@ -23,7 +23,9 @@ from keyframe import store_api
 from keyframe import generic_bot
 from keyframe import generic_bot_api
 
-log = logging.getLogger(__name__)
+#log = logging.getLogger(__name__)
+# Make the logger used by keyframe, but not the root logger.
+log = logging.getLogger("keyframe")
 ch = logging.StreamHandler(sys.stdout)
 ch.setLevel(logging.DEBUG)
 logformat = "[%(levelname)1.1s %(asctime)s %(name)s] %(message)s"
