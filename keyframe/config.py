@@ -5,8 +5,10 @@ log = logging.getLogger(__name__)
 
 # Zappa creates 'STAGE' env var based on the deploy.
 # 'zappa deploy dev' => STAGE=dev
-# So use this as the realm here.
-REALM = os.getenv("STAGE", "dev")
+# So STAGE overrides realm if it exists.
+TMP_REALM = os.getenv("REALM", "dev")
+REALM = os.getenv("STAGE", TMP_REALM)
+log.info("REALM: %s", REALM)
 
 def getConfig(realm=None):
     if not realm:
