@@ -98,7 +98,8 @@ class ResponseMeta(object):
         if self.apiResult:
             intentDict = {}
             entitiesDict = {}
-            d = {"intent":intentDict, "entities":entitiesDict}
+            d = {"intent":intentDict, "entities":entitiesDict,
+                 "raw":self.apiResult.api_response}
             i = self.apiResult.intent
             if i:
                 intentDict["label"] = i.label

@@ -97,6 +97,7 @@ class APIIntent(BaseField):
             canonicalMsg = kwargs.get("canonicalMsg")
             log.debug("calling myraAPI.get")
             self.apiResult = myraAPI.get(canonicalMsg.text)
+            log.debug("field_eval_fn.self.apiResult: %s", self.apiResult)
         else:
             log.debug("apiResult was passed in")
             self.apiResult = apiResult
