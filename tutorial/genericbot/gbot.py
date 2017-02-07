@@ -36,6 +36,10 @@ LOG_LEVEL = int(os.getenv("LOG_LEVEL", 10))
 log.setLevel(LOG_LEVEL)
 log.propagate = False
 
+log2 = logging.getLogger("pymyra")
+log2.addHandler(ch)
+log2.setLevel(LOG_LEVEL)
+
 # TODO:
 # Initialize via a configuration file
 kvStore = store_api.get_kv_store(
@@ -145,10 +149,14 @@ class GenericCmdlineHandler(BotCmdLineHandler):
             agentId = self.kwargs.get("agentId")
             configJson = bms.getJsonSpec(accountId, agentId)
 
-        intentModelId = configJson.get("config_json").get("intent_model_id")
+        cj = configJson.get("config_json")
+        intentModelId = cj.get("intent_model_id")
+        modelParams = cj.get("params")
+
         # TODO: inject json and have the GenericBot decipher it!!
         api = None
-        log.debug("intent_model_id: %s", intentModelId)
+        log.debug("GOT intent_model_id: %s, modelParams: %s",
+                  intentModelId, modelParams)
         if intentModelId:
             apicfg = {
                 "account_id": accountId,
@@ -157,6 +165,7 @@ class GenericCmdlineHandler(BotCmdLineHandler):
             }
             api = client.connect(apicfg)
             api.set_intent_model(intentModelId)
+            api.set_params(modelParams)
         self.bot = generic_bot.GenericBot(
             kvStore=kvStore, configJson=configJson.get("config_json"), api=api)
         self.bot.setChannelClient(channelClient)
@@ -213,8 +222,11 @@ class GenericBotHTTPAPI(generic_bot_api.GenericBotAPI):
         log.info("(::) agentId: %s, accountId: %s", agentId, accountId)
 
         intentModelId = configJson.get("config_json").get("intent_model_id")
+        modelParams = configJson.get("config_json").get("params")
+
         api = None
-        log.debug("intent_model_id: %s", intentModelId)
+        log.debug("intent_model_id: %s, modelParams: %s",
+                  intentModelId, modelParams)
         if intentModelId:
             apicfg = {
                 "account_id": accountId,
@@ -223,6 +235,7 @@ class GenericBotHTTPAPI(generic_bot_api.GenericBotAPI):
             }
             api = client.connect(apicfg)
             api.set_intent_model(intentModelId)
+            api.set_params(modelParams)
 
         self.bot = generic_bot.GenericBot(
             kvStore=kvStore,
