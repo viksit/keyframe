@@ -30,6 +30,11 @@ class BotState(object):
         self._lastResult = None
         self.changed = False
 
+    def clearWaiting(self):
+        if self._waiting:
+            self._waiting = None
+            self.changed = True
+
     def getWaiting(self):
         """Get an action object waiting for input, remove it
         from waiting, and return it (like a pop except this is not a stack).

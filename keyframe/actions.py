@@ -52,10 +52,17 @@ class ActionObject(object):
         self.slotObjects = kwargs.get("slotObjects")
         self.filledSlots = {}
         self.newIntent = kwargs.get("newIntent")
+        self.botState = None
         self.init()
 
     def init(self):
         pass
+
+    def getPreemptWaitingActionThreshold(self):
+        return False
+
+    def getClearWaitingAction(self):
+        return False
 
     def getSlots(self):
         cls = self.__class__
@@ -191,6 +198,8 @@ class ActionObject(object):
         # should we save bot state here?
         # reset slots now that we're filled
         self.resetSlots()
+        if self.getClearWaitingAction():
+            self.botState.clearWaiting()
         return requestState
 
     @classmethod

@@ -236,9 +236,9 @@ class BaseBot(object):
         log.debug("intentStr: %s", intentStr)
         # We now check if this intent has any registered action objects.
         actionObjectCls = self.intentActions.get(intentStr, None)
-
+        intentScore = apiResult.intent.score
         assert actionObjectCls is not None, "No action objects were registered for this intent"
-        return (intentStr, actionObjectCls, apiResult)
+        return (intentStr, intentScore, actionObjectCls, apiResult)
 
     def createActionObject(self, actionObjectCls, intentStr,
                            canonicalMsg, botState,
@@ -319,32 +319,37 @@ class BaseBot(object):
         msg = canonicalMsg.text.lower()
         if msg.startswith("botcmd"):
             return self._handleBotCmd(canonicalMsg, botState, userProfile, requestState)
+        intentStr, intentScore, actionObjectCls, apiResult = self._getActionObjectFromIntentHandlers(canonicalMsg)
+        log.debug("GetActionObjectFromIntentHandlers: intent: %s cls: %s", intentStr, actionObjectCls)
+        preemptWaitingAction = False
+        intentActionObject = self.createActionObject(
+            actionObjectCls,
+            intentStr, canonicalMsg, botState, userProfile,
+            requestState, apiResult=apiResult, newIntent=True)
+        log.debug("intentActionObject: %s", intentActionObject)
+        if (intentActionObject.getPreemptWaitingActionThreshold()
+            and intentActionObject.getPreemptWaitingActionThreshold() <= intentScore):
+            preemptWaitingAction = True
 
-        waitingActionJson = botState.getWaiting()
-        log.debug("waitingActionJson: %s", waitingActionJson)
-        if waitingActionJson:
-            intentStr = actions.ActionObject.getIntentStrFromJSON(waitingActionJson)
-            actionObjectCls = self.intentActions.get(intentStr)
-            actionObject = self.createActionObject(
-                actionObjectCls, intentStr,
-                canonicalMsg, botState, userProfile,
-                requestState, newIntent=False)
-            actionObject.populateFromJson(waitingActionJson)
-            #self.sendDebugResponse(botState, canonicalMsg)
-            requestState = actionObject.processWrapper(botState)
+        if not skipWaitingAction:
+            waitingActionJson = botState.getWaiting()
+            log.debug("waitingActionJson: %s", waitingActionJson)
+            if waitingActionJson:
+                intentStr = actions.ActionObject.getIntentStrFromJSON(waitingActionJson)
+                actionObjectCls = self.intentActions.get(intentStr)
+                waitingActionObject = self.createActionObject(
+                    actionObjectCls, intentStr,
+                    canonicalMsg, botState, userProfile,
+                    requestState, newIntent=False)
+                waitingActionObject.populateFromJson(waitingActionJson)
+                #self.sendDebugResponse(botState, canonicalMsg)
+                requestState = waitingActionObject.processWrapper(botState)
 
         if requestState != constants.BOT_REQUEST_STATE_PROCESSED:
             log.debug("requestState: %s", requestState)
             log.debug("botState: %s", botState)
-            intentStr, actionObjectCls, apiResult = self._getActionObjectFromIntentHandlers(canonicalMsg)
-            log.debug("GetActionObjectFromIntentHandlers: intent: %s cls: %s", intentStr, actionObjectCls)
-            actionObject = self.createActionObject(
-                actionObjectCls,
-                intentStr, canonicalMsg, botState, userProfile,
-                requestState, apiResult=apiResult, newIntent=True)
-            log.debug("actionObject: %s", actionObject)
             #self.sendDebugResponse(botState, canonicalMsg)
-            requestState = actionObject.processWrapper(botState)
+            requestState = intentActionObject.processWrapper(botState)
             log.debug("requeststate: %s", requestState)
 
         if requestState != constants.BOT_REQUEST_STATE_PROCESSED:

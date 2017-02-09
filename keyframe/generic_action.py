@@ -33,6 +33,17 @@ class GenericActionObject(actions.ActionObject):
     def __init__(self, **kwargs):
         super(GenericActionObject, self).__init__(**kwargs)
         self.msg = None
+        self.specJson = None
+
+    def getPreemptWaitingActionThreshold(self):
+        if self.specJson:
+            return self.specJson.get("preempt_waiting_action_threshold")
+        return None
+
+    def getClearWaitingAction(self):
+        if self.specJson:
+            return self.specJson.get("clear_waiting_action", False)
+        return False
 
     def fetchWebhook(self, webhook, filledSlots):
         # To render a templatized url with custom parameters
@@ -103,6 +114,7 @@ class GenericActionObject(actions.ActionObject):
 
         # Create a GenericActionObject using specJson
         actionObject = cls()
+        actionObject.specJson = specJson
         actionObject.msg = specJson.get("text")
         # TODO: This has to be enforced in the UI.
         #assert actionObject.msg, "No text field in json: %s" % (specJson,)
