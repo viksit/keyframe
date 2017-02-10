@@ -59,7 +59,7 @@ class ActionObject(object):
         pass
 
     def getPreemptWaitingActionThreshold(self):
-        return False
+        return None
 
     def getClearWaitingAction(self):
         return False
