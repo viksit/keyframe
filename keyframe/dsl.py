@@ -2,6 +2,8 @@ import logging
 import re
 import sys
 
+import pymyra.api.client
+
 log = logging.getLogger(__name__)
 ch = logging.StreamHandler(sys.stdout)
 ch.setLevel(logging.DEBUG)
@@ -105,7 +107,8 @@ class APIIntent(BaseField):
         log.debug("field_eval_fn intentStr: %s, returning: %s",
                   intentStr, (intentStr == self.label))
         r = (intentStr == self.label)
-        return {"result":r, "api_result":self.apiResult}
+        return {"result":r, "score":self.apiResult.intent.score,
+                "api_result":self.apiResult}
 
 # Entities
 

@@ -1,6 +1,7 @@
 from __future__ import print_function
 import logging
 import json
+import re
 
 import messages
 import slot_fill
@@ -205,6 +206,23 @@ class BaseBot(object):
             userProfile = userProfile
         )
 
+    debug_intent_re = re.compile("\[intent=([^\]]+)\]")
+    def _getDebugActionObject(self, canonicalMsg):
+        log.debug("_getDebugActionObject called")
+        utterance = canonicalMsg.text
+        if not utterance:
+            return None
+        x = self.debug_intent_re.match(utterance)
+        if not x:
+            return None
+        intentStr = x.groups()[0]
+        actionObjectCls = self.intentActions.get(intentStr)
+        assert actionObjectCls, "No action object for intent: %s" % (intentStr,)
+        d = {"intentStr":intentStr, "intentScore":1,
+                "actionObjectCls":actionObjectCls}
+        log.debug("RETURNING DEBUG action: %s", d)
+        return d
+
     def _getActionObjectFromIntentHandlers(self, canonicalMsg):
 
         # Support default intent.
@@ -214,7 +232,14 @@ class BaseBot(object):
         # In the future, we could do something different.
         # If no intents are matched we just return whatever is mapped to a default intent.
         apiResult = None
+        intentScore = 1
         defaultIntent = None
+        # debug
+        r = self._getDebugActionObject(canonicalMsg)
+        if r:
+            return (r["intentStr"], r.get("intentScore",1),
+                    r["actionObjectCls"], r.get("apiResult"))
+
         for intentObj in self.intentEvalSet:
             log.debug("intentObj: %s", intentObj)
             if isinstance(intentObj, dsl.DefaultIntent):
@@ -229,6 +254,7 @@ class BaseBot(object):
                 intentStr = intentObj.label
                 log.debug("found intentStr: %s", intentStr)
                 log.debug("api Result: %s", apiResult)
+                intentScore = evalRet.get("score", intentScore)
                 break
         # No non-default intent detected.
         if not intentStr and defaultIntent:
@@ -236,7 +262,6 @@ class BaseBot(object):
         log.debug("intentStr: %s", intentStr)
         # We now check if this intent has any registered action objects.
         actionObjectCls = self.intentActions.get(intentStr, None)
-        intentScore = apiResult.intent.score
         assert actionObjectCls is not None, "No action objects were registered for this intent"
         return (intentStr, intentScore, actionObjectCls, apiResult)
 
@@ -318,7 +343,10 @@ class BaseBot(object):
         # Check for a bot command
         msg = canonicalMsg.text.lower()
         if msg.startswith("botcmd"):
-            return self._handleBotCmd(canonicalMsg, botState, userProfile, requestState)
+            requestState = self._handleBotCmd(canonicalMsg, botState, userProfile, requestState)
+            if requestState == constants.BOT_REQUEST_STATE_PROCESSED:
+                return
+
         intentStr, intentScore, actionObjectCls, apiResult = self._getActionObjectFromIntentHandlers(canonicalMsg)
         log.debug("GetActionObjectFromIntentHandlers: intent: %s cls: %s", intentStr, actionObjectCls)
         preemptWaitingAction = False
