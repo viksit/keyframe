@@ -198,8 +198,8 @@ class ActionObject(object):
         # should we save bot state here?
         # reset slots now that we're filled
         self.resetSlots()
-        if self.getClearWaitingAction():
-            self.botState.clearWaiting()
+        if botState and self.getClearWaitingAction():
+            botState.clearWaiting()
         return requestState
 
     @classmethod
