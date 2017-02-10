@@ -355,8 +355,8 @@ class BaseBot(object):
             intentStr, canonicalMsg, botState, userProfile,
             requestState, apiResult=apiResult, newIntent=True)
         log.debug("intentActionObject: %s", intentActionObject)
-        if (intentActionObject.getPreemptWaitingActionThreshold()
-            and intentActionObject.getPreemptWaitingActionThreshold() <= intentScore):
+        preemptThreshold = intentActionObject.getPreemptWaitingActionThreshold()
+        if preemptThreshold and float(preemptThreshold) <= intentScore:
             preemptWaitingAction = True
 
         if not preemptWaitingAction:
