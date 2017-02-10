@@ -331,7 +331,7 @@ class BaseBot(object):
             and intentActionObject.getPreemptWaitingActionThreshold() <= intentScore):
             preemptWaitingAction = True
 
-        if not skipWaitingAction:
+        if not preemptWaitingAction:
             waitingActionJson = botState.getWaiting()
             log.debug("waitingActionJson: %s", waitingActionJson)
             if waitingActionJson:
