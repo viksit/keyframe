@@ -182,6 +182,10 @@ class ActionObject(object):
         raise NotImplementedError()
 
     def processWrapper(self, botState):
+        if self.transitionMsg and self.newIntent:
+            log.debug("sending transition msg back: %s", self.transitionMsg)
+            self.respond(self.transitionMsg)
+
         # Fill slots
         log.info("processWrapper: botState: botstate: %s, reqstate: %s", botState, self.requestState)
         allFilled = self.slotFill(botState)

@@ -116,6 +116,7 @@ class GenericActionObject(actions.ActionObject):
         actionObject = cls()
         actionObject.specJson = specJson
         actionObject.msg = specJson.get("text")
+        actionObject.transitionMsg = specJson.get("transition_text")
         # TODO: This has to be enforced in the UI.
         #assert actionObject.msg, "No text field in json: %s" % (specJson,)
         if not actionObject.msg:
