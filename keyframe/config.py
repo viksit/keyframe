@@ -1,5 +1,6 @@
 import os
 import logging
+import distutils
 
 log = logging.getLogger(__name__)
 
@@ -46,6 +47,9 @@ class Config(object):
 
     #MYRA_API_HOSTNAME = "api.dev.myralabs.com"
     MYRA_API_HOSTNAME = os.getenv("MYRA_API_HOSTNAME", "api.dev.myralabs.com")
+
+    SEND_EMAIL = distutils.util.strtobool(os.getenv("MYRA_SEND_EMAIL", "true"))
+    SEND_EMAIL_AUTH_KEY = "key-82392a82671aef14bc88bdf73977182d"
 
     # Test page access token.
     FB_PAGE_ACCESS_TOKEN = "EAANkHwib2HcBAAZAEVORAemInZAOAlIn6BzP4nmfUKxCe562rRQnZBxCHgZAaaxYskZBciitSipgUfQccKu5oCc1ZCGK6JxeXm0j5rBhI7ZBYl86gqAvEHn7aAeZA3C3x1BlczEqLwnVpKc0KXh7NwKBE85Jk1ONG36mzMetRbj93"

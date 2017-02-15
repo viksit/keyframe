@@ -16,7 +16,8 @@ import actions
 import generic_slot
 import dsl
 from six import iteritems, add_metaclass
-
+import traceback
+import email
 
 log = logging.getLogger(__name__)
 ch = logging.StreamHandler(sys.stdout)
@@ -76,11 +77,44 @@ class GenericActionObject(actions.ActionObject):
         })
         return renderedResponse
 
+    def doStructuredResponse(self, structuredMsg):
+        rt = structuredMsg["response_type"]
+        if rt != "email":
+            log.warn("unknown response_type: %s", rt)
+            return None
+        toAddr = Template(structuredMsg.get("to")).render(self.filledSlots)
+        subject = Template(structuredMsg.get("subject")).render(self.filledSlots)
+        emailContent = Template(structuredMsg.get("body")).render(self.filledSlots)
+        r = email.send(toAddr, subject, emailContent)
+        responseContent = "<no response specified>"
+        if r:
+            responseContent = structuredMsg.get(
+                "success_response",
+                structuredMsg.get("response", responseContent))
+        else:
+            responseContent = structuredMsg.get(
+                "failure_response",
+                structuredMsg.get("response", responseContent))
+        return Template(responseContent).render(self.filledSlots)
+
     def process(self):
+        log.debug("GenericAction.process called")
         resp = ""
         if self.webhook and len(self.webhook.items()):
             resp = self.fetchWebhook(self.webhook, self.filledSlots)
-        else:
+        try:
+            log.debug("MSG: %s, (%s)", self.msg, type(self.msg))
+            structuredMsg = json.loads(self.msg)
+            if "response_type" in structuredMsg:
+                resp = self.doStructuredResponse(structuredMsg)
+            else:
+                log.warn("no response_type found in json - skipping structured response")
+        except:
+            traceback.print_exc()
+            log.debug("msg is not json - normal response processing")
+
+        log.debug("resp 1: %s", resp)
+        if not resp:
             responseTemplate = Template(self.msg)
             resp = responseTemplate.render(self.filledSlots)
         # Final response
@@ -165,6 +199,11 @@ class GenericActionObject(actions.ActionObject):
         actionObject.slotObjects = slotObjects
         actionObject.apiResult = apiResult
         actionObject.newIntent = newIntent
+        actionObject.originalUtterance = None
+        if actionObject.newIntent:
+            log.debug("set originalUtterance to input (%s)",
+                      canonicalMsg.text)
+            actionObject.originalUtterance = canonicalMsg.text
         if runAPICall:
             apiResult = api.get(canonicalMsg.text)
             actionObject.apiResult = apiResult

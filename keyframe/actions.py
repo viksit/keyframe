@@ -118,6 +118,12 @@ class ActionObject(object):
         actionObject.botState = botState
         actionObject.apiResult = apiResult
         actionObject.newIntent = newIntent
+        actionObject.originalUtterance = None
+        if actionObject.newIntent:
+            log.debug("set originalUtterance to input (%s)",
+                      canonicalMsg.text)
+            actionObject.originalUtterance = canonicalMsg.text
+
         log.debug("createActionObject: %s", actionObject)
         return actionObject
 
@@ -129,6 +135,8 @@ class ActionObject(object):
         """
         Create an action object from a given JSON object
         """
+        self.originalUtterance = actionObjectJSON.get("originalUtterance")
+        log.debug("got originalUtterance from json: %s", self.originalUtterance)
         slotObjectData = actionObjectJSON.get("slotObjects")
         assert len(slotObjectData) == len(self.slotObjects)
         for slotObject, slotData in zip(self.slotObjects, slotObjectData):
@@ -195,9 +203,20 @@ class ActionObject(object):
 
         # Call process function only when slot data is filled up
         self.filledSlots = {}
+        transcript = []
+        if self.originalUtterance:
+            log.debug("adding original utterance to transcript (%s)",
+                      self.originalUtterance)
+            transcript.append("> %s" % (self.originalUtterance,))
+        # TODO: Need to add the original msg. Not clear if this is being stored.
         for s in self.slotObjects:
-            self.filledSlots[s.name] = s.value
-
+            self.filledSlots[s.name] = s.value  # Backward compat + easy to use.
+            self.filledSlots["%s_prompt" % (s.name,)] = s.prompt()
+            self.filledSlots["%s_response" % (s.name,)] = s.value
+            transcript.append("prompt> %s" % (s.prompt(),))
+            transcript.append("> %s" % (s.value,))
+            transcript.append("")
+        self.filledSlots["transcript"] = "\n".join(transcript)
         requestState = self.process()
         # should we save bot state here?
         # reset slots now that we're filled
@@ -217,11 +236,12 @@ class ActionObject(object):
         # Each action object should have the following things stored
         # Slotobjects
         serializedSlotObjects = [i.toJSONObject() for i in self.slotObjects]
-
+        
         return {
             "actionObjectClassName": self.__class__.__name__,
             "origIntentStr": self.originalIntentStr,
-            "slotObjects": serializedSlotObjects
+            "slotObjects": serializedSlotObjects,
+            "originalUtterance": self.originalUtterance
         }
 
     @classmethod
