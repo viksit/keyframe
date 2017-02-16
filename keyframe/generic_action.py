@@ -199,6 +199,9 @@ class GenericActionObject(actions.ActionObject):
         actionObject.slotObjects = slotObjects
         actionObject.apiResult = apiResult
         actionObject.newIntent = newIntent
+        actionObject.instanceId = None
+        if newIntent:
+            actionObject.instanceId = cls.createActionObjectId()
         actionObject.originalUtterance = None
         if actionObject.newIntent:
             log.debug("set originalUtterance to input (%s)",

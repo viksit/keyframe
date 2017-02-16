@@ -332,6 +332,7 @@ class BaseBot(object):
         action.
 
         """
+        log.debug("BaseBot.handle(%s)", locals())
         canonicalMsg = kwargs.get("canonicalMsg")
         botState = kwargs.get("botState")
         userProfile = kwargs.get("userProfile")

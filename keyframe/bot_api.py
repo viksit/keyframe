@@ -54,6 +54,7 @@ class BotAPI(object):
         if not canonicalMsg:
             log.warn("no canonicalMsg extracted from channelMsg (%s)", channelMsg)
             return
+        log.debug("created canonicalMsg: %s", canonicalMsg)
         # The bot to be created may depend on the user.
         bot = self.getBot()
         bot.setChannelClient(self.channelClient)

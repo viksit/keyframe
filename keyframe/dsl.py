@@ -97,8 +97,13 @@ class APIIntent(BaseField):
             myraAPI = kwargs.get("myraAPI")
             assert myraAPI is not None, "Have you registered an API object?"
             canonicalMsg = kwargs.get("canonicalMsg")
+            urlParams = None
+            if canonicalMsg.rid:
+                urlParams = {"rid":canonicalMsg.rid}
             log.debug("calling myraAPI.get")
-            self.apiResult = myraAPI.get(canonicalMsg.text)
+            self.apiResult = myraAPI.get(
+                canonicalMsg.text,
+                url_params=urlParams)
             log.debug("field_eval_fn.self.apiResult: %s", self.apiResult)
         else:
             log.debug("apiResult was passed in")

@@ -43,6 +43,7 @@ class ActionObject(object):
     """
 
     def __init__(self, **kwargs):
+        # TODO - get rid of this does not seem to be used
         self.__clsid__ = getUUID()
         self.apiResult = kwargs.get("apiResult")
         self.canonicalMsg = kwargs.get("canonicalMsg")
@@ -118,6 +119,9 @@ class ActionObject(object):
         actionObject.botState = botState
         actionObject.apiResult = apiResult
         actionObject.newIntent = newIntent
+        actionObject.instanceId = None
+        if newIntent:
+            actionObject.instanceId = cls.createActionObjectId()
         actionObject.originalUtterance = None
         if actionObject.newIntent:
             log.debug("set originalUtterance to input (%s)",
@@ -128,6 +132,11 @@ class ActionObject(object):
         return actionObject
 
     @classmethod
+    def createActionObjectId(cls):
+        x = getUUID()
+        return "k-ao-%s" % (x[5:],)
+
+    @classmethod
     def getIntentStrFromJSON(cls, actionObjectJSON):
         return actionObjectJSON.get("origIntentStr")
 
@@ -136,6 +145,7 @@ class ActionObject(object):
         Create an action object from a given JSON object
         """
         self.originalUtterance = actionObjectJSON.get("originalUtterance")
+        self.instanceId = actionObjectJSON.get("instanceId")
         log.debug("got originalUtterance from json: %s", self.originalUtterance)
         slotObjectData = actionObjectJSON.get("slotObjects")
         assert len(slotObjectData) == len(self.slotObjects)
@@ -241,7 +251,8 @@ class ActionObject(object):
             "actionObjectClassName": self.__class__.__name__,
             "origIntentStr": self.originalIntentStr,
             "slotObjects": serializedSlotObjects,
-            "originalUtterance": self.originalUtterance
+            "originalUtterance": self.originalUtterance,
+            "instanceId": self.instanceId
         }
 
     @classmethod
@@ -255,7 +266,8 @@ class ActionObject(object):
             responseMeta=messages.ResponseMeta(
                 apiResult=self.apiResult,
                 newIntent=self.newIntent,
-                intentStr=self.originalIntentStr))
+                intentStr=self.originalIntentStr,
+                actionObjectInstanceId=self.instanceId))
         self.channelClient.sendResponse(cr)
 
     def respond(self, text, canonicalMsg=None, responseType=None):
@@ -272,7 +284,8 @@ class ActionObject(object):
             responseMeta=messages.ResponseMeta(
                 apiResult=self.apiResult,
                 newIntent=self.newIntent,
-                intentStr=self.originalIntentStr))
+                intentStr=self.originalIntentStr,
+                actionObjectInstanceId=self.instanceId))
 
         self.channelClient.sendResponse(cr)
         return constants.BOT_REQUEST_STATE_PROCESSED

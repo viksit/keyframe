@@ -255,12 +255,14 @@ def run_agent():
         agentId=agentId,
         accountSecret=accountSecret
     )
+    rid = request.args.get("rid", None)
     # The bot should be created in the getBot() function
     # Thus we need the db call to happen before this
     event = {
         "channel": messages.CHANNEL_HTTP_REQUEST_RESPONSE,
         "request-type": request.method,
-        "body": request.json
+        "body": request.json,
+        "rid": rid
     }
     r = GenericBotHTTPAPI.requestHandler(
         event=event,
