@@ -41,18 +41,19 @@ class ChannelUserProfile(object):
 
 class CanonicalMsg(object):
     def __init__(self, channel, httpType, userId, text,
-                 actualName=None):
+                 actualName=None, rid=None):
         self.channel = channel
         self.httpType = httpType
         self.userId = userId
         self.text = text
         self.actualName = None
+        self.rid = rid
 
     def __repr__(self):
         return ("CanonicalMsg(channel=%s, httpType=%s, userId=%s, "
-                "text=%s)") % \
+                "text=%s, rid=%s)") % \
             (self.channel, self.httpType, self.userId,
-             self.text)
+             self.text, self.rid)
 
     def toJSON(self):
         return {
@@ -84,14 +85,16 @@ class CanonicalResponse(object):
         }
 
 class ResponseMeta(object):
-    def __init__(self, apiResult=None, newIntent=None, intentStr=None):
+    def __init__(self, apiResult=None, newIntent=None, intentStr=None,
+                 actionObjectInstanceId=None):
         self.apiResult = apiResult
         self.newIntent = newIntent
         self.intentStr = intentStr
+        self.actionObjectInstanceId = actionObjectInstanceId
 
     def __repr__(self):
-        return "ResponseMeta(apiResult=%s, newIntent=%s, intentStr=%s)" % (
-            self.apiResult, self.newIntent, self.intentStr)
+        return "ResponseMeta(apiResult=%s, newIntent=%s, intentStr=%s, actionObjectInstanceId=%s)" % (
+            self.apiResult, self.newIntent, self.intentStr, self.actionObjectInstanceId)
 
     def toJSON(self):
         d = None
@@ -109,7 +112,8 @@ class ResponseMeta(object):
                     entitiesDict["entity_dict"] = e.entity_dict
         return {"apiResult":d,
                 "newIntent":self.newIntent,
-                "intentStr":self.intentStr}
+                "intentStr":self.intentStr,
+                "actionObjectInstanceId":self.actionObjectInstanceId}
 
 class ResponseElement(object):
     TYPE_TEXT = "text"

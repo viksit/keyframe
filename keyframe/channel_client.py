@@ -46,7 +46,9 @@ class ChannelClientCmdline(ChannelClient):
             channel=channelMsg.channel,
             httpType=channelMsg.httpType,
             userId=channelMsg.body.get("user_id"),
-            text=channelMsg.body.get("text"))
+            text=channelMsg.body.get("text"),
+            rid=channelMsg.body.get("rid")
+        )
 
     def sendResponse(self, canonicalResponse):
         for e in canonicalResponse.responseElements:
@@ -94,7 +96,9 @@ class ChannelClientFacebook(ChannelClient):
             httpType=channelMsg.httpType,
             userId=sender_id,
             text=text,
-            actualName=actualName)
+            actualName=actualName,
+            rid=channelMsg.body.get("rid")
+        )
 
     def sendResponse(self, canonicalResponse):
         log.info("sendResponse(%s)", canonicalResponse)
@@ -149,7 +153,9 @@ class ChannelClientSlack(ChannelClient):
             channel=channelMsg.channel,
             httpType=channelMsg.httpType,
             userId=self.userId,
-            text=channelMsg.body.get("event", {}).get("text"))
+            text=channelMsg.body.get("event", {}).get("text"),
+            rid=channelMsg.body.get("rid")
+        )
 
     def sendResponse(self, canonicalResponse):
         slackClient = SlackClient(self.botToken)
@@ -193,7 +199,9 @@ class ChannelClientRESTAPI(ChannelClient):
             channel=channelMsg.channel,
             httpType=channelMsg.httpType,
             userId=channelMsg.body.get("user_id"),
-            text=channelMsg.body.get("text"))
+            text=channelMsg.body.get("text"),
+            rid=channelMsg.body.get("rid")
+        )
 
     def sendResponse(self, canonicalResponse):
         log.info("sendResponse(%s)", canonicalResponse)
