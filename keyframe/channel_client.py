@@ -55,6 +55,8 @@ class ChannelClientCmdline(ChannelClient):
             print("\n\t>> ", e, "\n")
 
 
+class ChannelClientScript(ChannelClientRESTAPI):
+    pass
 
 class ChannelClientFacebook(ChannelClient):
     def __init__(self, config=None):
@@ -225,7 +227,8 @@ channelClientMap = {
     messages.CHANNEL_CMDLINE: ChannelClientCmdline,
     messages.CHANNEL_HTTP_REQUEST_RESPONSE: ChannelClientRESTAPI,
     messages.CHANNEL_FB: ChannelClientFacebook,
-    messages.CHANNEL_SLACK: ChannelClientSlack
+    messages.CHANNEL_SLACK: ChannelClientSlack,
+    messages.CHANNEL_SCRIPT: ChannelClientScript
 }
 
 def getChannelClient(channel, requestType, config=None):

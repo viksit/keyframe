@@ -26,19 +26,19 @@ from keyframe import generic_bot_api
 #log = logging.getLogger(__name__)
 # Make the logger used by keyframe, but not the root logger.
 log = logging.getLogger("keyframe")
-ch = logging.StreamHandler(sys.stdout)
-ch.setLevel(logging.DEBUG)
-logformat = "[%(levelname)1.1s %(asctime)s %(name)s] %(message)s"
-formatter = logging.Formatter(logformat)
-ch.setFormatter(formatter)
-log.addHandler(ch)
-LOG_LEVEL = int(os.getenv("LOG_LEVEL", 10))
-log.setLevel(LOG_LEVEL)
-log.propagate = False
+# ch = logging.StreamHandler(sys.stdout)
+# ch.setLevel(logging.DEBUG)
+# logformat = "[%(levelname)1.1s %(asctime)s %(name)s] %(message)s"
+# formatter = logging.Formatter(logformat)
+# ch.setFormatter(formatter)
+# log.addHandler(ch)
+# LOG_LEVEL = int(os.getenv("LOG_LEVEL", 10))
+# log.setLevel(LOG_LEVEL)
+# log.propagate = False
 
-log2 = logging.getLogger("pymyra")
-log2.addHandler(ch)
-log2.setLevel(LOG_LEVEL)
+# log2 = logging.getLogger("pymyra")
+# log2.addHandler(ch)
+# log2.setLevel(LOG_LEVEL)
 
 # TODO:
 # Initialize via a configuration file
@@ -132,14 +132,25 @@ class BotMetaStore(object):
 # Deployment for command line
 class GenericCmdlineHandler(BotCmdLineHandler):
 
+    def processMessage(self, userInput):
+       canonicalMsg = messages.CanonicalMsg(
+           channel=messages.CHANNEL_SCRIPT,
+           httpType=None,
+           userId=self.userId,
+           text=userInput)
+       self.bot.process(canonicalMsg)
+
+    def getChannelClient(self, cf):
+        return channel_client.getChannelClient(
+            channel=messages.CHANNEL_CMDLINE,
+            requestType=None,
+            config=cf)
+
     def init(self):
         log.debug("GenericCmdlineHandler.init")
         # channel configuration
         cf = config.getConfig()
-        channelClient = channel_client.getChannelClient(
-            channel=messages.CHANNEL_CMDLINE,
-            requestType=None,
-            config=cf)
+        channelClient = self.getChannelClient(cf)
 
         accountId = self.kwargs.get("accountId")
         accountSecret = self.kwargs.get("accountSecret")
@@ -170,7 +181,49 @@ class GenericCmdlineHandler(BotCmdLineHandler):
             kvStore=kvStore, configJson=configJson.get("config_json"), api=api)
         self.bot.setChannelClient(channelClient)
 
+class ScriptHandler(GenericCmdlineHandler):
+    @classmethod
+    def createScript(cls, scriptFile):
+        assert scriptFile and os.path.isfile(scriptFile)
+        script = []
+        with open(scriptFile, "r") as f:
+            scriptLines = f.readlines()
+        scriptLines = [l.strip() for l in scriptLines if not l.startswith("#")]
+        script = []
+        ctr = 0
+        while True:
+            if ctr >= len(scriptLines):
+                break
+            l = scriptLines[ctr]
+            log.info("l: %s", l)
+            if l.startswith("<"):
+                # input to bot
+                input = l[1:]
+                expected = []
+                i = 1
+                while ctr + i < len(scriptLines):
+                    nl = scriptLines[ctr + i]
+                    log.debug("nl: %s", nl)
+                    if nl.startswith(">"):
+                        expected.append(nl[1:])
+                        i += 1
+                    else:
+                        break
+                ctr += i
+                log.debug("ctr: %s", ctr)
+                script.append({"input":input, "expected":expected})
+            else:
+                assert False, "unexpected input from file"
+        return script
 
+    def getChannelClient(self, cf):
+        return channel_client.getChannelClient(
+            channel=messages.CHANNEL_SCRIPT,
+            requestType=None,
+            config=cf)
+
+
+    
 # Deployment for lambda
 
 app = Flask(__name__)
