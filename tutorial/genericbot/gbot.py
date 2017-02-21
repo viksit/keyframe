@@ -22,6 +22,8 @@ from keyframe import config
 from keyframe import store_api
 from keyframe import generic_bot
 from keyframe import generic_bot_api
+from keyframe import generic_cmdline
+from keyframe import bot_stores
 
 #log = logging.getLogger(__name__)
 # Make the logger used by keyframe, but not the root logger.
@@ -48,129 +50,6 @@ kvStore = store_api.get_kv_store(
     # store_api.TYPE_INMEMORY,
     config.getConfig())
 
-"""
-Agent Deployment Store
-
-For Slack:
-    key:
-        channelname.teamId
-
-    dynamodbstore = {
-          slack.T06SXL7GV = {
-              "team_id": "T06SXL7GV",
-                "bot_token": "xoxb-121415322561-hkR3eLghiCpVlgMZ5DrxExNh",
-                "concierge_meta": {
-                    "account_id": "BIRsNx4aBt9nNG6TmXudl",
-                    "account_secret": "f947dee60657b7df99cceaecc80dd4d644a5e3bd",
-                    "agent_id": "a7e4b5d749c74a8bb15e35a12a1bc5c6"
-                }
-            }
-        }
-"""
-
-class AgentDeploymentStore(object):
-
-    def __init__(self, kvStore=None):
-        self.kvStore = kvStore
-
-    def _getKey(self, teamId, channel):
-        k = "agentdeploy.%s.%s" % (channel, teamId)
-        return k
-
-    def getJsonSpec(self, teamId, channel):
-        """
-        Should return a python dict
-        """
-        k = self._getKey(teamId, channel)
-        return json.loads(self.kvStore.get_json(k))
-
-    def putJsonSpec(self, teamId, channel, jsonSpec):
-        """
-        Input is a python dict, and stores it as json
-        """
-        k = self._getKey(teamId, channel)
-        self.kvStore.put_json(k, json.dumps(jsonSpec))
-
-
-"""
-BotMetaStore
-{
-  "botmeta.<acctid>.<agentid>" : {
-     "jsonSpec": {},
-   }
-}
-"""
-
-class BotMetaStore(object):
-
-    def __init__(self, kvStore):
-        self.kvStore = kvStore
-
-    def _botMetaKey(self, accountId, agentId):
-        k = "botmeta.%s.%s" % (accountId, agentId)
-        log.debug("k: %s", k)
-        return k
-
-    def getJsonSpec(self, accountId, agentId):
-        """
-        Should return a python dict
-        """
-        log.debug("BotMetaStore.getJsonSpec(%s)", locals())
-        k = self._botMetaKey(accountId, agentId)
-        js = self.kvStore.get_json(k)
-        if not js:
-            return None
-        return json.loads(js)
-
-    def putJsonSpec(self, accountId, agentId, jsonSpec):
-        """
-        Input is a python dict, and stores it as json
-        """
-        k = self._botMetaKey(accountId, agentId)
-        self.kvStore.put_json(k, json.dumps(jsonSpec))
-
-# Deployment for command line
-class GenericCmdlineHandler(BotCmdLineHandler):
-
-    def init(self):
-        log.debug("GenericCmdlineHandler.init")
-        # channel configuration
-        cf = config.getConfig()
-        channelClient = channel_client.getChannelClient(
-            channel=messages.CHANNEL_CMDLINE,
-            requestType=None,
-            config=cf)
-
-        accountId = self.kwargs.get("accountId")
-        accountSecret = self.kwargs.get("accountSecret")
-        configJson = self.kwargs.get("config_json")
-        bms = BotMetaStore(kvStore=kvStore)
-        if not len(configJson.keys()):
-            agentId = self.kwargs.get("agentId")
-            configJson = bms.getJsonSpec(accountId, agentId)
-
-        cj = configJson.get("config_json")
-        intentModelId = cj.get("intent_model_id")
-        modelParams = cj.get("params")
-
-        # TODO: inject json and have the GenericBot decipher it!!
-        api = None
-        log.debug("GOT intent_model_id: %s, modelParams: %s",
-                  intentModelId, modelParams)
-        if intentModelId:
-            apicfg = {
-                "account_id": accountId,
-                "account_secret": accountSecret,
-                "hostname": cfg.MYRA_API_HOSTNAME
-            }
-            api = client.connect(apicfg)
-            api.set_intent_model(intentModelId)
-            api.set_params(modelParams)
-        self.bot = generic_bot.GenericBot(
-            kvStore=kvStore, configJson=configJson.get("config_json"), api=api)
-        self.bot.setChannelClient(channelClient)
-
-
 # Deployment for lambda
 
 app = Flask(__name__)
@@ -190,7 +69,7 @@ class GenericBotHTTPAPI(generic_bot_api.GenericBotAPI):
         """
         Given a key to db, fetch json from there
         """
-        bms = BotMetaStore(kvStore)
+        bms = bot_stores.BotMetaStore(kvStore)
         with app.app_context():
 
             if "run_mode" in current_app.config and \
@@ -327,7 +206,7 @@ class Message(object):
 #     #     }
 #     # }
 # }
-ads = AgentDeploymentStore(kvStore=kvStore)
+ads = bot_stores.AgentDeploymentStore(kvStore=kvStore)
 cfg = config.getConfig()
 
 # By default get dev settings.
@@ -480,7 +359,7 @@ if __name__ == "__main__":
     cmd = sys.argv[1] # cmd/http
     runtype = sys.argv[2] # file/db
 
-    print("(++) cmd: ", cmd, ", runtype: ", runtype)
+    log.info("(++) cmd: %s, runtime: %s", cmd, runtype)
     jsonFile = None
     agentId = None
 
@@ -502,8 +381,17 @@ if __name__ == "__main__":
         agentId = sys.argv[5]
 
     if cmd == "cmd":
-        c = GenericCmdlineHandler(config_json=d, accountId=accountId, accountSecret = accountSecret, agentId=agentId)
+        c = generic_cmdline.GenericCmdlineHandler(config_json=d, accountId=accountId, accountSecret = accountSecret, agentId=agentId, kvStore=kvStore, cfg=cfg)
         c.begin()
+
+    elif cmd == "script":
+        scriptFile = sys.argv[6]
+        c = generic_cmdline.ScriptHandler(config_json=d, accountId=accountId, accountSecret = accountSecret, agentId=agentId, kvStore=kvStore, cfg=cfg)
+        c.scriptFile(scriptFile=scriptFile)
+        num_errors = c.executeScript()
+        if num_errors > 0:
+            log.error("num_errors: %s", num_errors)
+            sys.exit(1)
 
     elif cmd == "http":
         app.config["run_mode"] = runtype

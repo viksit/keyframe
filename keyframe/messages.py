@@ -2,6 +2,7 @@ CHANNEL_FB = "channel-fb"
 CHANNEL_SLACK = "channel-slack"
 CHANNEL_CMDLINE = "channel-cmdline"
 CHANNEL_HTTP_REQUEST_RESPONSE = "channel-http-request-response"
+CHANNEL_SCRIPT = "channel-script"
 
 class ChannelMsg(object):
     def __init__(self, channel, httpType, body):
@@ -125,6 +126,9 @@ class ResponseElement(object):
     RESPONSE_TYPE_QUESTION = "question"
     RESPONSE_TYPE_DEBUG = "debug"
     RESPONSE_TYPE_PRERESPONSE = "preresponse"
+    RESPONSE_TYPE_TRANSITIONMSG = "transitionmsg"
+    RESPONSE_TYPE_SLOTFILL = "slotfill"
+    RESPONSE_TYPE_SLOTFILL_RETRY = "slotfillretry"
 
     def __init__(self, type, text=None, carousel=None, responseType=None, responseMeta=None):
         """

@@ -110,7 +110,9 @@ class Slot(object):
 
             # The original sentence didn't have any items to fill this slot
             # Send a response
-            self._createAndSendResponse(self.prompt(), channelClient)
+            self._createAndSendResponse(
+                self.prompt(), channelClient,
+                responseType=messages.ResponseElement.RESPONSE_TYPE_SLOTFILL)
             self.state = Slot.SLOT_STATE_WAITING_FILL
 
         # Waiting for user response
@@ -129,7 +131,9 @@ class Slot(object):
                     # currently this is an inifnite loop.
                     # TODO(viksit/nishant): add a nice way to control this.
                     msg = "You entered an incorrect value for %s. Please enter again." % self.name
-                    self._createAndSendResponse(msg, channelClient)
+                    self._createAndSendResponse(
+                        msg, channelClient,
+                        responseType=messages.ResponseElement.RESPONSE_TYPE_SLOTFILL_RETRY)
                     self.state = Slot.SLOT_STATE_WAITING_FILL
                     self.filled = False
                     return self.filled
@@ -140,8 +144,9 @@ class Slot(object):
                 self.filled = True
         return self.filled
 
-    def _createAndSendResponse(self, msg, channelClient):
-        responseType = messages.ResponseElement.RESPONSE_TYPE_RESPONSE
+    def _createAndSendResponse(
+            self, msg, channelClient,
+            responseType=messages.ResponseElement.RESPONSE_TYPE_RESPONSE):
         cr = messages.createTextResponse(
             self.canonicalMsg,
             msg,

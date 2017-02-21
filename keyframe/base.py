@@ -277,6 +277,7 @@ class BaseBot(object):
 
 
     def _handleBotCmd(self, canonicalMsg, botState, userProfile, requestState):
+        log.debug("_handleBotCmd called")
         msg = canonicalMsg.text.lower()
         respText = "This command wasn't found"
         if msg.startswith("botcmd help"):
@@ -343,11 +344,13 @@ class BaseBot(object):
 
         # Check for a bot command
         msg = canonicalMsg.text.lower()
+        log.debug("checking for botcmd (%s)", msg)
         if msg.startswith("botcmd"):
             requestState = self._handleBotCmd(canonicalMsg, botState, userProfile, requestState)
             if requestState == constants.BOT_REQUEST_STATE_PROCESSED:
                 return
-
+        else:
+            log.debug("not a botcmd")
         intentStr, intentScore, actionObjectCls, apiResult = self._getActionObjectFromIntentHandlers(canonicalMsg)
         log.debug("GetActionObjectFromIntentHandlers: intent: %s cls: %s", intentStr, actionObjectCls)
         preemptWaitingAction = False

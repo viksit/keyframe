@@ -1,6 +1,7 @@
 import os
 import logging
 import distutils
+import distutils.util
 
 log = logging.getLogger(__name__)
 
