@@ -21,6 +21,7 @@ def getClasses(cls):
 class BaseField(object):
 
     def __init__(self, **kwargs):
+        log.debug("BaseField.__init__(%s)", kwargs)
         self.label = kwargs.get("label") # name
         self.field_type = re.sub(r"(.)([A-Z])", r"\1_\2", self.__class__.__name__).lower()
         # Only relevant for certain kinds of inherited classes of type APIIntent
@@ -32,6 +33,9 @@ class BaseField(object):
         """
         pass
 
+    def __repr__(self):
+        return "BaseField(label=%s, field_type=%s)" % (
+            self.label, self.field_type)
 
 # Intents
 
@@ -44,6 +48,7 @@ class DefaultIntent(BaseField):
     _params = {}
 
     def __init__(self, **kwargs):
+        log.debug("DefaultIntent.__init__(%s)", kwargs)
         super(DefaultIntent, self).__init__(**kwargs)
 
     def field_eval_fn(self, **kwargs):

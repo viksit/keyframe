@@ -226,7 +226,7 @@ class BaseBot(object):
     def _getActionObjectFromIntentHandlers(self, canonicalMsg):
 
         # Support default intent.
-        intentStr = "default"
+        intentStr = None
 
         # For now, simply go through the list and return the first one that comes up.
         # In the future, we could do something different.

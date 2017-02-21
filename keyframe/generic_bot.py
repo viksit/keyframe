@@ -77,7 +77,8 @@ class GenericBot(keyframe.base.BaseBot):
                 self.intentEvalSet.add(i)
                 self.intentActions[intentId] = keyframe.generic_action.GenericActionObject
             elif intentType == "default":
-                i = keyframe.dsl.DefaultIntent(label="default")
+                log.debug("adding intentType default with label: %s", intentId)
+                i = keyframe.dsl.DefaultIntent(label=intentId)
                 self.intentEvalSet.add(i)
                 self.intentActions[intentId] = keyframe.generic_action.GenericActionObject
             else:
