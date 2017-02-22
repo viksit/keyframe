@@ -2,6 +2,7 @@ CHANNEL_FB = "channel-fb"
 CHANNEL_SLACK = "channel-slack"
 CHANNEL_CMDLINE = "channel-cmdline"
 CHANNEL_HTTP_REQUEST_RESPONSE = "channel-http-request-response"
+CHANNEL_SCRIPT = "channel-script"
 
 class ChannelMsg(object):
     def __init__(self, channel, httpType, body):

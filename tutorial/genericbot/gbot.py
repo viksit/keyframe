@@ -132,14 +132,6 @@ class BotMetaStore(object):
 # Deployment for command line
 class GenericCmdlineHandler(BotCmdLineHandler):
 
-    def processMessage(self, userInput):
-       canonicalMsg = messages.CanonicalMsg(
-           channel=messages.CHANNEL_SCRIPT,
-           httpType=None,
-           userId=self.userId,
-           text=userInput)
-       self.bot.process(canonicalMsg)
-
     def getChannelClient(self, cf):
         return channel_client.getChannelClient(
             channel=messages.CHANNEL_CMDLINE,
@@ -150,7 +142,7 @@ class GenericCmdlineHandler(BotCmdLineHandler):
         log.debug("GenericCmdlineHandler.init")
         # channel configuration
         cf = config.getConfig()
-        channelClient = self.getChannelClient(cf)
+        self.channelClient = self.getChannelClient(cf)
 
         accountId = self.kwargs.get("accountId")
         accountSecret = self.kwargs.get("accountSecret")
@@ -179,16 +171,51 @@ class GenericCmdlineHandler(BotCmdLineHandler):
             api.set_params(modelParams)
         self.bot = generic_bot.GenericBot(
             kvStore=kvStore, configJson=configJson.get("config_json"), api=api)
-        self.bot.setChannelClient(channelClient)
+        self.bot.setChannelClient(self.channelClient)
 
 class ScriptHandler(GenericCmdlineHandler):
+    def getChannelClient(self, cf):
+        return channel_client.getChannelClient(
+            channel=messages.CHANNEL_SCRIPT,
+            requestType=None,
+            config=cf)
+
+    def scriptFile(self, scriptFile):
+        self.scriptFile = scriptFile
+        self.script = self.createScript(scriptFile)
+
+    def processMessage(self, userInput):
+       canonicalMsg = messages.CanonicalMsg(
+           channel=messages.CHANNEL_SCRIPT,
+           httpType=None,
+           userId=self.userId,
+           text=userInput)
+       self.bot.process(canonicalMsg)
+
+    def executeScript(self):
+        script = self.script  # Get the script from somewhere.
+        for d in script:
+            if "input" in d:
+                self.processMessage(d["input"])
+            actual = self.channelClient.popResponses()
+            print("actual: %s" % (actual,))
+            print(d.get("expected"))
+                    
+        
     @classmethod
     def createScript(cls, scriptFile):
         assert scriptFile and os.path.isfile(scriptFile)
         script = []
+        sl = None
         with open(scriptFile, "r") as f:
-            scriptLines = f.readlines()
-        scriptLines = [l.strip() for l in scriptLines if not l.startswith("#")]
+            sl = f.readlines()
+        scriptLines = []
+        for l in sl:
+            if l.startswith("#"):
+                continue
+            if not l.strip():
+                continue
+            scriptLines.append(l)
         script = []
         ctr = 0
         while True:
@@ -552,6 +579,12 @@ if __name__ == "__main__":
     if cmd == "cmd":
         c = GenericCmdlineHandler(config_json=d, accountId=accountId, accountSecret = accountSecret, agentId=agentId)
         c.begin()
+
+    elif cmd == "script":
+        scriptFile = sys.argv[6]
+        c = ScriptHandler(config_json=d, accountId=accountId, accountSecret = accountSecret, agentId=agentId)
+        c.scriptFile(scriptFile=scriptFile)
+        c.executeScript()
 
     elif cmd == "http":
         app.config["run_mode"] = runtype

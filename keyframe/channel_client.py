@@ -55,9 +55,6 @@ class ChannelClientCmdline(ChannelClient):
             print("\n\t>> ", e, "\n")
 
 
-class ChannelClientScript(ChannelClientRESTAPI):
-    pass
-
 class ChannelClientFacebook(ChannelClient):
     def __init__(self, config=None):
         log.info("ChannelClientFacebook.__init__(%s)", locals())
@@ -221,6 +218,13 @@ class ChannelClientRESTAPI(ChannelClient):
 
     def clearResponses(self):
         self.responses.clear()
+
+class ChannelClientScript(ChannelClientRESTAPI):
+    def getResponses(self):
+        # Just get the response objects back vs json as for base class.
+        ret = [r for r in self.responses]
+        log.info("getResponses called, returning: %s", ret)
+        return ret
 
 
 channelClientMap = {
