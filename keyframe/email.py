@@ -25,4 +25,5 @@ def send(toAddr, subject, body):
               "to": toAddr,
               "subject": subject,
               "text": body})
+    log.debug("r.status_code: %s, r.text: %s", r.status_code, r.text)
     return r.ok
