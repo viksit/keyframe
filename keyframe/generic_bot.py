@@ -16,14 +16,14 @@ import keyframe.actions
 import keyframe.generic_action
 
 log = logging.getLogger(__name__)
-ch = logging.StreamHandler(sys.stdout)
-ch.setLevel(logging.DEBUG)
-logformat = "[%(levelname)1.1s %(asctime)s %(name)s] %(message)s"
-formatter = logging.Formatter(logformat)
-ch.setFormatter(formatter)
-log.addHandler(ch)
-log.setLevel(logging.DEBUG)
-log.propagate = False
+# ch = logging.StreamHandler(sys.stdout)
+# ch.setLevel(logging.DEBUG)
+# logformat = "[%(levelname)1.1s %(asctime)s %(name)s] %(message)s"
+# formatter = logging.Formatter(logformat)
+# ch.setFormatter(formatter)
+# log.addHandler(ch)
+# log.setLevel(logging.DEBUG)
+# log.propagate = False
 
 class DefaultActionObject(keyframe.actions.ActionObject):
     def process(self):
