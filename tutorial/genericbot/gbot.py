@@ -3,6 +3,7 @@ import sys, os
 from os.path import expanduser, join
 from flask import Flask, request, Response
 from flask import Flask, current_app, jsonify, make_response
+from functools import wraps
 import yaml
 import json
 import traceback
@@ -51,6 +52,19 @@ kvStore = store_api.get_kv_store(
     config.getConfig())
 
 # Deployment for lambda
+
+def wrap_exceptions(func):
+    """Make sure exceptions are logged.
+    """
+    @wraps(func)
+    def decorated_function(*args, **kwargs):
+        try:
+            return func(*args, **kwargs)
+        except Exception as e:
+            log.exception("GOT EXCEPTION")
+            r = Response(response=str(e), status=500)
+            return r
+    return decorated_function
 
 app = Flask(__name__)
 app.config['DEBUG'] = True
@@ -125,6 +139,7 @@ class GenericBotHTTPAPI(generic_bot_api.GenericBotAPI):
         return self.bot
 
 @app.route("/run_agent", methods=["GET", "POST"])
+@wrap_exceptions
 def run_agent():
     accountId = request.args.get("account_id", None)
     accountSecret = request.args.get("account_secret", None)
