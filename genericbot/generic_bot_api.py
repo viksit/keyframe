@@ -15,14 +15,8 @@ import keyframe.config
 import keyframe.bot_api
 
 log = logging.getLogger(__name__)
-# ch = logging.StreamHandler(sys.stdout)
-# ch.setLevel(logging.DEBUG)
-# logformat = "[%(levelname)1.1s %(asctime)s %(name)s] %(message)s"
-# formatter = logging.Formatter(logformat)
-# ch.setFormatter(formatter)
-# log.addHandler(ch)
-# log.setLevel(logging.DEBUG)
-# log.propagate = False
+# If want extra logging for this specific module, set it explicitly here.
+#log.setLevel(10)
 
 class GenericBotAPI(keyframe.bot_api.BotAPI):
     """
@@ -63,6 +57,7 @@ class GenericBotAPI(keyframe.bot_api.BotAPI):
         botAPI = cls(
             channelClient=channelClient
         )
+        log.debug("calling botAPI.handleMsg(%s)", channelMsg)
         botAPI.handleMsg(channelMsg)
         resp = channelClient.popResponses()
         log.info("BotAPI.requestHandler returning: %s", resp)
