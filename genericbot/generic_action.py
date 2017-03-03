@@ -1,17 +1,13 @@
 from __future__ import print_function
 import logging
 import urlparse
-#import messages
-#import slot_fill
 import copy
-#import misc
 import uuid
 from collections import defaultdict
 import sys
 from jinja2 import Template
 import requests
 import json
-#import constants
 from six import iteritems, add_metaclass
 import traceback
 import keyframe.email
@@ -21,14 +17,6 @@ import keyframe.dsl as dsl
 import generic_slot
 
 log = logging.getLogger(__name__)
-# ch = logging.StreamHandler(sys.stdout)
-# ch.setLevel(logging.DEBUG)
-# logformat = "[%(levelname)1.1s %(asctime)s %(name)s] %(message)s"
-# formatter = logging.Formatter(logformat)
-# ch.setFormatter(formatter)
-# log.addHandler(ch)
-# log.setLevel(logging.DEBUG)
-# log.propagate = False
 
 class GenericActionObject(keyframe.actions.ActionObject):
 
@@ -108,8 +96,8 @@ class GenericActionObject(keyframe.actions.ActionObject):
             log.debug("MSG: %s, (%s)", self.msg, type(self.msg))
             structuredMsg = json.loads(self.msg)
         except ValueError as ve:
-            traceback.print_exc()
-            log.debug("msg is not json - normal response processing")
+            #traceback.print_exc()
+            log.info("msg is not json - normal response processing")
 
         if structuredMsg:
             if "response_type" in structuredMsg:

@@ -1,8 +1,16 @@
 from __future__ import print_function
 
+import os
 import logging
 from store_api import KVStore, KVStoreError
 
+def getLogLevel(envVar, defaultLogLevel=logging.INFO):
+    l = os.getenv(envVar, defaultLogLevel)
+    try:
+        ll = int(l)
+        return ll
+    except ValueError as ve:
+        return defaultLogLevel
 
 class PersistentDict(object):
     def __init__(self, kvStore, kvStoreKey):
