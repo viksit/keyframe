@@ -5,14 +5,6 @@ import sys
 import pymyra.api.client
 
 log = logging.getLogger(__name__)
-# ch = logging.StreamHandler(sys.stdout)
-# ch.setLevel(logging.DEBUG)
-# logformat = "[%(levelname)1.1s %(asctime)s %(name)s] %(message)s"
-# formatter = logging.Formatter(logformat)
-# ch.setFormatter(formatter)
-# log.addHandler(ch)
-# log.setLevel(logging.DEBUG)
-# log.propagate = False
 
 def getClasses(cls):
     allClasses = [cls.__getattribute__(cls, i) for i in cls.__dict__.keys() if i[:1] != '_']
@@ -106,10 +98,14 @@ class APIIntent(BaseField):
             if canonicalMsg.rid:
                 urlParams = {"rid":canonicalMsg.rid}
             log.debug("calling myraAPI.get")
-            self.apiResult = myraAPI.get(
-                canonicalMsg.text,
-                url_params=urlParams)
-            log.debug("field_eval_fn.self.apiResult: %s", self.apiResult)
+            try:
+                self.apiResult = myraAPI.get(
+                    canonicalMsg.text,
+                    url_params=urlParams)
+                log.debug("field_eval_fn.self.apiResult: %s", self.apiResult)
+            except pymyra.api.client.InferenceClientError as ice:
+                log.exception("Exception calling myra api")
+                raise Exception("Exception calling myra api: %s" % (str(ice),))
         else:
             log.debug("apiResult was passed in")
             self.apiResult = apiResult

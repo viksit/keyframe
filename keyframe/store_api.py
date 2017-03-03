@@ -10,6 +10,8 @@ import boto.dynamodb
 from boto.dynamodb.exceptions import DynamoDBKeyNotFoundError
 
 log = logging.getLogger(__name__)
+# To debug, just set the level for this module.
+#log.setLevel(10)
 
 TYPE_S3 = "type-s3"
 TYPE_DYNAMODB = "type-dynamodb"
@@ -137,14 +139,14 @@ class DynamoKVStore(KVStore):
         self.kvstore = dbconn.get_table(db_table)
 
     def put(self, key, value):
-        log.info("DynamoKVStore.put(%s)", locals())
+        log.debug("DynamoKVStore.put(%s)", locals())
         i = self.kvstore.new_item(
             hash_key=key,
             attrs={"kv_key":key, "kv_value":value})
         i.put()
 
     def get(self, key):
-        log.info("DynamoKVStore.get(%s)", locals())
+        log.debug("DynamoKVStore.get(%s)", locals())
         try:
             i = self.kvstore.get_item(
                 hash_key=key)

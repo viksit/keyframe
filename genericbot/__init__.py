@@ -12,10 +12,10 @@ except ImportError:
 
 logging.getLogger(__name__).addHandler(NullHandler())
 
-_keyframe_log_level = os.getenv("KEYFRAME_LOG_LEVEL")
-if _keyframe_log_level:
+_genericbot_log_level = os.getenv("GENERICBOT_LOG_LEVEL")
+if _genericbot_log_level:
     try:
-        kll = int(_keyframe_log_level)
+        kll = int(_genericbot_log_level)
         logging.getLogger(__name__).setLevel(kll)
         print >> sys.stderr, "setting loglevel for %s to %s" % (
             __name__, kll)

@@ -21,27 +21,24 @@ from keyframe import channel_client
 from keyframe import messages
 from keyframe import config
 from keyframe import store_api
-from keyframe import generic_bot
-from keyframe import generic_bot_api
-from keyframe import generic_cmdline
-from keyframe import bot_stores
+import generic_bot
+import generic_bot_api
+import generic_cmdline
+import keyframe.bot_stores as bot_stores
+import keyframe.utils
 
 #log = logging.getLogger(__name__)
-# Make the logger used by keyframe, but not the root logger.
-log = logging.getLogger("keyframe")
-# ch = logging.StreamHandler(sys.stdout)
-# ch.setLevel(logging.DEBUG)
-# logformat = "[%(levelname)1.1s %(asctime)s %(name)s] %(message)s"
-# formatter = logging.Formatter(logformat)
-# ch.setFormatter(formatter)
-# log.addHandler(ch)
-# LOG_LEVEL = int(os.getenv("LOG_LEVEL", 10))
-# log.setLevel(LOG_LEVEL)
-# log.propagate = False
-
-# log2 = logging.getLogger("pymyra")
-# log2.addHandler(ch)
-# log2.setLevel(LOG_LEVEL)
+# Make the logger used by keyframe and genericbot, but not the root logger.
+# If you want to set keyframe / pymyra to a different log level, comment out
+# the setLevel below or set explicity or use the env var for that library.
+logging.basicConfig()
+logLevel = keyframe.utils.getLogLevel("GBOT_LOG_LEVEL", logging.INFO)
+log = logging.getLogger("genericbot")
+log.setLevel(logLevel)
+log_keyframe = logging.getLogger("keyframe")
+log_keyframe.setLevel(logLevel)
+log_pymyra = logging.getLogger("pymyra")
+log_pymyra.setLevel(logLevel)
 
 # TODO:
 # Initialize via a configuration file
@@ -365,10 +362,10 @@ if __name__ == "__main__":
     usage = "gbot.py [cmd/http] [file/db] [file: <accountId> <accountSecret> <path to json spec> / db: <accountId> <accountSecret> <agentId>]"
     assert len(sys.argv) > 2, usage
 
-    logging.basicConfig()
-    log.setLevel(int(os.getenv("KEYFRAME_LOGLEVEL", 20)))
-    log.debug("debug log")
-    log.info("info log")
+    #logging.basicConfig()
+    #log.setLevel(int(os.getenv("GENERICBOT_LOGLEVEL", 20)))
+    #log.debug("debug log")
+    #log.info("info log")
 
     d = {}
     cmd = sys.argv[1] # cmd/http
