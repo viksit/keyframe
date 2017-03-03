@@ -1,23 +1,24 @@
 from __future__ import print_function
 import logging
 import urlparse
-import messages
-import slot_fill
+#import messages
+#import slot_fill
 import copy
-import misc
+#import misc
 import uuid
 from collections import defaultdict
 import sys
 from jinja2 import Template
 import requests
 import json
-import constants
-import actions
-import generic_slot
-import dsl
+#import constants
 from six import iteritems, add_metaclass
 import traceback
-import email
+import keyframe.email
+
+import keyframe.actions
+import keyframe.dsl as dsl
+import generic_slot
 
 log = logging.getLogger(__name__)
 # ch = logging.StreamHandler(sys.stdout)
@@ -29,7 +30,7 @@ log = logging.getLogger(__name__)
 # log.setLevel(logging.DEBUG)
 # log.propagate = False
 
-class GenericActionObject(actions.ActionObject):
+class GenericActionObject(keyframe.actions.ActionObject):
 
     def __init__(self, **kwargs):
         super(GenericActionObject, self).__init__(**kwargs)
@@ -85,7 +86,7 @@ class GenericActionObject(actions.ActionObject):
         toAddr = Template(structuredMsg.get("to")).render(self.filledSlots)
         subject = Template(structuredMsg.get("subject")).render(self.filledSlots)
         emailContent = Template(structuredMsg.get("body")).render(self.filledSlots)
-        r = email.send(toAddr, subject, emailContent)
+        r = keyframe.email.send(toAddr, subject, emailContent)
         responseContent = "<no response specified>"
         if r:
             responseContent = structuredMsg.get(
@@ -100,18 +101,21 @@ class GenericActionObject(actions.ActionObject):
     def process(self):
         log.debug("GenericAction.process called")
         resp = ""
+        structuredMsg = None
         if self.webhook and len(self.webhook.items()):
             resp = self.fetchWebhook(self.webhook, self.filledSlots)
         try:
             log.debug("MSG: %s, (%s)", self.msg, type(self.msg))
             structuredMsg = json.loads(self.msg)
+        except ValueError as ve:
+            traceback.print_exc()
+            log.debug("msg is not json - normal response processing")
+
+        if structuredMsg:
             if "response_type" in structuredMsg:
                 resp = self.doStructuredResponse(structuredMsg)
             else:
                 log.warn("no response_type found in json - skipping structured response")
-        except:
-            traceback.print_exc()
-            log.debug("msg is not json - normal response processing")
 
         log.debug("resp 1: %s", resp)
         if not resp:

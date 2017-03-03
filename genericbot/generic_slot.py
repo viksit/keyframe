@@ -1,7 +1,7 @@
-import slot_fill
+import keyframe.slot_fill
 import keyframe.dsl
 
-class GenericSlot(slot_fill.Slot):
+class GenericSlot(keyframe.slot_fill.Slot):
     def __init__(self, apiResult=None, newIntent=None,
                  promptMsg=None, intentStr=None):
         super(GenericSlot, self).__init__(

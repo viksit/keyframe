@@ -14,7 +14,7 @@ from keyframe.cmdline import BotCmdLineHandler
 from keyframe import channel_client
 from keyframe import messages
 from keyframe import config
-from keyframe import generic_bot
+import generic_bot
 from keyframe import bot_stores
 
 log = logging.getLogger(__name__)
