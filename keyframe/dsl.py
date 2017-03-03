@@ -106,10 +106,14 @@ class APIIntent(BaseField):
             if canonicalMsg.rid:
                 urlParams = {"rid":canonicalMsg.rid}
             log.debug("calling myraAPI.get")
-            self.apiResult = myraAPI.get(
-                canonicalMsg.text,
-                url_params=urlParams)
-            log.debug("field_eval_fn.self.apiResult: %s", self.apiResult)
+            try:
+                self.apiResult = myraAPI.get(
+                    canonicalMsg.text,
+                    url_params=urlParams)
+                log.debug("field_eval_fn.self.apiResult: %s", self.apiResult)
+            except pymyra.api.client.InferenceClientError as ice:
+                log.exception("Exception calling myra api")
+                raise Exception("Exception calling myra api: %s" % (str(ice),))
         else:
             log.debug("apiResult was passed in")
             self.apiResult = apiResult

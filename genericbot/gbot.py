@@ -21,10 +21,10 @@ from keyframe import channel_client
 from keyframe import messages
 from keyframe import config
 from keyframe import store_api
-from keyframe import generic_bot
-from keyframe import generic_bot_api
-from keyframe import generic_cmdline
-from keyframe import bot_stores
+import generic_bot
+import generic_bot_api
+import generic_cmdline
+import keyframe.bot_stores as bot_stores
 
 #log = logging.getLogger(__name__)
 # Make the logger used by keyframe, but not the root logger.
