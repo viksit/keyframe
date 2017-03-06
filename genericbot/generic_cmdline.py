@@ -130,6 +130,7 @@ class ScriptHandler(GenericCmdlineHandler):
         script = self.script
         num_errors = [0]
         for d in script:
+            print("PROCESSING: %s" % (d,)) 
             log.debug("D: %s", d)
             if "input" in d:
                 self.processMessage(d["input"])
