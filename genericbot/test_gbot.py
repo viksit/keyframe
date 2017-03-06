@@ -10,9 +10,9 @@ import json
 
 from keyframe import store_api
 from keyframe import config
-from keyframe import generic_cmdline
+from genericbot import generic_cmdline
 
-log = logging.getLogger("keyframe")
+log = logging.getLogger("genericbot")
 
 def _extract_ids(scriptFile):
     with open(scriptFile, "r") as f:
@@ -26,7 +26,6 @@ if __name__ == "__main__":
     assert len(sys.argv) > 1, usage
     
     logging.basicConfig()
-    log.setLevel(int(os.getenv("KEYFRAME_LOGLEVEL", 20)))
     log.debug("debug log")
     log.info("info log")
 
@@ -48,6 +47,8 @@ if __name__ == "__main__":
 
     errors = {}
     total_errors = 0
+    log.debug("scriptFiles: %s", scriptFiles)
+    assert scriptFiles
     for scriptFile in scriptFiles:
         ids = _extract_ids(scriptFile)
         assert ids
