@@ -41,14 +41,26 @@ class ChannelUserProfile(object):
         }
 
 class CanonicalMsg(object):
+    # msg types cater to different types of input. For example, an option selected
+    # via a drop down, or a date selected via a widget, or a button click.
+    # The msg type will affect how it is processed.
+    MSG_TYPE_FREETEXT = "msg_type_freetext"
+    MSG_TYPE_SLOT_OPTION = "msg_type_slot_option"
+    MSG_TYPES = [MSG_TYPE_FREETEXT, MSG_TYPE_SLOT_OPTION]
+
     def __init__(self, channel, httpType, userId, text,
-                 actualName=None, rid=None):
+                 actualName=None, rid=None, msgType=None):
         self.channel = channel
         self.httpType = httpType
         self.userId = userId
         self.text = text
-        self.actualName = None
+        self.actualName = actualName
         self.rid = rid
+        self.msgType = msgType
+        if not self.msgType:
+            self.msgType = self.MSG_TYPE_FREETEXT
+        assert self.msgType in CanonicalMsg.MSG_TYPES
+
 
     def __repr__(self):
         return ("CanonicalMsg(channel=%s, httpType=%s, userId=%s, "

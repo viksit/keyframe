@@ -343,20 +343,28 @@ class BaseBot(object):
                 return
         else:
             log.debug("not a botcmd")
-        intentStr, intentScore, actionObjectCls, apiResult = self._getActionObjectFromIntentHandlers(canonicalMsg)
-        log.debug("GetActionObjectFromIntentHandlers: intent: %s cls: %s", intentStr, actionObjectCls)
+
+        waitingActionJson = botState.getWaiting()
+        checkIntent = True
+        # Check the type of input
+        if canonicalMsg.msgType == messages.CanonicalMsg.MSG_TYPE_SLOT_OPTION:
+            assert waitingAction, "msg type slot option but no waiting action"
+            checkIntent = False
+
         preemptWaitingAction = False
-        intentActionObject = self.createActionObject(
-            actionObjectCls,
-            intentStr, canonicalMsg, botState, userProfile,
-            requestState, apiResult=apiResult, newIntent=True)
-        log.debug("intentActionObject: %s", intentActionObject)
-        preemptThreshold = intentActionObject.getPreemptWaitingActionThreshold()
-        if preemptThreshold and float(preemptThreshold) <= intentScore:
-            preemptWaitingAction = True
+        if checkIntent:
+            intentStr, intentScore, actionObjectCls, apiResult = self._getActionObjectFromIntentHandlers(canonicalMsg)
+            log.debug("GetActionObjectFromIntentHandlers: intent: %s cls: %s", intentStr, actionObjectCls)
+            intentActionObject = self.createActionObject(
+                actionObjectCls,
+                intentStr, canonicalMsg, botState, userProfile,
+                requestState, apiResult=apiResult, newIntent=True)
+            log.debug("intentActionObject: %s", intentActionObject)
+            preemptThreshold = intentActionObject.getPreemptWaitingActionThreshold()
+            if preemptThreshold and float(preemptThreshold) <= intentScore:
+                preemptWaitingAction = True
 
         if not preemptWaitingAction:
-            waitingActionJson = botState.getWaiting()
             log.debug("waitingActionJson: %s", waitingActionJson)
             if waitingActionJson:
                 intentStr = actions.ActionObject.getIntentStrFromJSON(waitingActionJson)

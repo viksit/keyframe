@@ -15,7 +15,6 @@ log = logging.getLogger(__name__)
 class ChannelClientError(Exception):
     pass
 
-
 class ChannelClient(object):
     def __init__(self, config=None):
         self.config = config
