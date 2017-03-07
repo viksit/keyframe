@@ -125,7 +125,8 @@ class GenericActionObject(keyframe.actions.ActionObject):
             "DATE": dsl.DateEntity,
             "ORGANIZATION": dsl.OrgEntity,
             "PHONE": dsl.PhoneRegexEntity,
-            "EMAIL": dsl.EmailRegexEntity
+            "EMAIL": dsl.EmailRegexEntity,
+            "OPTIONS": dsl.OptionsEntity
         }
         if entityType in mapping:
             return mapping.get(entityType)
@@ -178,11 +179,19 @@ class GenericActionObject(keyframe.actions.ActionObject):
             assert gc.name, "slot %s must have a name" % (slotSpec,)
 
             entityType = slotSpec.get("entity_type")
+            gc.entityType = entityType
             # If the entity type is not FREETEXT, this should be true
             # override
             if entityType != "FREETEXT":
                 gc.parseResponse = True
             gc.entity = actionObject.getEntityClassFromType(entityType)(label=gc.name)
+            if entityType == "OPTIONS":
+                optionsList = slotSpec.get("options_list")
+                if not optionsList:
+                    raise Exception("must have options_list for slot %s in action object for intent %s" % (gc.name, intentStr))
+                gc.optionsList = [e.strip() for e in optionsList.strip().split(",") if e.strip()]
+                gc.entity.optionsList = gc.optionsList
+                log.debug("set optionsList to %s", gc.optionsList)
             slotObjects.append(gc)
             if gc.entity.needsAPICall:
                 runAPICall = True
