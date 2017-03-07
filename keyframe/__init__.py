@@ -17,7 +17,7 @@ if _keyframe_log_level:
     try:
         kll = int(_keyframe_log_level)
         logging.getLogger(__name__).setLevel(kll)
-        print >> sys.stderr, "setting loglevel for %s to %s" % (
+        print >> sys.stderr, "setting keyframe loglevel for %s to %s" % (
             __name__, kll)
     except:
         print >> sys.stderr, "exception setting up logging"

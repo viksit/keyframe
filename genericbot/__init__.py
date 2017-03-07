@@ -17,7 +17,7 @@ if _genericbot_log_level:
     try:
         kll = int(_genericbot_log_level)
         logging.getLogger(__name__).setLevel(kll)
-        print >> sys.stderr, "setting loglevel for %s to %s" % (
+        print >> sys.stderr, "setting genericbot loglevel for %s to %s" % (
             __name__, kll)
     except:
         print >> sys.stderr, "exception setting up logging"

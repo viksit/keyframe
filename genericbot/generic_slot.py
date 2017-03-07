@@ -9,11 +9,16 @@ class GenericSlot(keyframe.slot_fill.Slot):
         self.promptMsg = promptMsg
 
     # TODO(viksit): This should be defined via the JSON spec file.
-    entity = keyframe.dsl.FreeTextEntity(label="genericentity")
-    required = False
-    parseOriginal = False
-    parseResponse = False
+    #entity = keyframe.dsl.FreeTextEntity(label="genericentity")
+    #required = False
+    #parseOriginal = False
+    #parseResponse = False
+    #optionsList = None
 
     def prompt(self):
         assert self.promptMsg
+        if self.entityType == "OPTIONS":
+            return self.promptMsg + "[]"
         return self.promptMsg
+
+            

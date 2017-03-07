@@ -26,8 +26,11 @@ class Slot(object):
         self.value = None
         self.validated = False
         self.state = Slot.SLOT_STATE_NEW
-        ## self.required = False
-
+        self.required = False
+        self.parseOriginal = False
+        self.parseResponse = False
+        self.optionsList = None
+        self.entityType = None
         self.apiResult = apiResult
         self.newIntent = newIntent
         self.intentStr = intentStr
@@ -43,7 +46,8 @@ class Slot(object):
             "parseOriginal": self.parseOriginal,
             "parseResponse": self.parseResponse,
             "entity": self.entity.toJSON(),
-            "required": self.required
+            "required": self.required,
+            "optionsList":self.optionsList
         }
 
     def fromJSONObject(self, j):
@@ -56,6 +60,7 @@ class Slot(object):
         self.parseResponse = j.get("parseResponse")
         self.entity = BaseEntity.fromJSON(j.get("entity"))
         self.required = j.get("required")
+        self.optionsList = j.get("optionsList")
 
     def init(self, **kwargs):
         self.channelClient = kwargs.get("channelClient")
@@ -139,14 +144,26 @@ class Slot(object):
     def _createAndSendResponse(
             self, msg, channelClient,
             responseType=messages.ResponseElement.RESPONSE_TYPE_RESPONSE):
-        cr = messages.createTextResponse(
-            self.canonicalMsg,
-            msg,
-            responseType,
-            responseMeta=messages.ResponseMeta(
-                apiResult=self.apiResult,
-                newIntent=self.newIntent,
-                intentStr=self.intentStr))
+        cr = None
+        if self.entityType == "OPTIONS":
+            cr = messages.createOptionsResponse(
+                self.canonicalMsg,
+                msg,
+                self.optionsList,
+                responseType,
+                responseMeta=messages.ResponseMeta(
+                    apiResult=self.apiResult,
+                    newIntent=self.newIntent,
+                    intentStr=self.intentStr))
+        else:
+            cr = messages.createTextResponse(
+                self.canonicalMsg,
+                msg,
+                responseType,
+                responseMeta=messages.ResponseMeta(
+                    apiResult=self.apiResult,
+                    newIntent=self.newIntent,
+                    intentStr=self.intentStr))
         channelClient.sendResponse(cr)
 
     def _extractSlotFromSentence(self, text):

@@ -21,18 +21,20 @@ from keyframe import channel_client
 from keyframe import messages
 from keyframe import config
 from keyframe import store_api
-import generic_bot
-import generic_bot_api
-import generic_cmdline
-import keyframe.bot_stores as bot_stores
+from keyframe import bot_stores
 import keyframe.utils
+
+from genericbot import generic_bot
+from genericbot import generic_bot_api
+from genericbot import generic_cmdline
+
 
 #log = logging.getLogger(__name__)
 # Make the logger used by keyframe and genericbot, but not the root logger.
 # If you want to set keyframe / pymyra to a different log level, comment out
 # the setLevel below or set explicity or use the env var for that library.
 logging.basicConfig()
-logLevel = keyframe.utils.getLogLevel("GBOT_LOG_LEVEL", logging.INFO)
+logLevel = int(keyframe.utils.getLogLevel("GBOT_LOG_LEVEL", logging.INFO))
 log = logging.getLogger("genericbot")
 log.setLevel(logLevel)
 log_keyframe = logging.getLogger("keyframe")

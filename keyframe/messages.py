@@ -120,6 +120,7 @@ class ResponseElement(object):
     TYPE_TEXT = "text"
     TYPE_CAROUSEL = "carousel"
     TYPE_YESNOBUTTON = "yesnobutton"
+    TYPE_OPTIONS = "options"
 
     RESPONSE_TYPE_RESPONSE = "response"
     RESPONSE_TYPE_CTA = "cta"
@@ -130,7 +131,7 @@ class ResponseElement(object):
     RESPONSE_TYPE_SLOTFILL = "slotfill"
     RESPONSE_TYPE_SLOTFILL_RETRY = "slotfillretry"
 
-    def __init__(self, type, text=None, carousel=None, responseType=None, responseMeta=None):
+    def __init__(self, type, text=None, carousel=None, responseType=None, responseMeta=None, optionsList=None):
         """
         text: Text response to show user
         carousel: To render a series of images on the channel
@@ -142,10 +143,11 @@ class ResponseElement(object):
         self.carousel = carousel
         self.responseType = responseType
         self.responseMeta = responseMeta
+        self.optionsList = optionsList
 
     def __repr__(self):
-        res = "ResponseElement(type=%s, responseType=%s, text=%s, carousel=%s, responseMeta=%s)" % \
-            (self.type, self.responseType, self.text, self.carousel, self.responseMeta)
+        res = "ResponseElement(type=%s, responseType=%s, text=%s, carousel=%s, optionsList=%s, responseMeta=%s)" % \
+            (self.type, self.responseType, self.text, self.carousel, self.optionsList, self.responseMeta)
         return res.encode("utf-8")
 
     def toJSON(self):
@@ -157,9 +159,24 @@ class ResponseElement(object):
             "responseType": self.responseType,
             "text": self.text,
             "carousel": self.carousel,
+            "optionsList":self.optionsList,
             "responseMeta": rm
         }
 
+def createOptionsResponse(canonicalMsg, text, optionsList, responseType=None,
+                          responseMeta=None):
+    responseElement = ResponseElement(
+        type=ResponseElement.TYPE_OPTIONS,
+        optionsList=optionsList,
+        text=text,
+        responseType=responseType,
+        responseMeta=responseMeta)
+    return CanonicalResponse(
+        channel=canonicalMsg.channel,
+        userId=canonicalMsg.userId,
+        responseElements=[responseElement])
+
+        
 def createTextResponse(canonicalMsg, text, responseType=None,
                        responseMeta=None):
 

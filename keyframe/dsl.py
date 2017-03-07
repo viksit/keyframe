@@ -164,6 +164,23 @@ class FreeTextEntity(BaseEntity):
         assert text is not None
         return text
 
+class OptionsEntity(BaseEntity):
+    def __init__(self, **kwargs):
+        super(OptionsEntity, self).__init__(**kwargs)
+        self.optionsList = kwargs.get("optionsList", None)
+
+    def entity_extract_fn(self, **kwargs):
+        log.debug("OptionsEntity.entity_extract_fn(%s)", locals())
+        text = kwargs.get("text", None)
+        assert self.optionsList is not None, "OptionsEntity does not have options"
+        if not text:
+            log.info("no text - cannot extract entity")
+            return None
+        if text not in self.optionsList:
+            log.info("text (%s) not in optionsList (%s)", text, self.optionsList)
+            return None
+        return text
+
 class RegexEntity(BaseEntity):
     """
     Accepts anything as input
