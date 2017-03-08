@@ -16,5 +16,8 @@
   "test": {
     "s3_bucket": "ml-lamdba-test-1",
     "app_function": "gbot.app"
+    "environment_variables": {
+      "REALM":"dev"
+    },
   }
 }
