@@ -370,15 +370,19 @@ if __name__ == "__main__":
     #log.info("info log")
 
     d = {}
-    cmd = sys.argv[1] # cmd/http
+    cmd = sys.argv[1] # cmd/http/script
     runtype = sys.argv[2] # file/db
 
     log.info("(++) cmd: %s, runtime: %s", cmd, runtype)
     jsonFile = None
     agentId = None
+    accountId = None
+    accountSecret = None
 
-    accountId = sys.argv[3]
-    accountSecret = sys.argv[4]
+    if len(sys.argv) > 3:
+        accountId = sys.argv[3]
+    if len(sys.argv) > 4:
+        accountSecret = sys.argv[4]
 
     if runtype == "file":
         jsonFile = sys.argv[5]
@@ -392,7 +396,8 @@ if __name__ == "__main__":
             sys.exit(1)
         log.info("config_json: %s", d['config_json'])
     elif runtype == "db":
-        agentId = sys.argv[5]
+        if len(sys.argv) > 5:
+            agentId = sys.argv[5]
 
     if cmd == "cmd":
         c = generic_cmdline.GenericCmdlineHandler(config_json=d, accountId=accountId, accountSecret = accountSecret, agentId=agentId, kvStore=kvStore, cfg=cfg)

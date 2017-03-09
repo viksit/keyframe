@@ -2,6 +2,11 @@
 
 magic.
 
+## Running generic bot locally (to receive requests from local myra api server most probably).
+`
+(keyframe1) ~/work/keyframe/gbot $ python gbot.py http db 2>&1 | tee /tmp/gbot.log.$(date +%s)
+`
+
 ## To debug most things
 
 keyframe/base.py:handle - this has the creation of the action object from the intent.
