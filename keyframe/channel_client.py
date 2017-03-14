@@ -5,6 +5,7 @@ import sys
 import collections
 import logging
 import codecs
+import json
 
 import messages
 import fb
@@ -51,7 +52,7 @@ class ChannelClientCmdline(ChannelClient):
 
     def sendResponse(self, canonicalResponse):
         for e in canonicalResponse.responseElements:
-            print("\n\t>> ", e, "\n")
+            print("\n>>\n", e.toJSON(), "\n")
 
 
 class ChannelClientFacebook(ChannelClient):

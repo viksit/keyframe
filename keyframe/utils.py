@@ -1,5 +1,6 @@
 from __future__ import print_function
 
+import traceback
 import os
 import logging
 from store_api import KVStore, KVStoreError
@@ -10,6 +11,7 @@ def getLogLevel(envVar, defaultLogLevel=logging.INFO):
         ll = int(l)
         return ll
     except ValueError as ve:
+        traceback.print_exc()
         return defaultLogLevel
 
 class PersistentDict(object):

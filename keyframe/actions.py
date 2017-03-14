@@ -23,7 +23,6 @@ class ActionObjectError(Exception):
     pass
 
 class ActionObject(object):
-
     """
     A user declares an action object.
     Each action object contains a bunch of slots.
@@ -32,6 +31,8 @@ class ActionObject(object):
     Each AO can be serialized and deserialized from botstate.
     Botstate is stored via the KV store api.
     """
+    SLOTS_TYPE_SEQUENTIAL = "slots-type-sequential"
+    SLOTS_TYPE_CONDITIONAL = "slots-type-conditional"
 
     def __init__(self, **kwargs):
         # TODO - get rid of this does not seem to be used
@@ -131,12 +132,13 @@ class ActionObject(object):
     def getIntentStrFromJSON(cls, actionObjectJSON):
         return actionObjectJSON.get("origIntentStr")
 
-    def populateFromJson(self, actionObjectJSON):
+    def fromJSONObject(self, actionObjectJSON):
         """
         Create an action object from a given JSON object
         """
         self.originalUtterance = actionObjectJSON.get("originalUtterance")
         self.instanceId = actionObjectJSON.get("instanceId")
+        self.nextSlotToFillName = actionObjectJSON.get("nextSlotToFillName")
         log.debug("got originalUtterance from json: %s", self.originalUtterance)
         slotObjectData = actionObjectJSON.get("slotObjects")
         assert len(slotObjectData) == len(self.slotObjects)
@@ -247,10 +249,6 @@ class ActionObject(object):
             "originalUtterance": self.originalUtterance,
             "instanceId": self.instanceId
         }
-
-    @classmethod
-    def fromJSONObject(self, jsonObject):
-        pass
 
     def createAndSendTextResponse(self, canonicalMsg, text, responseType=None):
         log.debug("ActionObject.createAndSendTextResponse(%s)", locals())

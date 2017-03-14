@@ -14,6 +14,7 @@ import keyframe.email
 
 import keyframe.actions
 import keyframe.dsl as dsl
+import keyframe.slot_fill as slot_fill
 import generic_slot
 
 log = logging.getLogger(__name__)
@@ -24,6 +25,8 @@ class GenericActionObject(keyframe.actions.ActionObject):
         super(GenericActionObject, self).__init__(**kwargs)
         self.msg = None
         self.specJson = None
+        self.slotsType = None
+        self.nextSlotToFill = None
 
     def getPreemptWaitingActionThreshold(self):
         if self.specJson:
@@ -117,20 +120,67 @@ class GenericActionObject(keyframe.actions.ActionObject):
 
 
     # TODO(viksit): make this more centralized.
+    ENTITY_TYPE_CLASS_MAP = {
+        "PERSON": dsl.PersonEntity,
+        "FREETEXT": dsl.FreeTextEntity,
+        "LOCATION": dsl.LocationEntity,
+        "DATE": dsl.DateEntity,
+        "ORGANIZATION": dsl.OrgEntity,
+        "PHONE": dsl.PhoneRegexEntity,
+        "EMAIL": dsl.EmailRegexEntity,
+        "OPTIONS": dsl.OptionsEntity
+    }
     def getEntityClassFromType(self, entityType):
-        mapping = {
-            "PERSON": dsl.PersonEntity,
-            "FREETEXT": dsl.FreeTextEntity,
-            "LOCATION": dsl.LocationEntity,
-            "DATE": dsl.DateEntity,
-            "ORGANIZATION": dsl.OrgEntity,
-            "PHONE": dsl.PhoneRegexEntity,
-            "EMAIL": dsl.EmailRegexEntity,
-            "OPTIONS": dsl.OptionsEntity
-        }
-        if entityType in mapping:
-            return mapping.get(entityType)
-        return mapping.get("FREETEXT")
+        if entityType in self.ENTITY_TYPE_CLASS_MAP:
+            return self.ENTITY_TYPE_CLASS_MAP[entityType]
+        return self.ENTITY_TYPE_CLASS_MAP.get("FREETEXT")
+
+    def slotFill(self, botState):
+        if self.slotsType == self.SLOTS_TYPE_CONDITIONAL:
+            return self.slotFillConditional(botState)
+        else:
+            return super(GenericActionObject, self).slotFill(botState)
+
+    def slotFillConditional(self, botState):
+        """
+        Function to do slot fill per action object.
+        Returns:
+          True if all required slots are filled.
+          False if all required slots haven't been filled yet or something went wrong.
+
+        """
+        log.info("slotFillConditional called")
+        while True:
+            assert self.nextSlotToFillName, "No nextSlotToFillName!"
+            slotObject = self.slotObjectsByName[self.nextSlotToFillName]
+            assert slotObject
+            filled = slotObject.fill(
+                self.canonicalMsg, self.apiResult, self.channelClient)
+            if not filled:
+                botState.putWaiting(self.toJSONObject())
+                log.debug("slotFillConditional: returning False - not filled")
+                return False
+            if not slotObject.slotTransitions:
+                log.debug("slotFillConditional: returning True")
+                return True
+            self.nextSlotToFillName = slotObject.slotTransitions.get(
+                slotObject.value)
+            log.debug("self.nextSlotToFillName: %s", self.nextSlotToFillName)
+            if not self.nextSlotToFillName:
+                self.nextSlotToFillName = slotObject.slotTransitions.get("__default__")
+            if not self.nextSlotToFillName:
+                log.debug("slotFillConditional: returning True")
+                return True
+
+    def toJSONObject(self):
+        jsonObject = super(GenericActionObject, self).toJSONObject()
+        jsonObject["nextSlotToFillName"] = self.nextSlotToFillName
+        return jsonObject
+
+    def fromJSONObject(self, actionObjectJSON):
+        super(GenericActionObject, self).fromJSONObject(actionObjectJSON)
+        self.nextSlotToFill = actionObjectJSON.get(
+            "nextSlotToFillName", self.nextSlotToFill)
 
     @classmethod
     def createActionObject(cls, specJson, intentStr, canonicalMsg, botState,
@@ -144,33 +194,44 @@ class GenericActionObject(keyframe.actions.ActionObject):
         actionObject.specJson = specJson
         actionObject.msg = specJson.get("text")
         actionObject.transitionMsg = specJson.get("transition_text")
+        actionObject.slotsType = specJson.get(
+            "slots_type", cls.SLOTS_TYPE_SEQUENTIAL)
         # TODO: This has to be enforced in the UI.
         #assert actionObject.msg, "No text field in json: %s" % (specJson,)
         if not actionObject.msg:
             actionObject.msg = "<No msg provided by agent spec.>"
         slots = specJson.get("slots", [])
+
         slotObjects = []
+        slotObjectsByName = {}
         runAPICall = False
         for slotSpec in slots:
-            gc = generic_slot.GenericSlot(
-                apiResult=apiResult, newIntent=newIntent, intentStr=intentStr)
-            required = slotSpec.get("required")
-            if not required:
-                required = getattr(gc, "required")
-                log.debug("slotSpec does not specify required - getting default: %s", required)
-            gc.required = required
+            slotType = slotSpec.get("slot_type", slot_fill.Slot.SLOT_TYPE_INPUT)
+            gc = None
+            if slotType == slot_fill.Slot.SLOT_TYPE_INFO:
+                gc = generic_slot.GenericInfoSlot(
+                    apiResult=apiResult, newIntent=newIntent, intentStr=intentStr)
+            else:
+                gc = generic_slot.GenericSlot(
+                    apiResult=apiResult, newIntent=newIntent, intentStr=intentStr)
 
-            parseOriginal = slotSpec.get("parse_original")
-            if not parseOriginal:
-                parseOriginal = getattr(gc, "parseOriginal")
-                log.debug("slotSpec does not specify parseOriginal - getting default :%s", parseOriginal)
-            gc.parseOriginal = parseOriginal
+                required = slotSpec.get("required")
+                if not required:
+                    required = getattr(gc, "required")
+                    log.debug("slotSpec does not specify required - getting default: %s", required)
+                gc.required = required
 
-            parseResponse = slotSpec.get("parse_response")
-            if not parseResponse:
-                parseResponse = getattr(gc, "parseResponse")
-                log.debug("slotSpec does not specify parseResponse - getting default: %s", parseResponse)
-            gc.parseResponse = parseResponse
+                parseOriginal = slotSpec.get("parse_original")
+                if not parseOriginal:
+                    parseOriginal = getattr(gc, "parseOriginal")
+                    log.debug("slotSpec does not specify parseOriginal - getting default :%s", parseOriginal)
+                gc.parseOriginal = parseOriginal
+
+                parseResponse = slotSpec.get("parse_response")
+                if not parseResponse:
+                    parseResponse = getattr(gc, "parseResponse")
+                    log.debug("slotSpec does not specify parseResponse - getting default: %s", parseResponse)
+                gc.parseResponse = parseResponse
 
             gc.promptMsg = slotSpec.get("prompt")
             assert gc.promptMsg, "slot %s must have a prompt" % (slotSpec,)
@@ -192,12 +253,25 @@ class GenericActionObject(keyframe.actions.ActionObject):
                 gc.optionsList = [e.strip() for e in optionsList.strip().split(",") if e.strip()]
                 gc.entity.optionsList = gc.optionsList
                 log.debug("set optionsList to %s", gc.optionsList)
+
+            if actionObject.slotsType == cls.SLOTS_TYPE_CONDITIONAL:
+                # If a slot does not have slot_transitions, this is the last
+                # slot in this path - after it is filled the actionobject is done.
+                gc.slotTransitions = slotSpec.get("slot_transitions")
+                log.debug("got slot transitions for slot (%s): %s",
+                          gc.name, gc.slotTransitions)
             slotObjects.append(gc)
+            slotObjectsByName[gc.name] = gc
             if gc.entity.needsAPICall:
                 runAPICall = True
 
         # Maintain indent
         actionObject.slotObjects = slotObjects
+        actionObject.slotObjectsByName = slotObjectsByName
+        if slotObjects:
+            actionObject.nextSlotToFillName = slotObjects[0].name
+            log.debug("actionObject.nextSlotToFillName: %s",
+                      actionObject.nextSlotToFillName)
         actionObject.apiResult = apiResult
         actionObject.newIntent = newIntent
         actionObject.instanceId = None
