@@ -23,7 +23,6 @@ class ActionObjectError(Exception):
     pass
 
 class ActionObject(object):
-
     """
     A user declares an action object.
     Each action object contains a bunch of slots.
@@ -32,6 +31,8 @@ class ActionObject(object):
     Each AO can be serialized and deserialized from botstate.
     Botstate is stored via the KV store api.
     """
+    SLOTS_TYPE_SEQUENTIAL = "slots-type-sequential"
+    SLOTS_TYPE_CONDITIONAL = "slots-type-conditional"
 
     def __init__(self, **kwargs):
         # TODO - get rid of this does not seem to be used
@@ -41,6 +42,7 @@ class ActionObject(object):
         self.state = "new"
         self.channelClient = kwargs.get("channelClient")
         self.kvStore = kwargs.get("kvStore")
+        self.slotsType = kwargs.get("slotsType", self.SLOTS_TYPE_SEQUENTIAL)
         self.slotObjects = kwargs.get("slotObjects")
         self.filledSlots = {}
         self.newIntent = kwargs.get("newIntent")
@@ -66,7 +68,7 @@ class ActionObject(object):
     def createActionObject(
             cls, intentStr, canonicalMsg, botState,
             userProfile, requestState, api, channelClient, actionObjectParams={},
-            apiResult=None, newIntent=None):
+            apiResult=None, newIntent=None, slotsType=None):
         log.debug("ActionObject.createActionObject(%s)", locals())
         """
         Create a new action object from the given data
