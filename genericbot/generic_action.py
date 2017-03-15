@@ -14,6 +14,7 @@ import keyframe.email
 
 import keyframe.actions
 import keyframe.dsl as dsl
+import keyframe.slot_fill as slot_fill
 import generic_slot
 
 log = logging.getLogger(__name__)
@@ -119,20 +120,20 @@ class GenericActionObject(keyframe.actions.ActionObject):
 
 
     # TODO(viksit): make this more centralized.
+    ENTITY_TYPE_CLASS_MAP = {
+        "PERSON": dsl.PersonEntity,
+        "FREETEXT": dsl.FreeTextEntity,
+        "LOCATION": dsl.LocationEntity,
+        "DATE": dsl.DateEntity,
+        "ORGANIZATION": dsl.OrgEntity,
+        "PHONE": dsl.PhoneRegexEntity,
+        "EMAIL": dsl.EmailRegexEntity,
+        "OPTIONS": dsl.OptionsEntity
+    }
     def getEntityClassFromType(self, entityType):
-        mapping = {
-            "PERSON": dsl.PersonEntity,
-            "FREETEXT": dsl.FreeTextEntity,
-            "LOCATION": dsl.LocationEntity,
-            "DATE": dsl.DateEntity,
-            "ORGANIZATION": dsl.OrgEntity,
-            "PHONE": dsl.PhoneRegexEntity,
-            "EMAIL": dsl.EmailRegexEntity,
-            "OPTIONS": dsl.OptionsEntity
-        }
-        if entityType in mapping:
-            return mapping.get(entityType)
-        return mapping.get("FREETEXT")
+        if entityType in self.ENTITY_TYPE_CLASS_MAP:
+            return self.ENTITY_TYPE_CLASS_MAP[entityType]
+        return self.ENTITY_TYPE_CLASS_MAP.get("FREETEXT")
 
     def slotFill(self, botState):
         if self.slotsType == self.SLOTS_TYPE_CONDITIONAL:
@@ -165,6 +166,8 @@ class GenericActionObject(keyframe.actions.ActionObject):
             self.nextSlotToFillName = slotObject.slotTransitions.get(
                 slotObject.value)
             log.debug("self.nextSlotToFillName: %s", self.nextSlotToFillName)
+            if not self.nextSlotToFillName:
+                self.nextSlotToFillName = slotObject.slotTransitions.get("__default__")
             if not self.nextSlotToFillName:
                 log.debug("slotFillConditional: returning True")
                 return True
@@ -203,25 +206,32 @@ class GenericActionObject(keyframe.actions.ActionObject):
         slotObjectsByName = {}
         runAPICall = False
         for slotSpec in slots:
-            gc = generic_slot.GenericSlot(
-                apiResult=apiResult, newIntent=newIntent, intentStr=intentStr)
-            required = slotSpec.get("required")
-            if not required:
-                required = getattr(gc, "required")
-                log.debug("slotSpec does not specify required - getting default: %s", required)
-            gc.required = required
+            slotType = slotSpec.get("slot_type", slot_fill.Slot.SLOT_TYPE_INPUT)
+            gc = None
+            if slotType == slot_fill.Slot.SLOT_TYPE_INFO:
+                gc = generic_slot.GenericInfoSlot(
+                    apiResult=apiResult, newIntent=newIntent, intentStr=intentStr)
+            else:
+                gc = generic_slot.GenericSlot(
+                    apiResult=apiResult, newIntent=newIntent, intentStr=intentStr)
 
-            parseOriginal = slotSpec.get("parse_original")
-            if not parseOriginal:
-                parseOriginal = getattr(gc, "parseOriginal")
-                log.debug("slotSpec does not specify parseOriginal - getting default :%s", parseOriginal)
-            gc.parseOriginal = parseOriginal
+                required = slotSpec.get("required")
+                if not required:
+                    required = getattr(gc, "required")
+                    log.debug("slotSpec does not specify required - getting default: %s", required)
+                gc.required = required
 
-            parseResponse = slotSpec.get("parse_response")
-            if not parseResponse:
-                parseResponse = getattr(gc, "parseResponse")
-                log.debug("slotSpec does not specify parseResponse - getting default: %s", parseResponse)
-            gc.parseResponse = parseResponse
+                parseOriginal = slotSpec.get("parse_original")
+                if not parseOriginal:
+                    parseOriginal = getattr(gc, "parseOriginal")
+                    log.debug("slotSpec does not specify parseOriginal - getting default :%s", parseOriginal)
+                gc.parseOriginal = parseOriginal
+
+                parseResponse = slotSpec.get("parse_response")
+                if not parseResponse:
+                    parseResponse = getattr(gc, "parseResponse")
+                    log.debug("slotSpec does not specify parseResponse - getting default: %s", parseResponse)
+                gc.parseResponse = parseResponse
 
             gc.promptMsg = slotSpec.get("prompt")
             assert gc.promptMsg, "slot %s must have a prompt" % (slotSpec,)

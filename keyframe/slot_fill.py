@@ -16,6 +16,9 @@ class Slot(object):
     SLOT_STATE_NEW = "new"
     SLOT_STATE_WAITING_FILL = "waiting_for_fill"
 
+    SLOT_TYPE_INPUT = "slot-type-input"
+    SLOT_TYPE_INFO = "slot-type-info"
+
     # TODO(viksit): overwrite the instance variables from the class variable
 
     def __init__(self, apiResult=None, newIntent=None, intentStr=None):
@@ -34,6 +37,7 @@ class Slot(object):
         self.apiResult = apiResult
         self.newIntent = newIntent
         self.intentStr = intentStr
+        self.canonicalMsg = None
 
     def toJSONObject(self):
         return {
