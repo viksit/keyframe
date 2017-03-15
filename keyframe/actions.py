@@ -42,7 +42,6 @@ class ActionObject(object):
         self.state = "new"
         self.channelClient = kwargs.get("channelClient")
         self.kvStore = kwargs.get("kvStore")
-        self.slotsType = kwargs.get("slotsType", self.SLOTS_TYPE_SEQUENTIAL)
         self.slotObjects = kwargs.get("slotObjects")
         self.filledSlots = {}
         self.newIntent = kwargs.get("newIntent")
@@ -68,7 +67,7 @@ class ActionObject(object):
     def createActionObject(
             cls, intentStr, canonicalMsg, botState,
             userProfile, requestState, api, channelClient, actionObjectParams={},
-            apiResult=None, newIntent=None, slotsType=None):
+            apiResult=None, newIntent=None):
         log.debug("ActionObject.createActionObject(%s)", locals())
         """
         Create a new action object from the given data
@@ -133,12 +132,13 @@ class ActionObject(object):
     def getIntentStrFromJSON(cls, actionObjectJSON):
         return actionObjectJSON.get("origIntentStr")
 
-    def populateFromJson(self, actionObjectJSON):
+    def fromJSONObject(self, actionObjectJSON):
         """
         Create an action object from a given JSON object
         """
         self.originalUtterance = actionObjectJSON.get("originalUtterance")
         self.instanceId = actionObjectJSON.get("instanceId")
+        self.nextSlotToFillName = actionObjectJSON.get("nextSlotToFillName")
         log.debug("got originalUtterance from json: %s", self.originalUtterance)
         slotObjectData = actionObjectJSON.get("slotObjects")
         assert len(slotObjectData) == len(self.slotObjects)
@@ -249,10 +249,6 @@ class ActionObject(object):
             "originalUtterance": self.originalUtterance,
             "instanceId": self.instanceId
         }
-
-    @classmethod
-    def fromJSONObject(self, jsonObject):
-        pass
 
     def createAndSendTextResponse(self, canonicalMsg, text, responseType=None):
         log.debug("ActionObject.createAndSendTextResponse(%s)", locals())

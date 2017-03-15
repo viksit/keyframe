@@ -24,6 +24,7 @@ class GenericActionObject(keyframe.actions.ActionObject):
         super(GenericActionObject, self).__init__(**kwargs)
         self.msg = None
         self.specJson = None
+        self.slotsType = None
 
     def getPreemptWaitingActionThreshold(self):
         if self.specJson:
@@ -132,6 +133,45 @@ class GenericActionObject(keyframe.actions.ActionObject):
             return mapping.get(entityType)
         return mapping.get("FREETEXT")
 
+    def slotFill(self, botState):
+        if self.slotsType == self.SLOTS_TYPE_CONDITIONAL:
+            return self.slotFillConditional(botState)
+        else:
+            return super(GenericActionObject, self).slotFill(botState)
+
+    def slotFillConditional(self, botState):
+        """
+        Function to do slot fill per action object.
+        Returns:
+          True if all required slots are filled.
+          False if all required slots haven't been filled yet or something went wrong.
+
+        """
+        log.info("slotFillConditional called")
+        assert self.nextSlotToFillName, "No nextSlotToFillName!"
+        slotObject = self.slotObjectsByName[self.nextSlotToFillName]
+        filled = slotObject.fill(
+            self.canonicalMsg, self.apiResult, self.channelClient)
+        if not filled:
+            botState.putWaiting(self.toJSONObject())
+            return False
+        nextSlotName = slotObject.slotTransitions.get(
+            slotObject.value)
+        if not nextSlotName:
+            return True
+        self.nextSlotToFillName = nextSlotName
+        botState.putWaiting(self.toJSONObject())
+        return False
+
+    def toJSONObject(self):
+        jsonObject = super(GenericActionObject, self).toJSONObject()
+        jsonObject["nextSlotToFill"] = self.nextSlotToFillName
+        return jsonObject
+
+    def fromJSONObject(self, actionObjectJSON):
+        super(GenericActionObject, self).fromJSONObject(actionObjectJSON)
+        self.nextSlotToFill = actionObjectJSON.get("nextSlotToFill")
+
     @classmethod
     def createActionObject(cls, specJson, intentStr, canonicalMsg, botState,
                            userProfile, requestState, api, channelClient,
@@ -144,12 +184,16 @@ class GenericActionObject(keyframe.actions.ActionObject):
         actionObject.specJson = specJson
         actionObject.msg = specJson.get("text")
         actionObject.transitionMsg = specJson.get("transition_text")
+        actionObject.slotsType = specJson.get(
+            "slots_type", self.SLOTS_TYPE_SEQUENTIAL)
         # TODO: This has to be enforced in the UI.
         #assert actionObject.msg, "No text field in json: %s" % (specJson,)
         if not actionObject.msg:
             actionObject.msg = "<No msg provided by agent spec.>"
         slots = specJson.get("slots", [])
+
         slotObjects = []
+        slotObjectsByName = {}
         runAPICall = False
         for slotSpec in slots:
             gc = generic_slot.GenericSlot(
@@ -192,12 +236,22 @@ class GenericActionObject(keyframe.actions.ActionObject):
                 gc.optionsList = [e.strip() for e in optionsList.strip().split(",") if e.strip()]
                 gc.entity.optionsList = gc.optionsList
                 log.debug("set optionsList to %s", gc.optionsList)
+
+            if actionObject.slotsType == self.SLOTS_TYPE_CONDITIONAL:
+                # If a slot does not have slot_transitions, this is the last
+                # slot in this path - after it is filled the actionobject is done.
+                gc.slotTransitions = slotSpec.get("slot_transitions")
+
             slotObjects.append(gc)
+            slotObjectsByName[gc.name] = gc
             if gc.entity.needsAPICall:
                 runAPICall = True
 
         # Maintain indent
         actionObject.slotObjects = slotObjects
+        actionObject.slotObjectsByName = slotObjectsByName
+        if slotObjects:
+            actionObject.nextSlotToFillName = slotObjects[0].name
         actionObject.apiResult = apiResult
         actionObject.newIntent = newIntent
         actionObject.instanceId = None
