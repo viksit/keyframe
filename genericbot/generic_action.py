@@ -25,6 +25,7 @@ class GenericActionObject(keyframe.actions.ActionObject):
         self.msg = None
         self.specJson = None
         self.slotsType = None
+        self.nextSlotToFill = None
 
     def getPreemptWaitingActionThreshold(self):
         if self.specJson:
@@ -148,29 +149,35 @@ class GenericActionObject(keyframe.actions.ActionObject):
 
         """
         log.info("slotFillConditional called")
-        assert self.nextSlotToFillName, "No nextSlotToFillName!"
-        slotObject = self.slotObjectsByName[self.nextSlotToFillName]
-        filled = slotObject.fill(
-            self.canonicalMsg, self.apiResult, self.channelClient)
-        if not filled:
-            botState.putWaiting(self.toJSONObject())
-            return False
-        nextSlotName = slotObject.slotTransitions.get(
-            slotObject.value)
-        if not nextSlotName:
-            return True
-        self.nextSlotToFillName = nextSlotName
-        botState.putWaiting(self.toJSONObject())
-        return False
+        while True:
+            assert self.nextSlotToFillName, "No nextSlotToFillName!"
+            slotObject = self.slotObjectsByName[self.nextSlotToFillName]
+            assert slotObject
+            filled = slotObject.fill(
+                self.canonicalMsg, self.apiResult, self.channelClient)
+            if not filled:
+                botState.putWaiting(self.toJSONObject())
+                log.debug("slotFillConditional: returning False - not filled")
+                return False
+            if not slotObject.slotTransitions:
+                log.debug("slotFillConditional: returning True")
+                return True
+            self.nextSlotToFillName = slotObject.slotTransitions.get(
+                slotObject.value)
+            log.debug("self.nextSlotToFillName: %s", self.nextSlotToFillName)
+            if not self.nextSlotToFillName:
+                log.debug("slotFillConditional: returning True")
+                return True
 
     def toJSONObject(self):
         jsonObject = super(GenericActionObject, self).toJSONObject()
-        jsonObject["nextSlotToFill"] = self.nextSlotToFillName
+        jsonObject["nextSlotToFillName"] = self.nextSlotToFillName
         return jsonObject
 
     def fromJSONObject(self, actionObjectJSON):
         super(GenericActionObject, self).fromJSONObject(actionObjectJSON)
-        self.nextSlotToFill = actionObjectJSON.get("nextSlotToFill")
+        self.nextSlotToFill = actionObjectJSON.get(
+            "nextSlotToFillName", self.nextSlotToFill)
 
     @classmethod
     def createActionObject(cls, specJson, intentStr, canonicalMsg, botState,
@@ -185,7 +192,7 @@ class GenericActionObject(keyframe.actions.ActionObject):
         actionObject.msg = specJson.get("text")
         actionObject.transitionMsg = specJson.get("transition_text")
         actionObject.slotsType = specJson.get(
-            "slots_type", self.SLOTS_TYPE_SEQUENTIAL)
+            "slots_type", cls.SLOTS_TYPE_SEQUENTIAL)
         # TODO: This has to be enforced in the UI.
         #assert actionObject.msg, "No text field in json: %s" % (specJson,)
         if not actionObject.msg:
@@ -237,11 +244,12 @@ class GenericActionObject(keyframe.actions.ActionObject):
                 gc.entity.optionsList = gc.optionsList
                 log.debug("set optionsList to %s", gc.optionsList)
 
-            if actionObject.slotsType == self.SLOTS_TYPE_CONDITIONAL:
+            if actionObject.slotsType == cls.SLOTS_TYPE_CONDITIONAL:
                 # If a slot does not have slot_transitions, this is the last
                 # slot in this path - after it is filled the actionobject is done.
                 gc.slotTransitions = slotSpec.get("slot_transitions")
-
+                log.debug("got slot transitions for slot (%s): %s",
+                          gc.name, gc.slotTransitions)
             slotObjects.append(gc)
             slotObjectsByName[gc.name] = gc
             if gc.entity.needsAPICall:
@@ -252,6 +260,8 @@ class GenericActionObject(keyframe.actions.ActionObject):
         actionObject.slotObjectsByName = slotObjectsByName
         if slotObjects:
             actionObject.nextSlotToFillName = slotObjects[0].name
+            log.debug("actionObject.nextSlotToFillName: %s",
+                      actionObject.nextSlotToFillName)
         actionObject.apiResult = apiResult
         actionObject.newIntent = newIntent
         actionObject.instanceId = None
