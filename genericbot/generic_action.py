@@ -128,7 +128,8 @@ class GenericActionObject(keyframe.actions.ActionObject):
         "ORGANIZATION": dsl.OrgEntity,
         "PHONE": dsl.PhoneRegexEntity,
         "EMAIL": dsl.EmailRegexEntity,
-        "OPTIONS": dsl.OptionsEntity
+        "OPTIONS": dsl.OptionsEntity,
+        "ATTACHMENTS":dsl.AttachmentsEntity
     }
     def getEntityClassFromType(self, entityType):
         if entityType in self.ENTITY_TYPE_CLASS_MAP:
@@ -246,7 +247,7 @@ class GenericActionObject(keyframe.actions.ActionObject):
             gc.entityType = entityType
             # If the entity type is not FREETEXT, this should be true
             # override
-            if entityType != "FREETEXT":
+            if entityType not in ("FREETEXT", "ATTACHMENTS"):
                 gc.parseResponse = True
             gc.entity = actionObject.getEntityClassFromType(entityType)(label=gc.name)
             if entityType == "OPTIONS":

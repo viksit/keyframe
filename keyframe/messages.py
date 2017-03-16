@@ -133,6 +133,7 @@ class ResponseElement(object):
     TYPE_CAROUSEL = "carousel"
     TYPE_YESNOBUTTON = "yesnobutton"
     TYPE_OPTIONS = "options"
+    TYPE_ATTACHMENTS = "attachments"
 
     RESPONSE_TYPE_RESPONSE = "response"
     RESPONSE_TYPE_CTA = "cta"
@@ -163,8 +164,8 @@ class ResponseElement(object):
         self.displayType = displayType
 
     def __repr__(self):
-        res = "ResponseElement(type=%s, responseType=%s, text=%s, carousel=%s, optionsList=%s, responseMeta=%s)" % \
-            (self.type, self.responseType, self.text, self.carousel, self.optionsList, self.responseMeta)
+        res = "ResponseElement(type=%s, responseType=%s, text=%s, carousel=%s, optionsList=%s, responseMeta=%s, displayType=%s)" % \
+            (self.type, self.responseType, self.text, self.carousel, self.optionsList, self.responseMeta, self.displayType)
         return res.encode("utf-8")
 
     def toJSON(self):
@@ -196,9 +197,20 @@ def createOptionsResponse(canonicalMsg, text, optionsList, responseType=None,
         responseElements=[responseElement])
 
         
+def createAttachmentsResponse(canonicalMsg, text, responseType=None,
+                             responseMeta=None):
+    responseElement = ResponseElement(
+        type=ResponseElement.TYPE_ATTACHMENTS,
+        text=text,
+        responseType=responseType,
+        responseMeta=responseMeta)
+    return CanonicalResponse(
+        channel=canonicalMsg.channel,
+        userId=canonicalMsg.userId,
+        responseElements=[responseElement])
+
 def createTextResponse(canonicalMsg, text, responseType=None,
                        responseMeta=None):
-
     responseElement = ResponseElement(
         type=ResponseElement.TYPE_TEXT,
         text=text,

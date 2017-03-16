@@ -164,6 +164,10 @@ class FreeTextEntity(BaseEntity):
         assert text is not None
         return text
 
+class AttachmentsEntity(FreeTextEntity):
+    def __init__(self, **kwargs):
+        super(AttachmentsEntity, self).__init__(**kwargs)
+    
 class OptionsEntity(BaseEntity):
     def __init__(self, **kwargs):
         super(OptionsEntity, self).__init__(**kwargs)

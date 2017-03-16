@@ -161,6 +161,15 @@ class Slot(object):
                     newIntent=self.newIntent,
                     intentStr=self.intentStr),
                 displayType=self.displayType)
+        elif self.entityType == "ATTACHMENTS":
+            cr = messages.createAttachmentsResponse(
+                self.canonicalMsg,
+                msg,
+                responseType,
+                responseMeta=messages.ResponseMeta(
+                    apiResult=self.apiResult,
+                    newIntent=self.newIntent,
+                    intentStr=self.intentStr))
         else:
             cr = messages.createTextResponse(
                 self.canonicalMsg,
