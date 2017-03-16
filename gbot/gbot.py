@@ -76,6 +76,9 @@ class GenericBotHTTPAPI(generic_bot_api.GenericBotAPI):
     This retrieves a json, which is what we use to run the bot for the given
     request.
     """
+    agentId = None
+    accountId = None
+    accountSecret = None
 
     @classmethod
     def fetchBotJsonSpec(cls, **kwargs):
@@ -88,7 +91,8 @@ class GenericBotHTTPAPI(generic_bot_api.GenericBotAPI):
             if "run_mode" in current_app.config and \
                current_app.config["run_mode"] == "file":
                 log.info("(++) Running in file mode")
-                GenericBotHTTPAPI.configJson = current_app.config
+                GenericBotHTTPAPI.configJson = current_app.config.get("config_json")
+                assert GenericBotHTTPAPI.configJson
 
             # We're in Flask deployment mode (run_mode is "DB")
             else:
@@ -112,6 +116,7 @@ class GenericBotHTTPAPI(generic_bot_api.GenericBotAPI):
         agentId = GenericBotHTTPAPI.agentId
         configJson = GenericBotHTTPAPI.configJson
         log.info("(::) agentId: %s, accountId: %s", agentId, accountId)
+        log.debug("configJson: %s", configJson)
 
         intentModelId = configJson.get("config_json").get("intent_model_id")
         modelParams = configJson.get("config_json").get("params")
