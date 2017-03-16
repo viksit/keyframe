@@ -46,7 +46,7 @@ log_pymyra.setLevel(logLevel)
 # Initialize via a configuration file
 kvStore = store_api.get_kv_store(
     # store_api.TYPE_LOCALFILE,
-    store_api.TYPE_DYNAMODB,
+    os.getenv("KEYFRAME_KV_STORE_TYPE", store_api.TYPE_DYNAMODB),
     # store_api.TYPE_INMEMORY,
     config.getConfig())
 

@@ -1,0 +1,111 @@
+{
+  "config_json": {
+    "intents": {
+      "default": {
+        "_id": "question_a14da32f1fc44d14a71c031b34f8f792", 
+        "intent_data": [], 
+        "text": "Response text for default intent.",
+        "intent_type": "default", 
+        "webhook": {}, 
+        "api_id": "", 
+        "clear_waiting_action": null, 
+        "parse_response": "false", 
+        "transition_text": "Transition text for default intent.",
+        "slots_type":"slots-type-conditional",
+        "slots": [
+          {
+            "slot_type": "slot-type-info",
+            "prompt": "Please answer some of the following questions to allow us to help you better.",
+            "slot_input_display_type":"text",
+            "name": "intro", 
+            "options_list": null,
+            "entity_type": "FREETEXT",
+            "slot_transitions": {
+              "__default__":"user_type"
+            }
+          },
+          {
+            "prompt": "What is your role?", 
+            "name": "user_type", 
+            "options_list": "driver, passenger", 
+            "entity_type": "OPTIONS",
+            "slot_input_display_type":"buttonlist",
+            "slot_transitions": {
+              "driver": "driver_top_level_question_about",
+              "passenger":"passenger_top_level_questions_about"
+            }
+          }, 
+          {
+            "prompt": "What is your question about?", 
+            "name": "driver_top_level_question_about", 
+            "options_list": "Issue with ride, Express drive rental", 
+            "entity_type": "OPTIONS",
+            "slot_input_display_type":"dropdown",
+            "slot_transitions": {
+              "Issue with ride": "driver_issue_with_ride",
+              "Express drive rental": "generic_additional_info"
+            }
+          }, 
+          {
+            "prompt": "What can I help you with?", 
+            "name": "passenger_top_level_questions_about", 
+            "options_list": "I lost an item, Issue with ride", 
+            "entity_type": "OPTIONS",
+            "slot_input_display_type":"dropdown",
+            "slot_transitions": {
+              "I lost an item": "generic_additional_info",
+              "Issue with ride": "passenger_issue_with_ride"
+            }
+          }, 
+          {
+            "prompt": "What was the issue with your ride?", 
+            "name": "driver_issue_with_ride", 
+            "options_list": "Cancelled ride, Found an item in car, Passenger caused damage", 
+            "entity_type": "OPTIONS",
+            "slot_input_display_type":"dropdown",
+            "slot_transitions":{
+              "Cancelled ride": "generic_additional_info",
+              "Found an item in car": "generic_additional_info",
+              "Passenger caused damage": "generic_additional_info"
+            }
+          },
+          {
+            "prompt": "What was the nature of the problem?", 
+            "name": "passenger_issue_with_ride", 
+            "options_list": "Driver feedback, Safety concern, Incorrect car photo", 
+            "entity_type": "OPTIONS",
+            "slot_input_display_type":"dropdown",
+            "slot_transitions":{
+              "Driver feedback": "generic_additional_info",
+              "Safety concern": "passenger_safety_concern",
+              "Incorrect car photo": "generic_additional_info"
+            }
+          },
+          {
+            "prompt": "Please enter any additional information.",
+            "name": "generic_additional_info", 
+            "options_list": null,
+            "entity_type": "FREETEXT",
+            "slot_input_display_type":"text"
+          },
+          {
+            "slot_type":"slot-type-info",
+            "prompt": "If you feel unsafe, please call the police.\nYou can also call us on our hotline at 999999999 at any time.<p>You can also look at our passenger terms of service <a href=\"http://www.lyft.com\">here</a>.<p>If you have other concerns, please fill out the additional information and submit a support request.",
+            "name": "passenger_safety_concern", 
+            "options_list": null,
+            "entity_type": "FREETEXT",
+            "slot_transitions":{
+              "__default__":"generic_additional_info"
+            }
+          }
+        ], 
+        "parse_original": "false", 
+        "_title": "Fallback Intent", 
+        "preempt_waiting_action_threshold": null
+      }
+    }, 
+    "params": {
+      "outlier_cutoff": ""
+    }
+  }
+}

@@ -373,7 +373,7 @@ class BaseBot(object):
                     actionObjectCls, intentStr,
                     canonicalMsg, botState, userProfile,
                     requestState, newIntent=False)
-                waitingActionObject.populateFromJson(waitingActionJson)
+                waitingActionObject.fromJSONObject(waitingActionJson)
                 #self.sendDebugResponse(botState, canonicalMsg)
                 requestState = waitingActionObject.processWrapper(botState)
 
