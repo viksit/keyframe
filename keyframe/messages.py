@@ -143,7 +143,11 @@ class ResponseElement(object):
     RESPONSE_TYPE_SLOTFILL = "slotfill"
     RESPONSE_TYPE_SLOTFILL_RETRY = "slotfillretry"
 
-    def __init__(self, type, text=None, carousel=None, responseType=None, responseMeta=None, optionsList=None):
+    DISPLAY_TYPE_TEXT = "text"
+    DISPLAY_TYPE_DROPDOWN = "dropdown"
+    DISPLAY_TYPE_BUTTON_LIST = "buttonlist"
+
+    def __init__(self, type, text=None, carousel=None, responseType=None, responseMeta=None, optionsList=None, displayType=None):
         """
         text: Text response to show user
         carousel: To render a series of images on the channel
@@ -156,6 +160,7 @@ class ResponseElement(object):
         self.responseType = responseType
         self.responseMeta = responseMeta
         self.optionsList = optionsList
+        self.displayType = displayType
 
     def __repr__(self):
         res = "ResponseElement(type=%s, responseType=%s, text=%s, carousel=%s, optionsList=%s, responseMeta=%s)" % \
@@ -172,17 +177,19 @@ class ResponseElement(object):
             "text": self.text,
             "carousel": self.carousel,
             "optionsList":self.optionsList,
-            "responseMeta": rm
+            "responseMeta": rm,
+            "displayType": self.displayType
         }
 
 def createOptionsResponse(canonicalMsg, text, optionsList, responseType=None,
-                          responseMeta=None):
+                          responseMeta=None, displayType=None):
     responseElement = ResponseElement(
         type=ResponseElement.TYPE_OPTIONS,
         optionsList=optionsList,
         text=text,
         responseType=responseType,
-        responseMeta=responseMeta)
+        responseMeta=responseMeta,
+        displayType=displayType)
     return CanonicalResponse(
         channel=canonicalMsg.channel,
         userId=canonicalMsg.userId,

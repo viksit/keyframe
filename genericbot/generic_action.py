@@ -215,29 +215,32 @@ class GenericActionObject(keyframe.actions.ActionObject):
                 gc = generic_slot.GenericSlot(
                     apiResult=apiResult, newIntent=newIntent, intentStr=intentStr)
 
-                required = slotSpec.get("required")
-                if not required:
-                    required = getattr(gc, "required")
-                    log.debug("slotSpec does not specify required - getting default: %s", required)
-                gc.required = required
-
-                parseOriginal = slotSpec.get("parse_original")
-                if not parseOriginal:
-                    parseOriginal = getattr(gc, "parseOriginal")
-                    log.debug("slotSpec does not specify parseOriginal - getting default :%s", parseOriginal)
-                gc.parseOriginal = parseOriginal
-
-                parseResponse = slotSpec.get("parse_response")
-                if not parseResponse:
-                    parseResponse = getattr(gc, "parseResponse")
-                    log.debug("slotSpec does not specify parseResponse - getting default: %s", parseResponse)
-                gc.parseResponse = parseResponse
-
             gc.promptMsg = slotSpec.get("prompt")
             assert gc.promptMsg, "slot %s must have a prompt" % (slotSpec,)
 
             gc.name = slotSpec.get("name")
             assert gc.name, "slot %s must have a name" % (slotSpec,)
+
+            required = slotSpec.get("required")
+            if not required:
+                required = getattr(gc, "required")
+                log.debug("slotSpec does not specify required - getting default: %s", required)
+            gc.required = required
+
+            parseOriginal = slotSpec.get("parse_original")
+            if not parseOriginal:
+                parseOriginal = getattr(gc, "parseOriginal")
+                log.debug("slotSpec does not specify parseOriginal - getting default :%s", parseOriginal)
+            gc.parseOriginal = parseOriginal
+
+            parseResponse = slotSpec.get("parse_response")
+            if not parseResponse:
+                parseResponse = getattr(gc, "parseResponse")
+                log.debug("slotSpec does not specify parseResponse - getting default: %s", parseResponse)
+            gc.parseResponse = parseResponse
+
+            gc.displayType = slotSpec.get("slot_input_display_type")
+            log.debug("set slot %s displayType: %s", gc.name, gc.displayType)
 
             entityType = slotSpec.get("entity_type")
             gc.entityType = entityType

@@ -38,6 +38,7 @@ class Slot(object):
         self.newIntent = newIntent
         self.intentStr = intentStr
         self.canonicalMsg = None
+        self.displayType = None
 
     def toJSONObject(self):
         return {
@@ -158,7 +159,8 @@ class Slot(object):
                 responseMeta=messages.ResponseMeta(
                     apiResult=self.apiResult,
                     newIntent=self.newIntent,
-                    intentStr=self.intentStr))
+                    intentStr=self.intentStr),
+                displayType=self.displayType)
         else:
             cr = messages.createTextResponse(
                 self.canonicalMsg,
