@@ -11,6 +11,8 @@ magic.
 
 keyframe/base.py:handle - this has the creation of the action object from the intent.
 keyframe/actions.py:processWrapper - actually handles the user utterance.
+keyframe/generic_action.py:createActionObject(cls, specJson,...)  - creates the ActionObject & Slots from the json spec.
+
 
 ## Making calls to lambda
 
