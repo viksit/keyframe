@@ -9,9 +9,17 @@ magic.
 
 ## To debug most things
 
-keyframe/base.py:handle - this has the creation of the action object from the intent.
-keyframe/actions.py:processWrapper - actually handles the user utterance.
-keyframe/generic_action.py:createActionObject(cls, specJson,...)  - creates the ActionObject & Slots from the json spec.
+#### keyframe/base.py
+BaseBot: Has many of the core functionalities of the bot.
+* BotState and UserProfile get/put.
+* _getActionObjectFromIntentHandlers
+* handle(canonicalMsg, BotState, UserProfile): Main function handling utterance.
+
+#### keyframe/actions.py
+* processWrapper: Actually handles the user utterance.
+
+#### keyframe/generic_action.py
+* createActionObject(cls, specJson,...)  - creates the ActionObject & Slots from the json spec.
 
 
 ## Making calls to lambda
