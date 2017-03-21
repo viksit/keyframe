@@ -44,7 +44,7 @@ class KVStoreError(Exception):
     pass
 
 class KVStore(object):
-    def put(self, key, value):
+    def put(self, key, value, expiry_time=None):
         """Input:
         key: (string)
         value: (string)
@@ -75,12 +75,12 @@ class KVStore(object):
         log.info("found key:%s, returning json", key)
         return json.loads(s)
 
-    def put_json(self, key, value):
+    def put_json(self, key, value, expiry_time=None):
         """Input
         key: (string)
         value: a python object that can be dumped as json.
         """
-        self.put(key, json.dumps(value))
+        self.put(key, json.dumps(value), expiry_time)
 
 
 # Useful in unit tests and potentially local testing.
@@ -91,7 +91,7 @@ class InMemoryKVStore(KVStore):
         log.info("InMemoryKVStore.__init__")
         self.d = {}
 
-    def put(self, key, value):
+    def put(self, key, value, expiry_time=None):
         """Input:
         key: (string)
         value: (string)
@@ -115,10 +115,13 @@ class LocalFileKVStore(KVStore):
     def __init__(self, local_dir="/mnt/tmp"):
         self.local_dir = local_dir
 
-    def put(self, key, value):
-        f = open(self.local_dir + "/" + key, "w")
-        f.write(value)
-        f.close()
+    def put(self, key, value, expiry_time=None):
+        with open(self.local_dir + "/" + key, "w") as f:
+            f.write(value)
+        if expiry_time:
+            with open(self.local_dir + "/" + key + ".meta", "w") as f:
+                f.write("expiry_time=%s\n" % (expiry_time,))
+
 
     def get(self, key):
         p = self.local_dir + "/" + key
@@ -138,11 +141,13 @@ class DynamoKVStore(KVStore):
         self.dbconn = dbconn
         self.kvstore = dbconn.get_table(db_table)
 
-    def put(self, key, value):
+    def put(self, key, value, expiry_time=None):
         log.debug("DynamoKVStore.put(%s)", locals())
+        attrs = {"kv_key":key, "kv_value":value}
+        if expiry_time:
+            attrs["expiry_time"] = expiry_time
         i = self.kvstore.new_item(
-            hash_key=key,
-            attrs={"kv_key":key, "kv_value":value})
+            hash_key=key, attrs=attrs)
         i.put()
 
     def get(self, key):
@@ -170,7 +175,7 @@ class S3KVStore(KVStore):
     def __init__(self, s3Bucket):
         self.s3Bucket = s3Bucket
 
-    def put(self, key, value):
+    def put(self, key, value, expiry_time=None):
         k = Key(self.s3Bucket)
         k.key = "nishant/r29/dbkvstore/%s" % (key,)
         k.set_contents_from_string(value)

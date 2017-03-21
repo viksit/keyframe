@@ -1,6 +1,7 @@
 from __future__ import print_function
 import inspect
 import logging
+import urlparse
 
 import messages
 import channel_client
@@ -14,6 +15,7 @@ from collections import defaultdict
 import sys
 
 log = logging.getLogger(__name__)
+log.setLevel(10)
 
 class CmdLineHandler(object):
 
@@ -63,9 +65,21 @@ class BotCmdLineHandler(CmdLineHandler):
        raise NotImplementedError()
 
     def processMessage(self, userInput):
-       canonicalMsg = messages.CanonicalMsg(
-           channel=messages.CHANNEL_CMDLINE,
-           httpType=None,
-           userId=self.userId,
-           text=userInput)
-       self.bot.process(canonicalMsg)
+        log.debug("processMessage(%s)", locals())
+        text = userInput
+        botStateUid = None
+        if userInput.strip().startswith(">"):
+            # Treat at url parameters
+            x = urlparse.parse_qs(userInput[1:])
+            text = x.get("text",[None])[0]
+            botStateUid = x.get("bot_state_uid",[None])[0]
+            log.debug("extracted url params: text=%s, botStateUid=%s",
+                      text, botStateUid)
+        canonicalMsg = messages.CanonicalMsg(
+            channel=messages.CHANNEL_CMDLINE,
+            httpType=None,
+            userId=self.userId,
+            text=text,
+            botStateUid=botStateUid)
+        log.debug("canonicalMsg: %s", canonicalMsg)
+        self.bot.process(canonicalMsg)

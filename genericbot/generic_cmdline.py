@@ -41,8 +41,10 @@ class GenericCmdlineHandler(BotCmdLineHandler):
         accountId = self.kwargs.get("accountId")
         accountSecret = self.kwargs.get("accountSecret")
         configJson = self.kwargs.get("config_json")
+        log.debug("configJson: %s", configJson)
         bms = bot_stores.BotMetaStore(kvStore=self.kvStore)
         if not len(configJson.keys()):
+            log.debug("going to get json spec")
             agentId = self.kwargs.get("agentId")
             configJson = bms.getJsonSpec(accountId, agentId)
 

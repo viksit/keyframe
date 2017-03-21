@@ -5,19 +5,16 @@ import messages
 import slot_fill
 import copy
 import misc
-import uuid
 from collections import defaultdict
 import sys
 import constants
 import slot_fill
+import utils
 
 from six import iteritems, add_metaclass
 
 
 log = logging.getLogger(__name__)
-
-def getUUID():
-    return str(uuid.uuid4()).replace("-", "")
 
 class ActionObjectError(Exception):
     pass
@@ -36,7 +33,7 @@ class ActionObject(object):
 
     def __init__(self, **kwargs):
         # TODO - get rid of this does not seem to be used
-        self.__clsid__ = getUUID()
+        self.__clsid__ = utils.getUUID()
         self.apiResult = kwargs.get("apiResult")
         self.canonicalMsg = kwargs.get("canonicalMsg")
         self.state = "new"
@@ -125,7 +122,7 @@ class ActionObject(object):
 
     @classmethod
     def createActionObjectId(cls):
-        x = getUUID()
+        x = utils.getUUID()
         return "k-ao-%s" % (x[5:],)
 
     @classmethod
@@ -166,7 +163,8 @@ class ActionObject(object):
             log.debug("slotObject: %s", slotObject)
             if not slotObject.filled:
                 filled = slotObject.fill(
-                    self.canonicalMsg, self.apiResult, self.channelClient)
+                    self.canonicalMsg, self.apiResult, self.channelClient,
+                    botState)
                 if filled is False:
                     botState.putWaiting(self.toJSONObject())
                     return False
@@ -186,7 +184,7 @@ class ActionObject(object):
         return allFilled
 
 
-    def process(self):
+    def process(self, botState):
         """
         The user fills this up.
         """
@@ -197,10 +195,11 @@ class ActionObject(object):
             log.debug("sending transition msg back: %s", self.transitionMsg)
             self.respond(
                 self.transitionMsg,
-                responseType=messages.ResponseElement.RESPONSE_TYPE_TRANSITIONMSG)
+                responseType=messages.ResponseElement.RESPONSE_TYPE_TRANSITIONMSG,
+                botStateUid=botState.getUid())
 
         # Fill slots
-        log.info("processWrapper: botState: botstate: %s, reqstate: %s", botState, self.requestState)
+        log.info("processWrapper: botstate: %s, reqstate: %s", botState, self.requestState)
         allFilled = self.slotFill(botState)
         log.debug("allFilled: %s", allFilled)
         if allFilled is False:
@@ -222,7 +221,7 @@ class ActionObject(object):
             transcript.append("> %s" % (s.value,))
             transcript.append("")
         self.filledSlots["transcript"] = "\n".join(transcript)
-        requestState = self.process()
+        requestState = self.process(botState)
         # should we save bot state here?
         # reset slots now that we're filled
         self.resetSlots()
@@ -250,18 +249,18 @@ class ActionObject(object):
             "instanceId": self.instanceId
         }
 
-    def createAndSendTextResponse(self, canonicalMsg, text, responseType=None):
-        log.debug("ActionObject.createAndSendTextResponse(%s)", locals())
-        cr = messages.createTextResponse(
-            canonicalMsg, text, responseType,
-            responseMeta=messages.ResponseMeta(
-                apiResult=self.apiResult,
-                newIntent=self.newIntent,
-                intentStr=self.originalIntentStr,
-                actionObjectInstanceId=self.instanceId))
-        self.channelClient.sendResponse(cr)
+    # def createAndSendTextResponse(self, canonicalMsg, text, responseType=None):
+    #     log.debug("ActionObject.createAndSendTextResponse(%s)", locals())
+    #     cr = messages.createTextResponse(
+    #         canonicalMsg, text, responseType,
+    #         responseMeta=messages.ResponseMeta(
+    #             apiResult=self.apiResult,
+    #             newIntent=self.newIntent,
+    #             intentStr=self.originalIntentStr,
+    #             actionObjectInstanceId=self.instanceId))
+    #     self.channelClient.sendResponse(cr)
 
-    def respond(self, text, canonicalMsg=None, responseType=None):
+    def respond(self, text, canonicalMsg=None, responseType=None, botStateUid=None):
         log.debug("ActionObject.respond(%s)", locals())
         if not canonicalMsg:
             canonicalMsg = self.canonicalMsg
@@ -276,7 +275,8 @@ class ActionObject(object):
                 apiResult=self.apiResult,
                 newIntent=self.newIntent,
                 intentStr=self.originalIntentStr,
-                actionObjectInstanceId=self.instanceId))
+                actionObjectInstanceId=self.instanceId),
+            botStateUid=botStateUid)
 
         self.channelClient.sendResponse(cr)
         return constants.BOT_REQUEST_STATE_PROCESSED

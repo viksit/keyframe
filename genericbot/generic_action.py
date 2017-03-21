@@ -16,6 +16,7 @@ import keyframe.actions
 import keyframe.dsl as dsl
 import keyframe.slot_fill as slot_fill
 import generic_slot
+import keyframe.messages as messages
 
 log = logging.getLogger(__name__)
 
@@ -89,7 +90,7 @@ class GenericActionObject(keyframe.actions.ActionObject):
                 structuredMsg.get("response", responseContent))
         return Template(responseContent).render(self.filledSlots)
 
-    def process(self):
+    def process(self, botState):
         log.debug("GenericAction.process called")
         resp = ""
         structuredMsg = None
@@ -113,7 +114,7 @@ class GenericActionObject(keyframe.actions.ActionObject):
             responseTemplate = Template(self.msg)
             resp = responseTemplate.render(self.filledSlots)
         # Final response
-        return self.respond(resp)
+        return self.respond(resp, botStateUid=botState.getUid())
 
     def getSlots(self):
         raise Exception("This should not be used")
@@ -156,7 +157,8 @@ class GenericActionObject(keyframe.actions.ActionObject):
             slotObject = self.slotObjectsByName[self.nextSlotToFillName]
             assert slotObject
             filled = slotObject.fill(
-                self.canonicalMsg, self.apiResult, self.channelClient)
+                self.canonicalMsg, self.apiResult, self.channelClient,
+                botState)
             if not filled:
                 botState.putWaiting(self.toJSONObject())
                 log.debug("slotFillConditional: returning False - not filled")
@@ -240,7 +242,8 @@ class GenericActionObject(keyframe.actions.ActionObject):
                 log.debug("slotSpec does not specify parseResponse - getting default: %s", parseResponse)
             gc.parseResponse = parseResponse
 
-            gc.displayType = slotSpec.get("slot_input_display_type")
+            gc.displayType = slotSpec.get("slot_input_display_type",
+                                          messages.ResponseElement.DISPLAY_TYPE_TEXT)
             log.debug("set slot %s displayType: %s", gc.name, gc.displayType)
 
             entityType = slotSpec.get("entity_type")

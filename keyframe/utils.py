@@ -3,6 +3,10 @@ from __future__ import print_function
 import traceback
 import os
 import logging
+import time
+import random
+import uuid
+
 from store_api import KVStore, KVStoreError
 
 def getLogLevel(envVar, defaultLogLevel=logging.INFO):
@@ -67,3 +71,9 @@ class CachedPersistentDict(PersistentDict):
 
     def __repr__(self):
         return "%s" % (self.cacheDict,)
+
+def getUUID():
+    return str(uuid.uuid4()).replace("-", "")
+
+def timestampUid():
+    return "%i_%s" % (round(time.time()*1000), random.randint(0,1000))

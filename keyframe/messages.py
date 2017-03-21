@@ -1,3 +1,5 @@
+import utils
+
 CHANNEL_FB = "channel-fb"
 CHANNEL_SLACK = "channel-slack"
 CHANNEL_CMDLINE = "channel-cmdline"
@@ -49,7 +51,8 @@ class CanonicalMsg(object):
     MSG_TYPES = [MSG_TYPE_FREETEXT, MSG_TYPE_SLOT_OPTION]
 
     def __init__(self, channel, httpType, userId, text,
-                 actualName=None, rid=None, msgType=None):
+                 actualName=None, rid=None, msgType=None,
+                 botStateUid=None):
         self.channel = channel
         self.httpType = httpType
         self.userId = userId
@@ -60,41 +63,44 @@ class CanonicalMsg(object):
         if not self.msgType:
             self.msgType = self.MSG_TYPE_FREETEXT
         assert self.msgType in CanonicalMsg.MSG_TYPES
-
+        self.botStateUid = botStateUid
 
     def __repr__(self):
         return ("CanonicalMsg(channel=%s, httpType=%s, userId=%s, "
-                "text=%s, rid=%s)") % \
+                "text=%s, rid=%s, botStateUid=%s)") % \
             (self.channel, self.httpType, self.userId,
-             self.text, self.rid)
+             self.text, self.rid, self.botStateUid)
 
     def toJSON(self):
         return {
             "channel": self.channel,
             "httpType": self.httpType,
             "userId": self.userId,
-            "text": self.text
+            "text": self.text,
+            "botStateUid": self.botStateUid
         }
 
 class CanonicalResponse(object):
     """Must support a common way to represent data that can then
     be transformed to the suitable format for any channel.
     """
-    def __init__(self, channel, userId, responseElements=[]):
+    def __init__(self, channel, userId, responseElements=[], botStateUid=None):
         self.channel = channel
         self.userId = userId
         self.responseElements = responseElements
+        self.botStateUid = botStateUid
 
     def __repr__(self):
-        res = "CanonicalResponse(channel=%s, userId=%s, responseElements=%s)" % \
-            (self.channel, self.userId, self.responseElements)
+        res = "CanonicalResponse(channel=%s, userId=%s, responseElements=%s, botStateUid=%s)" % \
+            (self.channel, self.userId, self.responseElements, self.botStateUid)
         return res.encode("utf-8")
 
     def toJSON(self):
         return {
             "channel": self.channel,
             "userId": self.userId,
-            "responseElements": map(lambda x: x.toJSON(), self.responseElements)
+            "responseElements": map(lambda x: x.toJSON(), self.responseElements),
+            "botStateUid": self.botStateUid
         }
 
 class ResponseMeta(object):
@@ -148,7 +154,9 @@ class ResponseElement(object):
     DISPLAY_TYPE_DROPDOWN = "dropdown"
     DISPLAY_TYPE_BUTTON_LIST = "buttonlist"
 
-    def __init__(self, type, text=None, carousel=None, responseType=None, responseMeta=None, optionsList=None, displayType=None):
+    def __init__(self, type, text=None, carousel=None, responseType=None,
+                 responseMeta=None, optionsList=None, displayType=None,
+                 inputExpected=None, uuid=None):
         """
         text: Text response to show user
         carousel: To render a series of images on the channel
@@ -162,10 +170,17 @@ class ResponseElement(object):
         self.responseMeta = responseMeta
         self.optionsList = optionsList
         self.displayType = displayType
+        self.inputExpected = inputExpected
+        self.uuid = uuid
+        if not self.uuid:
+            self.uuid = utils.getUUID()
 
     def __repr__(self):
-        res = "ResponseElement(type=%s, responseType=%s, text=%s, carousel=%s, optionsList=%s, responseMeta=%s, displayType=%s)" % \
-            (self.type, self.responseType, self.text, self.carousel, self.optionsList, self.responseMeta, self.displayType)
+        res = ("ResponseElement(type=%s, responseType=%s, text=%s, carousel=%s, "
+               "optionsList=%s, responseMeta=%s, displayType=%s, inputExpected=%s, "
+               "uuid=%s") % (self.type, self.responseType, self.text,
+                             self.carousel, self.optionsList, self.responseMeta,
+                             self.displayType, self.inputExpected, self.uuid)
         return res.encode("utf-8")
 
     def toJSON(self):
@@ -179,54 +194,67 @@ class ResponseElement(object):
             "carousel": self.carousel,
             "optionsList":self.optionsList,
             "responseMeta": rm,
-            "displayType": self.displayType
+            "displayType": self.displayType,
+            "inputExpected": self.inputExpected,
+            "uuid": self.uuid
         }
 
 def createOptionsResponse(canonicalMsg, text, optionsList, responseType=None,
-                          responseMeta=None, displayType=None):
+                          responseMeta=None, displayType=None, botStateUid=None):
     responseElement = ResponseElement(
         type=ResponseElement.TYPE_OPTIONS,
         optionsList=optionsList,
         text=text,
         responseType=responseType,
         responseMeta=responseMeta,
-        displayType=displayType)
+        displayType=displayType,
+        inputExpected=True)
     return CanonicalResponse(
         channel=canonicalMsg.channel,
         userId=canonicalMsg.userId,
-        responseElements=[responseElement])
+        responseElements=[responseElement],
+        botStateUid=botStateUid)
 
         
 def createAttachmentsResponse(canonicalMsg, text, responseType=None,
-                             responseMeta=None):
+                              responseMeta=None, botStateUid=None):
     responseElement = ResponseElement(
         type=ResponseElement.TYPE_ATTACHMENTS,
         text=text,
         responseType=responseType,
-        responseMeta=responseMeta)
+        responseMeta=responseMeta,
+        inputExpected=True)
     return CanonicalResponse(
         channel=canonicalMsg.channel,
         userId=canonicalMsg.userId,
-        responseElements=[responseElement])
+        responseElements=[responseElement],
+        botStateUid=botStateUid)
 
 def createTextResponse(canonicalMsg, text, responseType=None,
-                       responseMeta=None):
+                       responseMeta=None, botStateUid=None,
+                       inputExpected=False):
     responseElement = ResponseElement(
         type=ResponseElement.TYPE_TEXT,
         text=text,
         responseType=responseType,
-        responseMeta=responseMeta)
+        responseMeta=responseMeta,
+        inputExpected=inputExpected)
     return CanonicalResponse(
         channel=canonicalMsg.channel,
         userId=canonicalMsg.userId,
-        responseElements=[responseElement])
+        responseElements=[responseElement],
+        botStateUid=botStateUid)
 
-def createYesNoButtonResponse(canonicalMsg, text, responseType=None):
+def createYesNoButtonResponse(
+        canonicalMsg, text, responseType=None, botStateUid=None):
     responseElement = ResponseElement(
         type=ResponseElement.TYPE_YESNOBUTTON,
         text=text,
-        responseType=responseType)
+        responseType=responseType,
+        inputExpected=True)
+    botState
     return CanonicalResponse(
         channel=canonicalMsg.channel,
         userId=canonicalMsg.userId,
-        responseElements=[responseElement])
+        responseElements=[responseElement],
+        botStateUid=botStateUid)

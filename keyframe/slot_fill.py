@@ -71,7 +71,7 @@ class Slot(object):
         self.channelClient = kwargs.get("channelClient")
         self.state = "new" # or process_slot
 
-    def fill(self, canonicalMsg, apiResult, channelClient):
+    def fill(self, canonicalMsg, apiResult, channelClient, botState):
         """
         if parseOriginal is true
           analyze the intent canonicalMsg to see if we can extract
@@ -114,7 +114,8 @@ class Slot(object):
             # Send a response
             self._createAndSendResponse(
                 self.prompt(), channelClient,
-                responseType=messages.ResponseElement.RESPONSE_TYPE_SLOTFILL)
+                responseType=messages.ResponseElement.RESPONSE_TYPE_SLOTFILL,
+                botStateUid=botState.getUid())
             self.state = Slot.SLOT_STATE_WAITING_FILL
 
         # Waiting for user response
@@ -135,7 +136,8 @@ class Slot(object):
                     msg = "You entered an incorrect value for %s. Please enter again." % self.name
                     self._createAndSendResponse(
                         msg, channelClient,
-                        responseType=messages.ResponseElement.RESPONSE_TYPE_SLOTFILL_RETRY)
+                        responseType=messages.ResponseElement.RESPONSE_TYPE_SLOTFILL_RETRY,
+                        botStateUid=botState.getUid())
                     self.state = Slot.SLOT_STATE_WAITING_FILL
                     self.filled = False
                     return self.filled
@@ -148,7 +150,8 @@ class Slot(object):
 
     def _createAndSendResponse(
             self, msg, channelClient,
-            responseType=messages.ResponseElement.RESPONSE_TYPE_RESPONSE):
+            responseType=messages.ResponseElement.RESPONSE_TYPE_RESPONSE,
+            botStateUid=None):
         cr = None
         if self.entityType == "OPTIONS":
             cr = messages.createOptionsResponse(
@@ -160,7 +163,8 @@ class Slot(object):
                     apiResult=self.apiResult,
                     newIntent=self.newIntent,
                     intentStr=self.intentStr),
-                displayType=self.displayType)
+                displayType=self.displayType,
+                botStateUid=botStateUid)
         elif self.entityType == "ATTACHMENTS":
             cr = messages.createAttachmentsResponse(
                 self.canonicalMsg,
@@ -169,7 +173,8 @@ class Slot(object):
                 responseMeta=messages.ResponseMeta(
                     apiResult=self.apiResult,
                     newIntent=self.newIntent,
-                    intentStr=self.intentStr))
+                    intentStr=self.intentStr),
+                botStateUid=botStateUid)
         else:
             cr = messages.createTextResponse(
                 self.canonicalMsg,
@@ -178,7 +183,9 @@ class Slot(object):
                 responseMeta=messages.ResponseMeta(
                     apiResult=self.apiResult,
                     newIntent=self.newIntent,
-                    intentStr=self.intentStr))
+                    intentStr=self.intentStr),
+                botStateUid=botStateUid,
+                inputExpected=True)
         channelClient.sendResponse(cr)
 
     def _extractSlotFromSentence(self, text):

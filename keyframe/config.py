@@ -26,6 +26,7 @@ def getConfig(realm=None):
         raise "Unknown REALM: %s" % (realm,)
 
 class Config(object):
+    BOTSTATE_HISTORY_TTL_SECONDS = 60*60*24  # 1 day is probably way too much.
     INTENT_SCORE_THRESHOLD = 0.7
 
     DYNAMODB_AWS_REGION = "us-west-2"

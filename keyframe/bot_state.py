@@ -18,6 +18,25 @@ class BotState(object):
         self._lastResult = None  # CanonicalResult
         self.changed = False
         self.debug = False
+        self.uid = None
+        self.previousUid = None
+
+    def setUid(self, uid):
+        self.uid = uid
+
+    def getUid(self):
+        # What if it is None?
+        return self.uid
+
+    def setPreviousUid(self, previousUid):
+        self.previousUid = previousUid
+
+    def getPreviousUid(self):
+        return self.previousUid
+
+    def shiftUid(self, newUid):
+        self.previousUid = self.uid
+        self.uid = newUid
 
     def __repr__(self):
         return "%s" % (self.toJSONObject())
@@ -26,9 +45,9 @@ class BotState(object):
         self.debug = debug
 
     def clear(self):
-        self.waiting = None
+        self._waiting = None
         self._lastResult = None
-        self.changed = False
+        self.changed = True
 
     def clearWaiting(self):
         if self._waiting:
@@ -65,7 +84,9 @@ class BotState(object):
         return {
             "class":self.__class__.__name__,
             "waiting":self._waiting,
-            "last_result": self._lastResult
+            "last_result": self._lastResult,
+            "uid": self.uid,
+            "previous_uid": self.previousUid
         }
 
     @classmethod
@@ -79,4 +100,6 @@ class BotState(object):
         botState = cls()
         botState._waiting = jsonObject.get("waiting")
         botState._lastResult = jsonObject.get("last_result")
+        botState.uid = jsonObject.get("uid")
+        botState.previousUid = jsonObject.get("previous_uid")
         return botState

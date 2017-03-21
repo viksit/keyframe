@@ -47,12 +47,14 @@ class ChannelClientCmdline(ChannelClient):
             httpType=channelMsg.httpType,
             userId=channelMsg.body.get("user_id"),
             text=channelMsg.body.get("text"),
-            rid=channelMsg.body.get("rid")
+            rid=channelMsg.body.get("rid"),
+            botStateUid=channelMsg.body.get("bot_state_uid")
         )
 
     def sendResponse(self, canonicalResponse):
-        for e in canonicalResponse.responseElements:
-            print("\n>>\n", e.toJSON(), "\n")
+        print("\n>>\n", canonicalResponse.toJSON(), "\n")
+        # for e in canonicalResponse.responseElements:
+        #     print("\n>>\n", e.toJSON(), "\n")
 
 
 class ChannelClientFacebook(ChannelClient):
@@ -199,7 +201,8 @@ class ChannelClientRESTAPI(ChannelClient):
             httpType=channelMsg.httpType,
             userId=channelMsg.body.get("user_id"),
             text=channelMsg.body.get("text"),
-            rid=channelMsg.body.get("rid")
+            rid=channelMsg.body.get("rid"),
+            botStateUid=channelMsg.body.get("bot_state_uid")
         )
 
     def sendResponse(self, canonicalResponse):

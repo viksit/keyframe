@@ -2,11 +2,13 @@ from __future__ import print_function
 import logging
 import json
 import re
+import copy
+import time
 
 import messages
 import slot_fill
 import dsl
-import copy
+import config
 import misc
 from collections import defaultdict
 import sys
@@ -26,6 +28,7 @@ from ordered_set import OrderedSet
 # TODO: move logging out into a nicer function/module
 
 log = logging.getLogger(__name__)
+log.setLevel(10)
 
 class BaseBot(object):
 
@@ -41,6 +44,8 @@ class BaseBot(object):
         self.channelClient = kwargs.get("channelClient")
         self.kvStore = kwargs.get("kvStore")
         self.config = kwargs.get("config")
+        if not self.config:
+            self.config = config.getConfig()
         self.debug = kwargs.get("debug")
 
         # self.slotFill = slot_fill.SlotFill()
@@ -87,26 +92,48 @@ class BaseBot(object):
         log.debug("BaseBot: returning botstate key: %s", k)
         return k
 
-    def getBotState(self, userId, channel):
+    def _botStateHistoryKey(self, userId, channel, botStateUid):
+        log.debug("_botStateHistoryKey(%s)", locals())
+        k = self._botStateKey(userId, channel)
+        k = "history." + k + "." + botStateUid
+        log.debug("BaseBot._botStateHistoryKey returning: %s", k)
+        return k
+
+    def getBotState(self, userId, channel, botStateUid=None):
         log.debug("getBotState(%s)", locals())
         k = self._botStateKey(userId, channel)
+        if botStateUid:
+            k = self._botStateHistoryKey(userId, channel, botStateUid)
         jsonObject = self.kvStore.get_json(k)
         if not jsonObject:
+            assert not botStateId, "Could not get botStateId: %s (key: %s)" % (
+                botStateId, k)
             return self.botStateClass()
         return self.botStateClass.fromJSONObject(jsonObject)
 
-    def putBotState(self, userId, channel, botState):
+    def putBotState(self, userId, channel, botState, botStateUid):
         k = self._botStateKey(userId, channel)
         self.kvStore.put_json(k, botState.toJSONObject())
+        # Always also add to history.
+        self.putBotStateHistory(userId, channel, botState, botStateUid)
+
+    def putBotStateHistory(self, userId, channel, botState, botStateUid):
+        k = self._botStateHistoryKey(userId, channel, botStateUid)
+        expiry_time = int(time.time()) + self.config.BOTSTATE_HISTORY_TTL_SECONDS
+        self.kvStore.put_json(k, botState.toJSONObject(),
+                              expiry_time=expiry_time)
 
     # Channel and I/O related functions
     def setChannelClient(self, cc):
         self.channelClient = cc
 
 
-    def createAndSendTextResponse(self, canonicalMsg, text, responseType=None):
+    def createAndSendTextResponse(self, canonicalMsg, text, responseType=None,
+                                  botStateUid=None):
         log.info("createAndSendTextResponse(%s)", locals())
-        cr = messages.createTextResponse(canonicalMsg, text, responseType)
+        cr = messages.createTextResponse(
+            canonicalMsg, text, responseType,
+            botStateUid=botStateUid)
         log.info("cr: %s", cr)
         self.channelClient.sendResponse(cr)
 
@@ -165,7 +192,8 @@ class BaseBot(object):
             try:
                 self.createAndSendTextResponse(
                     canonicalMsg, "botState: %s" % (botState,),
-                    messages.ResponseElement.RESPONSE_TYPE_DEBUG)
+                    messages.ResponseElement.RESPONSE_TYPE_DEBUG,
+                    botStateUid=botState.getUid())
             except Exception as e:
                 log.exception(e.message)
         else:
@@ -184,7 +212,20 @@ class BaseBot(object):
 
         botState = self.getBotState(
             userId=canonicalMsg.userId,
-            channel=canonicalMsg.channel)
+            channel=canonicalMsg.channel,
+            botStateUid=canonicalMsg.botStateUid)
+        
+        # self.putBotStateHistory(
+        #     userId=canonicalMsg.userId,
+        #     channel=canonicalMsg.channel,
+        #     botState=botState,
+        #     uid=botStateUid)
+
+        # create a state uid so we can keep track of botstate.
+        newBotStateUid = utils.timestampUid()
+        log.info("newBotStateUid: %s", newBotStateUid)
+        botState.shiftUid(newBotStateUid)
+        #canonicalMsg.botStateUid = botStateUid
 
         userProfile = self.getUserProfile(
             userId=canonicalMsg.userId,
@@ -267,7 +308,6 @@ class BaseBot(object):
             userProfile, requestState, self.api, self.channelClient,
             apiResult=apiResult, newIntent=newIntent)
 
-
     def _handleBotCmd(self, canonicalMsg, botState, userProfile, requestState):
         log.debug("_handleBotCmd called")
         msg = canonicalMsg.text.lower()
@@ -287,15 +327,13 @@ class BaseBot(object):
             respText = botState.toJSONObject()
 
         if msg.find("clear state") > -1:
-            botState = self.getBotState(
-                userId=canonicalMsg.userId,
-                channel=canonicalMsg.channel)
-            log.debug("botstate pre: %s", botState)
             botState.clear()
             self.putBotState(
                 userId=canonicalMsg.userId,
                 channel=canonicalMsg.channel,
-                botState=self.botStateClass()
+                #botState=self.botStateClass(),
+                botState=botState,
+                botStateUid=botState.getUid()
             )
             log.debug("botstate post: %s", botState)
             respText = "bot state has been cleared"
@@ -303,7 +341,8 @@ class BaseBot(object):
         self.createAndSendTextResponse(
             canonicalMsg,
             respText,
-            messages.ResponseElement.RESPONSE_TYPE_RESPONSE)
+            messages.ResponseElement.RESPONSE_TYPE_RESPONSE,
+            botStateUid=botState.getUid())
         return constants.BOT_REQUEST_STATE_PROCESSED
 
 
@@ -369,6 +408,7 @@ class BaseBot(object):
             if waitingActionJson:
                 intentStr = actions.ActionObject.getIntentStrFromJSON(waitingActionJson)
                 actionObjectCls = self.intentActions.get(intentStr)
+                log.debug("actionObjectCls: %s", actionObjectCls)
                 waitingActionObject = self.createActionObject(
                     actionObjectCls, intentStr,
                     canonicalMsg, botState, userProfile,
@@ -391,6 +431,7 @@ class BaseBot(object):
             self.putBotState(
                 userId=canonicalMsg.userId,
                 channel=canonicalMsg.channel,
-                botState=botState
+                botState=botState,
+                botStateUid=botState.getUid()
             )
         return requestState
