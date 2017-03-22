@@ -49,3 +49,20 @@ Uses loggers with "genericbot.*" hierarchy.
 
 See gbot.py. Logging is set by GBOT_LOG_LEVEL env var for genericbot, keyframe and pymyra. But you can comment out a couple of lines inside gbot.py and not set loglevel for keyframe and/or keyframe and set those independently with their own env vars or explicitly in the code for debugging.
 
+
+
+## Uploading a bot spec to dynamodb
+
+    import keyframe.store_api as store_api
+    import json
+    import keyframe.config
+
+    config = keyframe.config.getConfig()
+    kvStore = store_api.get_kv_store(store_api.TYPE_DYNAMODB, config)
+    k = 'botmeta.3rxCO9rydbBIf3DOMb9lFh.94e0d0a482664965abc63e13638636e2'
+    s = open('/Users/nishant/work/keyframe/genericbot/example-configs/lyft_test.json','r').read()
+    j = json.loads(s)
+    x = json.dumps(j)
+    kvStore.put_json(k, x)
+
+
