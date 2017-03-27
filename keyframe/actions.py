@@ -207,6 +207,7 @@ class ActionObject(object):
 
         # Call process function only when slot data is filled up
         self.filledSlots = {}
+        entityNameValues = {}
         transcript = []
         if self.originalUtterance:
             log.debug("adding original utterance to transcript (%s)",
@@ -220,7 +221,17 @@ class ActionObject(object):
             transcript.append("prompt> %s" % (s.prompt(),))
             transcript.append("> %s" % (s.value,))
             transcript.append("")
+            log.debug("adding key: %s, value: %s to entityNameValues",
+                      s.entityName, s.value)
+            # entityName can be the same in multiple slots. Only update
+            # if the slot has a value.
+            if s.value or s.entityName not in entityNameValues:
+                if s.entityName in entityNameValues:
+                    log.warn("entityName %s is being overwritten")
+                entityNameValues[s.entityName] = s.value
         self.filledSlots["transcript"] = "\n".join(transcript)
+        self.filledSlots.update(entityNameValues)
+
         requestState = self.process(botState)
         # should we save bot state here?
         # reset slots now that we're filled

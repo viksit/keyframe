@@ -112,7 +112,10 @@ class GenericActionObject(keyframe.actions.ActionObject):
         log.debug("resp 1: %s", resp)
         if not resp:
             responseTemplate = Template(self.msg)
-            resp = responseTemplate.render(self.filledSlots)
+            log.debug("responseTemplate: %s", responseTemplate)
+            _d = {"entities":self.filledSlots}
+            log.debug("calling responseTemplate.render with dict: %s", _d)
+            resp = responseTemplate.render(_d)
         # Final response
         return self.respond(resp, botStateUid=botState.getUid())
 
@@ -223,6 +226,7 @@ class GenericActionObject(keyframe.actions.ActionObject):
 
             gc.name = slotSpec.get("name")
             assert gc.name, "slot %s must have a name" % (slotSpec,)
+            gc.entityName = slotSpec.get("entityName", gc.name)
 
             required = slotSpec.get("required")
             if not required:
@@ -257,7 +261,11 @@ class GenericActionObject(keyframe.actions.ActionObject):
                 optionsList = slotSpec.get("options_list")
                 if not optionsList:
                     raise Exception("must have options_list for slot %s in action object for intent %s" % (gc.name, intentStr))
-                gc.optionsList = [e.strip() for e in optionsList.strip().split(",") if e.strip()]
+                # From the current UI, the list is specified as a string, but from a newer UI it is a list.
+                if isinstance(optionsList, basestring):
+                    gc.optionsList = [e.strip() for e in optionsList.strip().split(",") if e.strip()]
+                elif isinstance(optionsList, list):
+                    gc.optionsList = optionsList
                 gc.entity.optionsList = gc.optionsList
                 log.debug("set optionsList to %s", gc.optionsList)
 

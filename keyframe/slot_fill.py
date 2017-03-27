@@ -25,6 +25,7 @@ class Slot(object):
         # If there are multiple slots with the same class, the slot definition
         # will have to override this and give some names.
         self.name = re.sub(r"(.)([A-Z])", r"\1_\2", self.__class__.__name__).lower()
+        self.entityName = self.name
         self.filled = False
         self.value = None
         self.validated = False
@@ -52,11 +53,13 @@ class Slot(object):
             "parseResponse": self.parseResponse,
             "entity": self.entity.toJSON(),
             "required": self.required,
-            "optionsList":self.optionsList
+            "optionsList":self.optionsList,
+            "entityName":self.entityName
         }
 
     def fromJSONObject(self, j):
         self.name = j.get("name")
+        self.entityName = j.get("entityName")
         self.filled = j.get("filled")
         self.value = j.get("value")
         self.validated = j.get("validated")
