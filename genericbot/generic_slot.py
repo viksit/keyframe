@@ -27,7 +27,7 @@ class GenericHiddenSlot(keyframe.slot_fill.Slot):
                  intentStr=None):
         super(GenericHiddenSlot, self).__init__(
             apiResult=apiResult, newIntent=newIntent, intentStr=intentStr)
-        self.entityAssignments = None
+        self.customFields = None
 
     def prompt(self):
         raise Exception("Hidden slots do not have prompts")

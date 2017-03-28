@@ -25,6 +25,7 @@
             }
           },
           {
+            "slot_type":"slot-type-input",
             "prompt": "What is your role?", 
             "name": "user_type", 
             "options_list": ["driver", "passenger", "other"], 
@@ -37,6 +38,7 @@
             }
           }, 
           {
+            "slot_type":"slot-type-input",
             "prompt": "What is your question about?", 
             "name": "driver_top_level_question_about",
             "entityName": "topic",
@@ -49,6 +51,7 @@
             }
           }, 
           {
+            "slot_type":"slot-type-input",
             "prompt": "What can I help you with?", 
             "name": "passenger_top_level_questions_about",
             "entityName":"topic",
@@ -61,6 +64,7 @@
             }
           }, 
           {
+            "slot_type":"slot-type-input",
             "prompt": "What was the issue with your ride?", 
             "name": "driver_issue_with_ride",
             "entityName":"issue",
@@ -74,6 +78,7 @@
             }
           },
           {
+            "slot_type":"slot-type-input",
             "prompt": "What was the nature of the problem?", 
             "name": "passenger_issue_with_ride",
             "entityName":"issue",
@@ -87,6 +92,7 @@
             }
           },
           {
+            "slot_type":"slot-type-input",
             "prompt": "Please enter any additional information.",
             "name": "generic_additional_info",
             "entityName":"additional_info",
@@ -100,7 +106,7 @@
           {
             "slot_type": "slot-type-hidden",
             "name": "drivers_hidden_1",
-            "entityAssignments":{
+            "custom_fields":{
               "issue_type":"Driver::Drivers Issue::Drivers Detail",
               "view_type":"Driver support tier 2"
             },
@@ -112,7 +118,7 @@
           {
             "slot_type": "slot-type-hidden",
             "name": "passengers_hidden_1",
-            "entityAssignments":{
+            "custom_fields":{
               "issue_type":"Passenger::Passengers Issue::Passengers Detail",
               "view_type":"Passenger support tier 2"
             },
@@ -124,7 +130,7 @@
           {
             "slot_type": "slot-type-hidden",
             "name": "other_hidden_1",
-            "entityAssignments":{
+            "custom_fields":{
               "issue_type":"Other::Other Issue::Other Detail",
               "view_type":"support tier 3"
             },
@@ -134,6 +140,7 @@
             }
           },
           {
+            "slot_type":"slot-type-input",
             "prompt": "Please upload any files",
             "name": "upload_files", 
             "options_list": null,

@@ -25,6 +25,7 @@
             }
           },
           {
+            "slot_type":"slot-type-input",
             "prompt": "What is your role?", 
             "name": "user_type", 
             "options_list": ["driver", "passenger"], 
@@ -36,6 +37,7 @@
             }
           }, 
           {
+            "slot_type":"slot-type-input",
             "prompt": "What is your question about?", 
             "name": "driver_top_level_question_about",
             "entityName": "topic",
@@ -48,6 +50,7 @@
             }
           }, 
           {
+            "slot_type":"slot-type-input",
             "prompt": "What can I help you with?", 
             "name": "passenger_top_level_questions_about",
             "entityName":"topic",
@@ -60,6 +63,7 @@
             }
           }, 
           {
+            "slot_type":"slot-type-input",
             "prompt": "What was the issue with your ride?", 
             "name": "driver_issue_with_ride",
             "entityName":"issue",
@@ -73,6 +77,7 @@
             }
           },
           {
+            "slot_type":"slot-type-input",
             "prompt": "What was the nature of the problem?", 
             "name": "passenger_issue_with_ride",
             "entityName":"issue",
@@ -86,6 +91,7 @@
             }
           },
           {
+            "slot_type":"slot-type-input",
             "prompt": "Please enter any additional information.",
             "name": "generic_additional_info",
             "entityName":"additional_info",
@@ -97,6 +103,7 @@
             }
           },
           {
+            "slot_type":"slot-type-input",
             "prompt": "Please upload any files",
             "name": "upload_files", 
             "options_list": null,

@@ -212,7 +212,8 @@ class GenericActionObject(keyframe.actions.ActionObject):
         slotObjectsByName = {}
         runAPICall = False
         for slotSpec in slots:
-            slotType = slotSpec.get("slot_type", slot_fill.Slot.SLOT_TYPE_INPUT)
+            slotType = slotSpec.get("slot_type")
+            assert slotType, "all slots must have an explicit slot type specified"
             log.debug("creating slot: %s slotType: %s",
                       slotSpec.get("name"), slotType)
             gc = None
@@ -222,8 +223,8 @@ class GenericActionObject(keyframe.actions.ActionObject):
             elif slotType == slot_fill.Slot.SLOT_TYPE_HIDDEN:
                 gc = generic_slot.GenericHiddenSlot(
                     apiResult=apiResult, newIntent=newIntent, intentStr=intentStr)
-                gc.entityAssignments = slotSpec.get("entityAssignments")
-                assert gc.entityAssignments, "Hidden slot must have entityAssignment"
+                gc.customFields = slotSpec.get("custom_fields")
+                assert gc.customFields, "Hidden slot must have customFields"
             else:
                 gc = generic_slot.GenericSlot(
                     apiResult=apiResult, newIntent=newIntent, intentStr=intentStr)

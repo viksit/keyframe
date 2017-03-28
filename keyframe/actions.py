@@ -217,7 +217,7 @@ class ActionObject(object):
         for s in self.slotObjects:
             log.debug("processing slot: %s", s)
             if s.slotType == slot_fill.Slot.SLOT_TYPE_HIDDEN:
-                for (k,v) in s.entityAssignments.iteritems():
+                for (k,v) in s.customFields.iteritems():
                     entityNameValues[k] = v
             else:
                 self.filledSlots[s.name] = s.value  # Backward compat + easy to use.
