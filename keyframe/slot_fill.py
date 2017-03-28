@@ -6,6 +6,7 @@ import misc
 from six import add_metaclass
 import re
 from dsl import BaseEntity
+import json
 
 log = logging.getLogger(__name__)
 
@@ -18,6 +19,7 @@ class Slot(object):
 
     SLOT_TYPE_INPUT = "slot-type-input"
     SLOT_TYPE_INFO = "slot-type-info"
+    SLOT_TYPE_HIDDEN = "slot-type-hidden"
 
     # TODO(viksit): overwrite the instance variables from the class variable
 
@@ -40,6 +42,10 @@ class Slot(object):
         self.intentStr = intentStr
         self.canonicalMsg = None
         self.displayType = None
+        self.slotType = None
+
+    def __repr__(self):
+        return "%s" % (json.dumps(self.toJSONObject()),)
 
     def toJSONObject(self):
         return {
@@ -54,7 +60,8 @@ class Slot(object):
             "entity": self.entity.toJSON(),
             "required": self.required,
             "optionsList":self.optionsList,
-            "entityName":self.entityName
+            "entityName":self.entityName,
+            "slotType":self.slotType
         }
 
     def fromJSONObject(self, j):
@@ -68,7 +75,8 @@ class Slot(object):
         self.parseResponse = j.get("parseResponse")
         self.entity = BaseEntity.fromJSON(j.get("entity"))
         self.required = j.get("required")
-        self.optionsList = j.get("optionsList")
+        self.optionsList = j.get("optionsList"),
+        self.slotType = j.get("slotType")
 
     def init(self, **kwargs):
         self.channelClient = kwargs.get("channelClient")

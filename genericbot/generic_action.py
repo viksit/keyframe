@@ -213,16 +213,24 @@ class GenericActionObject(keyframe.actions.ActionObject):
         runAPICall = False
         for slotSpec in slots:
             slotType = slotSpec.get("slot_type", slot_fill.Slot.SLOT_TYPE_INPUT)
+            log.debug("creating slot: %s slotType: %s",
+                      slotSpec.get("name"), slotType)
             gc = None
             if slotType == slot_fill.Slot.SLOT_TYPE_INFO:
                 gc = generic_slot.GenericInfoSlot(
                     apiResult=apiResult, newIntent=newIntent, intentStr=intentStr)
+            elif slotType == slot_fill.Slot.SLOT_TYPE_HIDDEN:
+                gc = generic_slot.GenericHiddenSlot(
+                    apiResult=apiResult, newIntent=newIntent, intentStr=intentStr)
+                gc.entityAssignments = slotSpec.get("entityAssignments")
+                assert gc.entityAssignments, "Hidden slot must have entityAssignment"
             else:
                 gc = generic_slot.GenericSlot(
                     apiResult=apiResult, newIntent=newIntent, intentStr=intentStr)
 
+            gc.slotType = slotType
             gc.promptMsg = slotSpec.get("prompt")
-            assert gc.promptMsg, "slot %s must have a prompt" % (slotSpec,)
+            #assert gc.promptMsg, "slot %s must have a prompt" % (slotSpec,)
 
             gc.name = slotSpec.get("name")
             assert gc.name, "slot %s must have a name" % (slotSpec,)
@@ -275,6 +283,7 @@ class GenericActionObject(keyframe.actions.ActionObject):
                 gc.slotTransitions = slotSpec.get("slot_transitions")
                 log.debug("got slot transitions for slot (%s): %s",
                           gc.name, gc.slotTransitions)
+            log.debug("created slot: %s", gc)
             slotObjects.append(gc)
             slotObjectsByName[gc.name] = gc
             if gc.entity.needsAPICall:

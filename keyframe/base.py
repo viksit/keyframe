@@ -106,8 +106,8 @@ class BaseBot(object):
             k = self._botStateHistoryKey(userId, channel, botStateUid)
         jsonObject = self.kvStore.get_json(k)
         if not jsonObject:
-            assert not botStateId, "Could not get botStateId: %s (key: %s)" % (
-                botStateId, k)
+            assert not botStateUid, "Could not get botStateUid: %s (key: %s)" % (
+                botStateUid, k)
             return self.botStateClass()
         return self.botStateClass.fromJSONObject(jsonObject)
 

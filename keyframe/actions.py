@@ -215,20 +215,25 @@ class ActionObject(object):
             transcript.append("> %s" % (self.originalUtterance,))
         # TODO: Need to add the original msg. Not clear if this is being stored.
         for s in self.slotObjects:
-            self.filledSlots[s.name] = s.value  # Backward compat + easy to use.
-            self.filledSlots["%s_prompt" % (s.name,)] = s.prompt()
-            self.filledSlots["%s_response" % (s.name,)] = s.value
-            transcript.append("prompt> %s" % (s.prompt(),))
-            transcript.append("> %s" % (s.value,))
-            transcript.append("")
-            log.debug("adding key: %s, value: %s to entityNameValues",
-                      s.entityName, s.value)
-            # entityName can be the same in multiple slots. Only update
-            # if the slot has a value.
-            if s.value or s.entityName not in entityNameValues:
-                if s.entityName in entityNameValues:
-                    log.warn("entityName %s is being overwritten")
-                entityNameValues[s.entityName] = s.value
+            log.debug("processing slot: %s", s)
+            if s.slotType == slot_fill.Slot.SLOT_TYPE_HIDDEN:
+                for (k,v) in s.entityAssignments.iteritems():
+                    entityNameValues[k] = v
+            else:
+                self.filledSlots[s.name] = s.value  # Backward compat + easy to use.
+                self.filledSlots["%s_prompt" % (s.name,)] = s.prompt()
+                self.filledSlots["%s_response" % (s.name,)] = s.value
+                transcript.append("prompt> %s" % (s.prompt(),))
+                transcript.append("> %s" % (s.value,))
+                transcript.append("")
+                log.debug("adding key: %s, value: %s to entityNameValues",
+                          s.entityName, s.value)
+                # entityName can be the same in multiple slots. Only update
+                # if the slot has a value.
+                if s.value or s.entityName not in entityNameValues:
+                    if s.entityName in entityNameValues:
+                        log.warn("entityName %s is being overwritten")
+                    entityNameValues[s.entityName] = s.value
         self.filledSlots["transcript"] = "\n".join(transcript)
         self.filledSlots.update(entityNameValues)
 

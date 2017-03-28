@@ -22,6 +22,22 @@ class GenericSlot(keyframe.slot_fill.Slot):
             return self.promptMsg
         return self.promptMsg
 
+class GenericHiddenSlot(keyframe.slot_fill.Slot):
+    def __init__(self, apiResult=None, newIntent=None,
+                 intentStr=None):
+        super(GenericHiddenSlot, self).__init__(
+            apiResult=apiResult, newIntent=newIntent, intentStr=intentStr)
+        self.entityAssignments = None
+
+    def prompt(self):
+        raise Exception("Hidden slots do not have prompts")
+
+    def fill(self, canonicalMsg, apiResult, channelClient, botState):
+        self.apiResult = apiResult
+        self.channelClient = channelClient
+        self.canonicalMsg = canonicalMsg
+        self.filled = True
+        return self.filled
 
 class GenericInfoSlot(GenericSlot):
     def __init__(self, apiResult=None, newIntent=None,
