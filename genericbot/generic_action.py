@@ -45,19 +45,37 @@ class GenericActionObject(keyframe.actions.ActionObject):
         custom = webhook.get("api_params", "{}")
         custom = json.loads(custom) # convert to dict
         entities = filledSlots
+        requestBody = webhook.get("api_body")
 
         # Response
         urlTemplate = Template(url)
         templatedURL = urlTemplate.render({"custom": custom, "entities": entities})
         log.debug("URL to fetch: %s" % (templatedURL,))
+        requestBodyJsonObject = None
+        if requestBody:
+            templatedRequestBody = Template(requestBody).render(
+                {"custom": custom, "entities": entities})
+            requestBodyJsonObject = json.loads(templatedRequestBody)
+
         urlPieces = urlparse.urlparse(templatedURL)
         log.debug("urlPieces: %s" % (urlPieces,))
         response = {}
-        if len(urlPieces.scheme) > 0 and len(urlPieces.netloc) > 0:
-            response = requests.get(templatedURL)
-            log.info("response (%s): %s" % (type(response), response.json()))
+        if not (len(urlPieces.scheme) > 0 and len(urlPieces.netloc) > 0):
+            raise Exception("bad api url: %s", templatedUrl)
+
+        if requestBodyJsonObject:
+            response = requests.post(templatedURL, json=requestBodyJsonObject)
         else:
-            log.info("something was wrong with the api url")
+            response = requests.get(templatedURL)
+        if response.status_code != 200:
+            log.exception("webhook call failed. status_code: %s", r.status_code)
+            raise Exception("webhook call failed. status_code: %s" % (r.status_code,))
+        log.info("response (%s): %s" % (type(response), response))
+        responseJsonObj = {}
+        try:
+            responseJsonObj = response.json()
+        except ValueError as ve:
+            log.warn("could not get json from response to webhook")
 
         # We've called the webhook with params, now take response
         # And make it available to the text response
@@ -66,7 +84,7 @@ class GenericActionObject(keyframe.actions.ActionObject):
         textResponseTemplate = Template(r)
         renderedResponse = textResponseTemplate.render({
             "entities": filledSlots,
-            "response": response.json()
+            "response": responseJsonObj
         })
         return renderedResponse
 

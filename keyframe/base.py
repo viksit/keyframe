@@ -28,7 +28,7 @@ from ordered_set import OrderedSet
 # TODO: move logging out into a nicer function/module
 
 log = logging.getLogger(__name__)
-log.setLevel(10)
+#log.setLevel(10)
 
 class BaseBot(object):
 

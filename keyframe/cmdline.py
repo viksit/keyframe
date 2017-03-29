@@ -15,7 +15,7 @@ from collections import defaultdict
 import sys
 
 log = logging.getLogger(__name__)
-log.setLevel(10)
+#log.setLevel(10)
 
 class CmdLineHandler(object):
 
@@ -70,7 +70,7 @@ class BotCmdLineHandler(CmdLineHandler):
         botStateUid = None
         if userInput.strip().startswith(">"):
             # Treat at url parameters
-            x = urlparse.parse_qs(userInput[1:])
+            x = urlparse.parse_qs(userInput[1:].strip())
             text = x.get("text",[None])[0]
             botStateUid = x.get("bot_state_uid",[None])[0]
             log.debug("extracted url params: text=%s, botStateUid=%s",
