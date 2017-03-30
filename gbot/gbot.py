@@ -399,7 +399,7 @@ if __name__ == "__main__":
             print("%s is not a valid json bot configuration file" %
                   jsonFile, file=sys.stderr)
             sys.exit(1)
-        log.info("config_json: %s", d['config_json'])
+        log.debug("config_json: %s", d['config_json'])
     elif runtype == "db":
         if len(sys.argv) > 5:
             agentId = sys.argv[5]

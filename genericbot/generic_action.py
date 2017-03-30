@@ -46,6 +46,7 @@ class GenericActionObject(keyframe.actions.ActionObject):
         custom = json.loads(custom) # convert to dict
         entities = filledSlots
         requestBody = webhook.get("api_body")
+        requestAuth = webhook.get("api_auth")  # Assume basic auth for now.
 
         # Response
         urlTemplate = Template(url)
@@ -53,8 +54,10 @@ class GenericActionObject(keyframe.actions.ActionObject):
         log.debug("URL to fetch: %s" % (templatedURL,))
         requestBodyJsonObject = None
         if requestBody:
+            log.info("requestBody: %s", requestBody)
             templatedRequestBody = Template(requestBody).render(
                 {"custom": custom, "entities": entities})
+            log.info("templatedRequestBody (%s): %s", type(templatedRequestBody), templatedRequestBody)
             requestBodyJsonObject = json.loads(templatedRequestBody)
 
         urlPieces = urlparse.urlparse(templatedURL)
@@ -63,13 +66,21 @@ class GenericActionObject(keyframe.actions.ActionObject):
         if not (len(urlPieces.scheme) > 0 and len(urlPieces.netloc) > 0):
             raise Exception("bad api url: %s", templatedUrl)
 
+        requestAuthTuple = None
+        if requestAuth:
+            requestAuthTuple = tuple(requestAuth.split(":"))
+            assert len(requestAuthTuple) == 2, "requestAuth must be a string with format username:password. (%s)" % (requestAuth,)
+
         if requestBodyJsonObject:
-            response = requests.post(templatedURL, json=requestBodyJsonObject)
+            log.info("making POST request: url: %s, json: %s, auth: %s",
+                      templatedURL, requestBodyJsonObject, requestAuthTuple)
+            response = requests.post(
+                templatedURL, json=requestBodyJsonObject, auth=requestAuthTuple)
         else:
-            response = requests.get(templatedURL)
-        if response.status_code != 200:
-            log.exception("webhook call failed. status_code: %s", r.status_code)
-            raise Exception("webhook call failed. status_code: %s" % (r.status_code,))
+            response = requests.get(templatedURL, auth=requestAuthTuple)
+        if response.status_code not in (200, 201, 202):
+            log.exception("webhook call failed. status_code: %s", response.status_code)
+            raise Exception("webhook call failed. status_code: %s" % (response.status_code,))
         log.info("response (%s): %s" % (type(response), response))
         responseJsonObj = {}
         try:
