@@ -68,7 +68,8 @@ class ProdConfig(Config):
     SLACK_BOT_ID = "A3Y82KUCE"
     SLACK_VERIFICATION_TOKEN = "BweHbKtg9sBuOXXi92dU3e4Z"
 
-    MYRA_API_HOSTNAME = "api.prod.myralabs.com"
+    MYRA_API_HOSTNAME = os.getenv("MYRA_API_HOSTNAME", "api.myralabs.com")
+    #MYRA_API_HOSTNAME = "api.prod.myralabs.com"
 
     # This is IAM user dyndb-prod
     AWS_ACCESS_KEY_ID = "AKIAJACRM3ORXT3E6HVA"

@@ -337,6 +337,7 @@ class GenericActionObject(keyframe.actions.ActionObject):
                       canonicalMsg.text)
             actionObject.originalUtterance = canonicalMsg.text
         if runAPICall:
+            assert api, "must have an api to runAPICall"
             apiResult = api.get(canonicalMsg.text)
             actionObject.apiResult = apiResult
 

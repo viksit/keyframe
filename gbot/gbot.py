@@ -40,7 +40,8 @@ log.setLevel(logLevel)
 log_keyframe = logging.getLogger("keyframe")
 log_keyframe.setLevel(logLevel)
 log_pymyra = logging.getLogger("pymyra")
-log_pymyra.setLevel(logLevel)
+pymyra_loglevel = int(keyframe.utils.getLogLevel("PYMYRA_LOG_LEVEL", logLevel))
+log_pymyra.setLevel(pymyra_loglevel)
 
 # TODO:
 # Initialize via a configuration file
