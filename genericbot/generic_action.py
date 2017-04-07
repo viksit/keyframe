@@ -58,6 +58,7 @@ class GenericActionObject(keyframe.actions.ActionObject):
         if requestAuth:
             requestAuthTuple = tuple(requestAuth.split(":"))
             assert len(requestAuthTuple) == 2, "requestAuth must be a string with format username:password. (%s)" % (requestAuth,)
+
         uploadFileTokens = []
         for f in filesToUpload:
             attachments = {"upload_file_name":os.path.basename(f)}
@@ -72,7 +73,7 @@ class GenericActionObject(keyframe.actions.ActionObject):
             if not token:
                 raise Exception("could not get token for uploaded file", data=r.json())
             uploadFileTokens.append(token)
-        # TODO
+
         return uploadFileTokens
 
     def fetchWebhook(self, webhook, filledSlots, slotObjects):
@@ -100,6 +101,8 @@ class GenericActionObject(keyframe.actions.ActionObject):
             log.info("templatedRequestBody (%s): %s", type(templatedRequestBody), templatedRequestBody)
             requestBodyJsonObject = json.loads(templatedRequestBody)
 
+        # Need a zendesk integration. Can't do this generically.
+        
         urlPieces = urlparse.urlparse(templatedURL)
         log.debug("urlPieces: %s" % (urlPieces,))
         response = {}
