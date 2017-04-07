@@ -1,0 +1,46 @@
+{
+  "config_json": {
+    "intents": {
+      "default": {
+        "_id": "question_a14da32f1fc44d14a71c031b34f8f792",
+        "_title": "Fallback Intent",
+        "api_id": "",
+        "clear_waiting_action": null,
+        "intent_data": [],
+        "intent_type": "default",
+        "parse_original": "false",
+        "parse_response": "false",
+        "preempt_waiting_action_threshold": null,
+        "slots": [
+          {
+            "entity_type": "OPTIONS",
+            "name": "user_type",
+            "options_list": "driver, passenger, applicant, uploadtest",
+            "prompt": "What is your role?",
+            "slot_type": "slot-type-input"
+          },
+          {
+            "entity_type": "ATTACHMENTS",
+            "name": "upload_file",
+            "prompt": "upload any files you may have",
+            "slot_type": "slot-type-input"
+          }
+        ],
+        "slots_type": "slots-type-sequential",
+        "text": "All entities: {{entities}}",
+        "transition_text": "Default intent transition msg",
+        "webhook":{
+          "api_auth": "admin.lyft@myralabs.com/token:rnA6JY4sr9TTonk1PxaLs0twQs3e6KAxe3svkr65",
+          "api_body": "{\"ticket\": {\"comment\": {\"body\": \"user_type: {{entities.user_type}} topic: {{entities.topic}} issue:{{entities.issue}} detail:{{entities.detail}} issue type: {{entities.issue_type}} view: {{entities.view}}\"}, \"subject\": \"{{entities.issue_type}}\", \"requester\": {\"name\": \"MyraLabs Test\", \"email\": \"{{entities.email}}\"}}}",
+          "api_name": "Lyft Zendesk API",
+          "api_url": "https://lyft1450739301.zendesk.com/api/v2/tickets.json",
+          "response_text": "Thank you for contacting us. A support ticket ({{response.ticket.url}}) has been created for you and we will get back to you as soon as possible.",
+          "file_upload_url":"https://lyft1450739301.zendesk.com/api/v2/uploads.json?filename={{attachments.upload_file_name}}"
+        }
+      }
+    },
+    "params": {
+      "outlier_cutoff": ""
+    }
+  }
+}
