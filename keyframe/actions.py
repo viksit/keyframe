@@ -138,7 +138,8 @@ class ActionObject(object):
         self.nextSlotToFillName = actionObjectJSON.get("nextSlotToFillName")
         log.debug("got originalUtterance from json: %s", self.originalUtterance)
         slotObjectData = actionObjectJSON.get("slotObjects")
-        assert len(slotObjectData) == len(self.slotObjects)
+        assert len(slotObjectData) == len(self.slotObjects), \
+            "action object spec has %s slots, but object saved in state has %s slots" % (len(self.slotObjects), len(slotObjectData))
         for slotObject, slotData in zip(self.slotObjects, slotObjectData):
             # Get these from the saved state
             slotObject.filled = slotData.get("filled")

@@ -6,6 +6,8 @@ import logging
 import time
 import random
 import uuid
+import tempfile
+import requests
 
 from store_api import KVStore, KVStoreError
 
@@ -77,3 +79,13 @@ def getUUID():
 
 def timestampUid():
     return "%i_%s" % (round(time.time()*1000), random.randint(0,1000))
+
+def urlToFD(url, sizeLimitBytes=None, chunkSize=100000):
+    f = tempfile.TemporaryFile()
+    r = requests.get(url, stream=True)
+    if not r.status_code in (200, 201):
+        raise Exception("could not get url. status_code: %s" % (r.status_code,))
+    for chunk in r.iter_content(chunk_size=chunkSize):
+        f.write(chunk)
+    f.seek(0)
+    return (f, r.headers.get("Content-Type"))

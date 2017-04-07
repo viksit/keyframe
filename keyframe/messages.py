@@ -135,6 +135,10 @@ class ResponseMeta(object):
                 "actionObjectInstanceId":self.actionObjectInstanceId}
 
 class ResponseElement(object):
+    # These are to tell the client the type of response
+    # that is expected. It is related to the EntityType
+    # (see generic_action.GenericActionObject.ENTITY_TYPE_CLASS_MAP),
+    # but this is currently different to that.
     TYPE_TEXT = "text"
     TYPE_CAROUSEL = "carousel"
     TYPE_YESNOBUTTON = "yesnobutton"

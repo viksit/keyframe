@@ -17,6 +17,7 @@ import keyframe.dsl as dsl
 import keyframe.slot_fill as slot_fill
 import generic_slot
 import keyframe.messages as messages
+import keyframe.utils
 
 log = logging.getLogger(__name__)
 
@@ -39,7 +40,42 @@ class GenericActionObject(keyframe.actions.ActionObject):
             return self.specJson.get("clear_waiting_action", False)
         return False
 
-    def fetchWebhook(self, webhook, filledSlots):
+    def uploadFiles(self, webhook, filledSlots, slotObjects):
+        requestAuth = webhook.get("api_auth")  # Assume basic auth for now.
+        fileUploadUrl = webhook.get("file_upload_url")
+        filesToUpload = []
+        for so in slotObjects:
+            if so.entityType == "ATTACHMENTS":
+                fUrl = filledSlots.get(so.name)
+                if fUrl:
+                    if not fUrl.startswith("http"):
+                        log.warn("file to upload is not a valid url (%s)", fUrl)
+                        continue
+                    filesToUpload.append(fUrl)
+
+        # Now get the files and upload them using the uploadUrl
+        requestAuthTuple = None
+        if requestAuth:
+            requestAuthTuple = tuple(requestAuth.split(":"))
+            assert len(requestAuthTuple) == 2, "requestAuth must be a string with format username:password. (%s)" % (requestAuth,)
+        uploadFileTokens = []
+        for f in filesToUpload:
+            attachments = {"upload_file_name":os.path.basename(f)}
+            _t = Template(fileUploadUrl)
+            uploadUrl = _t.render({"attachments":attachments})
+            (fo, ct) = keyframe.utils.urlToFD(f)
+            r = requests.post(uploadUrl, auth=requestAuthTuple,
+                              data=fo)
+            if r.status_code not in (200, 201):
+                raise Exception("could not upload file from %s" % (uploadUrl,))
+            token = r.json().get("upload",{}).get("token")
+            if not token:
+                raise Exception("could not get token for uploaded file", data=r.json())
+            uploadFileTokens.append(token)
+        # TODO
+        return uploadFileTokens
+
+    def fetchWebhook(self, webhook, filledSlots, slotObjects):
         # To render a templatized url with custom parameters
         url = webhook.get("api_url")
         custom = webhook.get("api_params", "{}")
@@ -47,6 +83,10 @@ class GenericActionObject(keyframe.actions.ActionObject):
         entities = filledSlots
         requestBody = webhook.get("api_body")
         requestAuth = webhook.get("api_auth")  # Assume basic auth for now.
+        fileUploadUrl = webhook.get("file_upload_url")
+
+        if fileUploadUrl:
+            fileTokens = self.uploadFiles(webhook, filledSlots, slotObjects)
 
         # Response
         urlTemplate = Template(url)
@@ -124,7 +164,7 @@ class GenericActionObject(keyframe.actions.ActionObject):
         resp = ""
         structuredMsg = None
         if self.webhook and len(self.webhook.items()):
-            resp = self.fetchWebhook(self.webhook, self.filledSlots)
+            resp = self.fetchWebhook(self.webhook, self.filledSlots, self.slotObjects)
         try:
             log.debug("MSG: %s, (%s)", self.msg, type(self.msg))
             structuredMsg = json.loads(self.msg)
