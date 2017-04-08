@@ -18,8 +18,10 @@ import keyframe.slot_fill as slot_fill
 import generic_slot
 import keyframe.messages as messages
 import keyframe.utils
+import integrations.zendesk.zendesk as zendesk
 
 log = logging.getLogger(__name__)
+log.setLevel(10)
 
 class GenericActionObject(keyframe.actions.ActionObject):
 
@@ -40,10 +42,8 @@ class GenericActionObject(keyframe.actions.ActionObject):
             return self.specJson.get("clear_waiting_action", False)
         return False
 
-    def uploadFiles(self, webhook, filledSlots, slotObjects):
-        requestAuth = webhook.get("api_auth")  # Assume basic auth for now.
-        fileUploadUrl = webhook.get("file_upload_url")
-        filesToUpload = []
+    def getAttachmentUrls(self, filledSlots, slotObjects):
+        attachmentUrls = []
         for so in slotObjects:
             if so.entityType == "ATTACHMENTS":
                 fUrl = filledSlots.get(so.name)
@@ -51,30 +51,8 @@ class GenericActionObject(keyframe.actions.ActionObject):
                     if not fUrl.startswith("http"):
                         log.warn("file to upload is not a valid url (%s)", fUrl)
                         continue
-                    filesToUpload.append(fUrl)
-
-        # Now get the files and upload them using the uploadUrl
-        requestAuthTuple = None
-        if requestAuth:
-            requestAuthTuple = tuple(requestAuth.split(":"))
-            assert len(requestAuthTuple) == 2, "requestAuth must be a string with format username:password. (%s)" % (requestAuth,)
-
-        uploadFileTokens = []
-        for f in filesToUpload:
-            attachments = {"upload_file_name":os.path.basename(f)}
-            _t = Template(fileUploadUrl)
-            uploadUrl = _t.render({"attachments":attachments})
-            (fo, ct) = keyframe.utils.urlToFD(f)
-            r = requests.post(uploadUrl, auth=requestAuthTuple,
-                              data=fo)
-            if r.status_code not in (200, 201):
-                raise Exception("could not upload file from %s" % (uploadUrl,))
-            token = r.json().get("upload",{}).get("token")
-            if not token:
-                raise Exception("could not get token for uploaded file", data=r.json())
-            uploadFileTokens.append(token)
-
-        return uploadFileTokens
+                    attachmentUrls.append(fUrl)
+        return attachmentUrls
 
     def fetchWebhook(self, webhook, filledSlots, slotObjects):
         # To render a templatized url with custom parameters
@@ -84,10 +62,6 @@ class GenericActionObject(keyframe.actions.ActionObject):
         entities = filledSlots
         requestBody = webhook.get("api_body")
         requestAuth = webhook.get("api_auth")  # Assume basic auth for now.
-        fileUploadUrl = webhook.get("file_upload_url")
-
-        if fileUploadUrl:
-            fileTokens = self.uploadFiles(webhook, filledSlots, slotObjects)
 
         # Response
         urlTemplate = Template(url)
@@ -162,24 +136,49 @@ class GenericActionObject(keyframe.actions.ActionObject):
                 structuredMsg.get("response", responseContent))
         return Template(responseContent).render(self.filledSlots)
 
+    def processZendesk(self, botState):
+        zc = copy.deepcopy(self.zendeskConfig.get("request"))
+        for (k,v) in self.zendeskConfig.get("request").iteritems():
+            log.debug("k: %s, v: %s", k, v)
+            zc[k] = Template(v).render(
+                {"entities":self.filledSlots})
+        if zc.get("attachments").lower() == "all":
+            attachmentUrls = self.getAttachmentUrls(
+                self.filledSlots, self.slotObjects)
+            zc["attachments"] = attachmentUrls
+        zr = zendesk.createTicket(zc)
+        log.debug("zr (%s): %s", type(zr), zr)
+        respTemplate = "A ticket has been filed: {{ticket.url}}"
+        respTemplate = self.zendeskConfig.get("response_text", respTemplate)
+        log.debug("respTemplate: %s", respTemplate)
+        _t = Template(respTemplate)
+        resp = _t.render(zr)
+        log.debug("after processing zendesk, resp: %s", resp)
+        return resp
+
     def process(self, botState):
         log.debug("GenericAction.process called")
         resp = ""
         structuredMsg = None
-        if self.webhook and len(self.webhook.items()):
-            resp = self.fetchWebhook(self.webhook, self.filledSlots, self.slotObjects)
-        try:
-            log.debug("MSG: %s, (%s)", self.msg, type(self.msg))
-            structuredMsg = json.loads(self.msg)
-        except ValueError as ve:
-            #traceback.print_exc()
-            log.info("msg is not json - normal response processing")
+        if self.zendeskConfig:
+            resp = self.processZendesk(botState)
 
-        if structuredMsg:
-            if "response_type" in structuredMsg:
-                resp = self.doStructuredResponse(structuredMsg)
-            else:
-                log.warn("no response_type found in json - skipping structured response")
+        if not resp and self.webhook and len(self.webhook.items()):
+            resp = self.fetchWebhook(self.webhook, self.filledSlots, self.slotObjects)
+
+        if not resp:
+            try:
+                log.debug("MSG: %s, (%s)", self.msg, type(self.msg))
+                structuredMsg = json.loads(self.msg)
+            except ValueError as ve:
+                #traceback.print_exc()
+                log.info("msg is not json - normal response processing")
+
+            if structuredMsg:
+                if "response_type" in structuredMsg:
+                    resp = self.doStructuredResponse(structuredMsg)
+                else:
+                    log.warn("no response_type found in json - skipping structured response")
 
         log.debug("resp 1: %s", resp)
         if not resp:
@@ -389,6 +388,7 @@ class GenericActionObject(keyframe.actions.ActionObject):
         actionObject.requestState = requestState
         actionObject.originalIntentStr = intentStr
         actionObject.webhook = specJson.get("webhook")
+        actionObject.zendeskConfig = specJson.get("zendesk")
         log.debug("createActionObject: %s", actionObject)
         # Action object now contains all the information needed to resolve this action
         return actionObject

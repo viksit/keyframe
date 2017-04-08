@@ -281,7 +281,8 @@ class BaseBot(object):
             evalRet = intentObj.field_eval_fn(
                 myraAPI = self.api, # If no API is passed to bot, this will be None
                 canonicalMsg = canonicalMsg,
-                apiResult = apiResult)
+                apiResult = apiResult
+                )
             apiResult = evalRet.get("api_result")
             if evalRet["result"]:
                 intentStr = intentObj.label

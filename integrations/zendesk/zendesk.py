@@ -4,12 +4,15 @@ import json
 import tempfile
 import logging
 
+import zdesk
+
 log = logging.getLogger(__name__)
+log.setLevel(10)
 
 class ZendeskClientError(Exception):
     pass
 
-def urlToFD(url, sizeLimitBytes=None, chunkSize=100000):
+def urlToFD2(url, sizeLimitBytes=None, chunkSize=100000):
     f = tempfile.TemporaryFile()
     r = requests.get(url, stream=True)
     if not r.status_code in (200, 201):
@@ -18,6 +21,24 @@ def urlToFD(url, sizeLimitBytes=None, chunkSize=100000):
         f.write(chunk)
         log.debug("got chunk (%s)", f.tell())
     f.seek(0)
+    return (f, r.headers.get("Content-Type"))
+
+def urlToFD(url, sizeLimitBytes=None, chunkSize=100000):
+    f = tempfile.TemporaryFile()
+    r = requests.get(url)
+    if not r.status_code in (200, 201):
+        raise Exception("could not get url. status_code: %s" % (r.status_code,))
+    f.write(r.content)
+    f.seek(0)
+    return (f, r.headers.get("Content-Type"))
+
+def urlToFD5(url, sizeLimitBytes=None, chunkSize=100000):
+    f = open("/tmp/%s", "wb")
+    r = requests.get(url)
+    if not r.status_code in (200, 201):
+        raise Exception("could not get url. status_code: %s" % (r.status_code,))
+    f.write(r.content)
+    f.close()
     return (f, r.headers.get("Content-Type"))
 
 DEFAULT_ATTACHMENT_SIZE_LIMIT_BYTES = 1024*1024*10  # 10 MB
@@ -43,24 +64,35 @@ class ZendeskClient(object):
              self.attachmentsConfig = attachmentsConfig
          if not self.attachmentsConfig:
              self.attachmentsConfig = defaultAttachmentsConfig
+        self.zdeskApi = zdesk.Zendesk(
+            apiHost, self.authTuple[0], self.authTuple[1], True)
 
-    def uploadAttachment(self, url, filename):
+    def uploadAttachment(self, src, filename):
         """Uploads the file pointed to by url as an attachment in Zendesk
         and returns a token.
-        url: file to upload
+        src: file to upload
         filename: name to give the uploaded file in zendesk
         Returns: (string) token of upload to include in zendesk ticket.
         """
-        if not url.startswith("http"):
-            raise ZendeskClientError("unsupported attachment format")
-        (fd, contentType) = urlToFD(
-            url=url,
-            sizeLimitBytes=self.attachmentsConfig.get("attachment_size_limit_bytes"),
-            chunkSize=self.attachmentsConfig.get("attachment_download_chunk_size"))
+        log.debug("uploadAttachment(%s)", locals())
+        contentType = "application/binary"
+        if not src.startswith("http"):
+            # assume local file for now
+            fd = open(src, "rb")
+        else:
+            (fd, contentType) = urlToFD(
+                url=src,
+                sizeLimitBytes=self.attachmentsConfig.get("attachment_size_limit_bytes"),
+                chunkSize=self.attachmentsConfig.get("attachment_download_chunk_size"))
+        log.debug("fd: %s, contentType: %s", fd, contentType)
         uploadUrl = "%s/api/v2/uploads.json?filename=%s" % (
             self.apiHost, filename)
         log.info("uploadUrl: %s, auth: %s", uploadUrl, self.authTuple)
-        r = requests.post(uploadUrl, auth=self.authTuple, files={"f1":fd})
+        s = requests.Session()
+        r = s.request('POST', uploadUrl, auth=self.authTuple,
+                          files={"file":(os.path.basename(src), fd, 'image/jpeg')},
+                          headers={'Content-Type': 'image/jpeg'})
+        log.debug("r.json(): %s", r.json())
         if r.status_code not in (200, 201):
             log.exception(r.text)
             raise Exception("could not upload file using %s" % (uploadUrl,))
@@ -85,7 +117,7 @@ class ZendeskClient(object):
         uploadTokens = []
         if attachments:
             for a in attachments:
-                t = self.uploadAttachment(url=a, filename=os.path.basename(a))
+                t = self.uploadAttachment(src=a, filename=os.path.basename(a))
                 uploadTokens.append(t)
 
         ticketJson = {
@@ -149,11 +181,12 @@ def test():
         sys.exit(1)
     zendeskJsonFile = sys.argv[1]
     ticketJsonObject = json.loads(open(zendeskJsonFile).read())
-    ticketUrl = createTicket(ticketJsonObject)
-    print "ticketUrl: %s" % (ticketUrl,)
+    ticketResponse = createTicket(ticketJsonObject)
+    #print "ticketResponse: %s" % (ticketResponse,)
+    print "ticket.url: %s" % (ticketResponse.get("ticket", {}).get("url"),)
 
 if __name__ == "__main__":
     logging.basicConfig()
-    log = logging.getLogger(__name__)
+    log = logging.getLogger()
     log.setLevel(10)
     test()

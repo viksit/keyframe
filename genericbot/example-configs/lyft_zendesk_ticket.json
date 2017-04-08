@@ -34,20 +34,13 @@
           "request":{
             "api_host": "https://lyft1450739301.zendesk.com",
             "auth": "admin.lyft@myralabs.com/token:rnA6JY4sr9TTonk1PxaLs0twQs3e6KAxe3svkr65",
-            "subject":"Ticket subject",
+            "subject":"This is the ticket subject",
             "body": "This is the body of the ticket",
             "requester_name": "MyraLabs Test",
             "requester_email": "nishant@myralabs.com",
             "attachments":"all"
           },
           "response_text":"Thank for your input. A ticket ({{ticket.url}}) has been created for you and we will get back to you asap."
-        }
-        "webhook":{
-          "api_body": "{\"ticket\": {\"comment\": {\"body\": \"user_type: {{entities.user_type}} topic: {{entities.topic}} issue:{{entities.issue}} detail:{{entities.detail}} issue type: {{entities.issue_type}} view: {{entities.view}}\"}, \"subject\": \"{{entities.issue_type}}\", \"requester\": {\"name\": \"MyraLabs Test\", \"email\": \"{{entities.email}}\"}}}",
-          "api_name": "Lyft Zendesk API",
-          "api_url": "https://lyft1450739301.zendesk.com",
-          "response_text": "Thank you for contacting us. A support ticket ({{response.ticket.url}}) has been created for you and we will get back to you as soon as possible.",
-          "file_upload_slots":"ALL"
         }
       }
     },
