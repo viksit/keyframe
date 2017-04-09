@@ -88,40 +88,6 @@ class ZendeskClient(object):
         uploadResult = self.zdeskApi.upload_create(fd, filename=filename, mime_type=contentType, complete_response=True)
         return json.loads(uploadResult["content"])["upload"]["token"]
 
-    def uploadAttachment2(self, src, filename):
-        """Uploads the file pointed to by url as an attachment in Zendesk
-        and returns a token.
-        src: file to upload
-        filename: name to give the uploaded file in zendesk
-        Returns: (string) token of upload to include in zendesk ticket.
-        """
-        log.debug("uploadAttachment(%s)", locals())
-        contentType = "application/binary"
-        if not src.startswith("http"):
-            # assume local file for now
-            fd = open(src, "rb")
-        else:
-            (fd, contentType) = urlToFD(
-                url=src,
-                sizeLimitBytes=self.attachmentsConfig.get("attachment_size_limit_bytes"),
-                chunkSize=self.attachmentsConfig.get("attachment_download_chunk_size"))
-        log.debug("fd: %s, contentType: %s", fd, contentType)
-        uploadUrl = "%s/api/v2/uploads.json?filename=%s" % (
-            self.apiHost, filename)
-        log.info("uploadUrl: %s, auth: %s", uploadUrl, self.authTuple)
-        s = requests.Session()
-        r = s.request('POST', uploadUrl, auth=self.authTuple,
-                          files={"file":(os.path.basename(src), fd, 'image/jpeg')},
-                          headers={'Content-Type': 'image/jpeg'})
-        log.debug("r.json(): %s", r.json())
-        if r.status_code not in (200, 201):
-            log.exception(r.text)
-            raise Exception("could not upload file using %s" % (uploadUrl,))
-        token = r.json().get("upload",{}).get("token")
-        if not token:
-            raise Exception("could not get token for uploaded file", data=r.json())
-        return token
-
     def createTicket(self, subject, body, requesterName, requesterEmail,
                      attachments=None):
         """Create a zendesk ticket and return a url for the ticket.
@@ -173,37 +139,6 @@ class ZendeskClient(object):
             log.debug("updateResult: %s", updateResult)
 
         return r["content"]
-
-    def _createTicket2(self, subject, body, requesterName, requesterEmail,
-                      uploadTokens):
-        ticketJson = {
-            "ticket":{
-                "requester":{
-                    "name":requesterName,
-                    "email":requesterEmail
-                },
-                "subject":subject,
-                "comment":{
-                    "body":body,
-                    "uploads":uploadTokens
-                }
-            }
-        }
-        ticketUrl = "%s/api/v2/tickets.json" % (self.apiHost,)
-        log.info("calling zendesk: ticketUrl: %s, auth: %s",
-                 ticketUrl, self.authTuple)
-        log.debug("calling zendesk: json: %s", ticketJson)
-        response = requests.post(ticketUrl, json=ticketJson, auth=self.authTuple)
-        if response.status_code not in (200, 201, 202):
-            log.exception(response.text)
-            raise Exception("zendesk ticket api call failed. status_code: %s" % (response.status_code,))
-        log.info("response (%s): %s" % (type(response), response))
-        responseJsonObj = {}
-        try:
-            responseJsonObj = response.json()
-        except ValueError as ve:
-            log.warn("could not get json from response to webhook")
-        return responseJsonObj
 
 jsonObjectFormatExample = {
     "api_host": "https://lyft1450739301.zendesk.com",

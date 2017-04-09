@@ -33,7 +33,7 @@
         "zendesk":{
           "request":{
             "api_host": "https://lyft1450739301.zendesk.com",
-            "auth": "admin.lyft@myralabs.com/token:rnA6JY4sr9TTonk1PxaLs0twQs3e6KAxe3svkr65",
+            "auth": "admin.lyft@myralabs.com:rnA6JY4sr9TTonk1PxaLs0twQs3e6KAxe3svkr65",
             "subject":"This is the ticket subject",
             "body": "This is the body of the ticket",
             "requester_name": "MyraLabs Test",
