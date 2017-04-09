@@ -50,24 +50,45 @@ defaultAttachmentsConfig = {
 
 class ZendeskClient(object):
     def __init__(self, apiHost, auth, attachmentsConfig=None):
-         """Create a ZendeskClient
-         apiHost: (string) https://lyft1450739301.zendesk.com
-         auth: (string) example: admin.lyft@myralabs.com/token:xlk93jducjduejd
-         """
-         self.apiHost = apiHost.rstrip("/")
-         self.auth = auth
-         self.authTuple = None
-         if self.auth:
-             self.authTuple = tuple(auth.split(":"))
-             assert len(self.authTuple) == 2, \
-                 "unexpected auth string (%s)" % (self.auth,)
-             self.attachmentsConfig = attachmentsConfig
-         if not self.attachmentsConfig:
-             self.attachmentsConfig = defaultAttachmentsConfig
+        """Create a ZendeskClient
+        apiHost: (string) https://lyft1450739301.zendesk.com
+        auth: (string) example: admin.lyft@myralabs.com/token:xlk93jducjduejd
+        """
+        self.apiHost = apiHost.rstrip("/")
+        self.auth = auth
+        self.authTuple = None
+        if self.auth:
+            self.authTuple = tuple(auth.split(":"))
+            assert len(self.authTuple) == 2, \
+                "unexpected auth string (%s)" % (self.auth,)
+            self.attachmentsConfig = attachmentsConfig
+        if not self.attachmentsConfig:
+            self.attachmentsConfig = defaultAttachmentsConfig
         self.zdeskApi = zdesk.Zendesk(
             apiHost, self.authTuple[0], self.authTuple[1], True)
 
     def uploadAttachment(self, src, filename):
+        """Uploads the file pointed to by url as an attachment in Zendesk
+        and returns a token.
+        src: file to upload
+        filename: name to give the uploaded file in zendesk
+        Returns: (string) token of upload to include in zendesk ticket.
+        """
+        log.debug("uploadAttachment(%s)", locals())
+        contentType = "application/binary"
+        if not src.startswith("http"):
+            # assume local file for now
+            fd = open(src, "rb")
+        else:
+            (fd, contentType) = urlToFD(
+                url=src,
+                sizeLimitBytes=self.attachmentsConfig.get("attachment_size_limit_bytes"),
+                chunkSize=self.attachmentsConfig.get("attachment_download_chunk_size"))
+        log.debug("fd: %s, contentType: %s", fd, contentType)
+        uploadResult = self.zdeskApi.upload_create(fd, filename=filename, mime_type=contentType, complete_response=True)
+        return json.loads(uploadResult["content"])["upload"]["token"]
+
+    def uploadAttachment2(self, src, filename):
         """Uploads the file pointed to by url as an attachment in Zendesk
         and returns a token.
         src: file to upload
@@ -120,6 +141,41 @@ class ZendeskClient(object):
                 t = self.uploadAttachment(src=a, filename=os.path.basename(a))
                 uploadTokens.append(t)
 
+        return self._createTicket(subject, body, requesterName, requesterEmail,
+                             uploadTokens)
+
+    def _createTicket(self, subject, body, requesterName, requesterEmail,
+                      uploadTokens):
+        ticketJson = {
+            "ticket":{
+                "requester":{
+                    "name":requesterName,
+                    "email":requesterEmail
+                },
+                "subject":subject,
+                "comment":{
+                    "body":body,
+                    # "uploads":uploadTokens  # uploads don't work with zdesk on ticket creation
+                }
+            }
+        }
+        r = self.zdeskApi.ticket_create(ticketJson, complete_response=True)
+        log.debug("zdeskApi.ticket_create returned: %s", r)
+        if uploadTokens:
+            # update the ticket. this seems to work.
+            ticketId = r["content"]["ticket"]["id"]
+            updateJson = {"ticket":{
+                "comment":{"body":"attachment",
+                           "uploads":uploadTokens},
+                "id":ticketId}}
+            updateResult = self.zdeskApi.ticket_update(
+                ticketId, updateJson)
+            log.debug("updateResult: %s", updateResult)
+
+        return r["content"]
+
+    def _createTicket2(self, subject, body, requesterName, requesterEmail,
+                      uploadTokens):
         ticketJson = {
             "ticket":{
                 "requester":{
