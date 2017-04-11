@@ -31,6 +31,10 @@ class ActionObject(object):
     SLOTS_TYPE_SEQUENTIAL = "slots-type-sequential"
     SLOTS_TYPE_CONDITIONAL = "slots-type-conditional"
 
+    RESPONSE_TYPE_TEXT = "response-type-text"
+    RESPONSE_TYPE_WEBHOOK = "response-type-webhook"
+    RESPONSE_TYPE_ZENDESK = "response-type-zendesk"
+
     def __init__(self, **kwargs):
         # TODO - get rid of this does not seem to be used
         self.__clsid__ = utils.getUUID()

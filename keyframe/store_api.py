@@ -9,6 +9,7 @@ from boto.s3.key import Key
 import boto.dynamodb
 from boto.dynamodb.exceptions import DynamoDBKeyNotFoundError
 
+import keyframe.config
 
 log = logging.getLogger(__name__)
 # To debug, just set the level for this module.
@@ -19,9 +20,12 @@ TYPE_DYNAMODB = "type-dynamodb"
 TYPE_LOCALFILE = "type-localfile"
 TYPE_INMEMORY = "type-inmemory"
 
-def get_kv_store(kvstype, config):
+def get_kv_store(kvstype=None, config=None):
     if not kvstype:
-        kvstype = TYPE_LOCALFILE
+        #kvstype = TYPE_LOCALFILE
+        kvstype = TYPE_DYNAMODB
+    if not config:
+        config = keyframe.config.getConfig()
     if kvstype == TYPE_S3:
         conn = S3Connection(
             aws_access_key_id=config.AWS_ACCESS_KEY_ID,

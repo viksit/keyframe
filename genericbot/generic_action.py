@@ -48,9 +48,12 @@ class GenericActionObject(keyframe.actions.ActionObject):
             if so.entityType == "ATTACHMENTS":
                 fUrl = filledSlots.get(so.name)
                 if fUrl:
-                    if not fUrl.startswith("http"):
-                        log.warn("file to upload is not a valid url (%s)", fUrl)
+                    if fUrl.lower() in ("nope", "none", "no"):
+                        log.debug("slot %s does not have an attachment", so.name)
                         continue
+                    if not fUrl.startswith("http"):
+                        log.exception("file to upload is not a valid url (%s)", fUrl)
+                        raise Exception("file to upload is not a valid url (%s)" % (fUrl,))
                     attachmentUrls.append(fUrl)
         return attachmentUrls
 
@@ -75,8 +78,6 @@ class GenericActionObject(keyframe.actions.ActionObject):
             log.info("templatedRequestBody (%s): %s", type(templatedRequestBody), templatedRequestBody)
             requestBodyJsonObject = json.loads(templatedRequestBody)
 
-        # Need a zendesk integration. Can't do this generically.
-        
         urlPieces = urlparse.urlparse(templatedURL)
         log.debug("urlPieces: %s" % (urlPieces,))
         response = {}
@@ -142,10 +143,18 @@ class GenericActionObject(keyframe.actions.ActionObject):
             log.debug("k: %s, v: %s", k, v)
             zc[k] = Template(v).render(
                 {"entities":self.filledSlots})
-        if zc.get("attachments").lower() == "all":
-            attachmentUrls = self.getAttachmentUrls(
-                self.filledSlots, self.slotObjects)
-            zc["attachments"] = attachmentUrls
+        if zc.get("attachments"):
+            if zc.get("attachments").lower() in (
+                    "none", "no", "no attachments"):
+                zc["attachments"] = None
+            if zc.get("attachments").lower() == "all":
+                attachmentUrls = self.getAttachmentUrls(
+                    self.filledSlots, self.slotObjects)
+                zc["attachments"] = attachmentUrls
+            else:
+                attachmentUrl = Template(zc.get("attachments")).render(
+                    {"entities":self.filledSlots})
+                zc["attachments"] = [attachmentUrl]
         zr = zendesk.createTicket(zc)
         log.debug("zr (%s): %s", type(zr), zr)
         respTemplate = "A ticket has been filed: {{ticket.url}}"
@@ -160,13 +169,16 @@ class GenericActionObject(keyframe.actions.ActionObject):
         log.debug("GenericAction.process called")
         resp = ""
         structuredMsg = None
-        if self.zendeskConfig:
+        log.debug("self.responseType: %s", self.responseType)
+        if self.responseType == self.RESPONSE_TYPE_ZENDESK:
+            assert self.zendeskConfig
             resp = self.processZendesk(botState)
 
-        if not resp and self.webhook and len(self.webhook.items()):
+        if self.responseType == self.RESPONSE_TYPE_WEBHOOK:
+            assert self.webhook and len(self.webhook.items())
             resp = self.fetchWebhook(self.webhook, self.filledSlots, self.slotObjects)
 
-        if not resp:
+        if self.responseType == self.RESPONSE_TYPE_TEXT:
             try:
                 log.debug("MSG: %s, (%s)", self.msg, type(self.msg))
                 structuredMsg = json.loads(self.msg)
@@ -273,6 +285,8 @@ class GenericActionObject(keyframe.actions.ActionObject):
         actionObject.transitionMsg = specJson.get("transition_text")
         actionObject.slotsType = specJson.get(
             "slots_type", cls.SLOTS_TYPE_SEQUENTIAL)
+        actionObject.responseType = specJson.get(
+            "response_type", cls.RESPONSE_TYPE_TEXT)
         # TODO: This has to be enforced in the UI.
         #assert actionObject.msg, "No text field in json: %s" % (specJson,)
         if not actionObject.msg:
