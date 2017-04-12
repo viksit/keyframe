@@ -48,7 +48,7 @@ class GenericActionObject(keyframe.actions.ActionObject):
             if so.entityType == "ATTACHMENTS":
                 fUrl = filledSlots.get(so.name)
                 if fUrl:
-                    if fUrl.lower() in ("nope", "none", "no"):
+                    if fUrl.lower() in ("nope", "none", "no", "na"):
                         log.debug("slot %s does not have an attachment", so.name)
                         continue
                     if not fUrl.startswith("http"):
