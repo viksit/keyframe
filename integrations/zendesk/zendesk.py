@@ -7,7 +7,7 @@ import logging
 import zdesk
 
 log = logging.getLogger(__name__)
-log.setLevel(10)
+#log.setLevel(10)
 
 class ZendeskClientError(Exception):
     pass
