@@ -66,4 +66,9 @@ class GenericInfoSlot(GenericSlot):
             inputExpected=False)
         channelClient.sendResponse(cr)
         self.filled = True
+        e = event.createResponseEvent(
+            intentId=self.intentStr,
+            canonicalResponse=cr,
+            responseClass=event.ResponseEvent.RESPONSE_CLASS_INFO)
+        event.getEventSequencer().write(e)
         return self.filled

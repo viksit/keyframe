@@ -1,18 +1,16 @@
 from __future__ import print_function
 import logging
-
-import messages
-import slot_fill
-import copy
-import misc
 from collections import defaultdict
 import sys
-import constants
-import slot_fill
-import utils
-
 from six import iteritems, add_metaclass
+import copy
 
+from . import messages
+from . import slot_fill
+from . import misc
+from . import constants
+from . import utils
+from . import event
 
 log = logging.getLogger(__name__)
 
@@ -198,10 +196,16 @@ class ActionObject(object):
     def processWrapper(self, botState):
         if self.transitionMsg and self.newIntent:
             log.debug("sending transition msg back: %s", self.transitionMsg)
-            self.respond(
+            canonicalResponse = self.respond(
                 self.transitionMsg,
                 responseType=messages.ResponseElement.RESPONSE_TYPE_TRANSITIONMSG,
                 botStateUid=botState.getUid())
+            # Write event here
+            e = event.createResponseEvent(
+                intentId=self.originalIntentStr,
+                canonicalResponse=canonicalResponse,
+                responseClass=event.ResponseEvent.RESPONSE_CLASS_INFO)
+            event.getEventSequencer().write(e)
 
         # Fill slots
         log.info("processWrapper: botstate: %s, reqstate: %s", botState, self.requestState)
@@ -300,4 +304,5 @@ class ActionObject(object):
             botStateUid=botStateUid)
 
         self.channelClient.sendResponse(cr)
-        return constants.BOT_REQUEST_STATE_PROCESSED
+        return cr
+        #return constants.BOT_REQUEST_STATE_PROCESSED

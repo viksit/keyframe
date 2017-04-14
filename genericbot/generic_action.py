@@ -19,6 +19,8 @@ import generic_slot
 import keyframe.messages as messages
 import keyframe.utils
 import integrations.zendesk.zendesk as zendesk
+import keyframe.event
+import keyframe.constants
 
 log = logging.getLogger(__name__)
 #log.setLevel(10)
@@ -200,7 +202,13 @@ class GenericActionObject(keyframe.actions.ActionObject):
             log.debug("calling responseTemplate.render with dict: %s", _d)
             resp = responseTemplate.render(_d)
         # Final response
-        return self.respond(resp, botStateUid=botState.getUid())
+        canonicalResponse = self.respond(resp, botStateUid=botState.getUid())
+        e = keyframe.event.createResponseEvent(
+            intentId=self.originalIntentStr,
+            canonicalResponse=canonicalResponse,
+            responseClass=keyframe.event.ResponseEvent.RESPONSE_CLASS_INTENT_RESPONSE)
+        keyframe.event.getEventSequencer().write(e)
+        return keyframe.constants.BOT_REQUEST_STATE_PROCESSED
 
     def getSlots(self):
         raise Exception("This should not be used")

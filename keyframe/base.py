@@ -16,6 +16,7 @@ import utils
 from bot_state import BotState
 import actions
 import constants
+import event
 
 from six import iteritems, add_metaclass
 
@@ -59,8 +60,6 @@ class BaseBot(object):
 
         self.intentSlots = defaultdict(lambda: [])
         self.debug = True
-
-
         self.init()
 
     def init(self):
@@ -408,6 +407,14 @@ class BaseBot(object):
             log.debug("waitingActionJson: %s", waitingActionJson)
             if waitingActionJson:
                 intentStr = actions.ActionObject.getIntentStrFromJSON(waitingActionJson)
+                # Currently waiting => slotfill. If this changes, botState will
+                # need to store that.
+                
+                e = event.createRequestEvent(
+                    intentId=intentStr, canonicalMsg=canonicalMsg,
+                    eventResult=event.RequestEvent.RESULT_ANSWER)
+                event.getEventSequencer().write(e)
+
                 actionObjectCls = self.intentActions.get(intentStr)
                 log.debug("actionObjectCls: %s", actionObjectCls)
                 waitingActionObject = self.createActionObject(
