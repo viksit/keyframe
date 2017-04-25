@@ -68,7 +68,8 @@ class GenericInfoSlot(GenericSlot):
         self.filled = True
         e = event.createResponseEvent(
             intentId=self.intentStr,
+            userId=cr.userId,
             canonicalResponse=cr,
             responseClass=event.ResponseEvent.RESPONSE_CLASS_INFO)
-        event.getEventSequencer().write(e)
+        event.getEventSequencer().add(e)
         return self.filled

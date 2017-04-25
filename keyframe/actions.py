@@ -203,9 +203,10 @@ class ActionObject(object):
             # Write event here
             e = event.createResponseEvent(
                 intentId=self.originalIntentStr,
+                userId=canonicalResponse.userId,
                 canonicalResponse=canonicalResponse,
                 responseClass=event.ResponseEvent.RESPONSE_CLASS_INFO)
-            event.getEventSequencer().write(e)
+            event.getEventSequencer().add(e)
 
         # Fill slots
         log.info("processWrapper: botstate: %s, reqstate: %s", botState, self.requestState)

@@ -9,7 +9,7 @@ from . import utils
 log = logging.getLogger(__name__)
 
 def createEventId(eventType):
-    return "%s_%s" % (eventType, utils.getUUID())
+    return "ke_%s_%s" % (eventType, utils.getUUID())
 
 # def writeRequestEvent(
 #         intentId, canonicalMsg, seq=0, eventWriter=None):
@@ -21,9 +21,12 @@ def createEventId(eventType):
 #     return e
 
 def createRequestEvent(
-        intentId, canonicalMsg, eventResult, seq=0):
-    e = RequestEvent(
+        userId, intentId, canonicalMsg, eventResult, seq=0, ts=None):
+    if ts is None:
         ts=utils.getTimestampMillis(),
+    e = RequestEvent(
+        userId=userId,
+        ts=ts,
         seq=seq,
         eventId=createEventId(Event.TYPE_REQUEST),
         intentId=intentId,
@@ -32,9 +35,13 @@ def createRequestEvent(
     return e
 
 def createResponseEvent(
-        intentId, canonicalResponse, responseClass, seq=0):
-    e = ResponseEvent(
+        userId,
+        intentId, canonicalResponse, responseClass, seq=0, ts=None):
+    if ts is None:
         ts=utils.getTimestampMillis(),
+    e = ResponseEvent(
+        userId=userId,
+        ts=ts,
         seq=seq,
         eventId=createEventId(Event.TYPE_RESPONSE),
         intentId=intentId,
@@ -51,6 +58,7 @@ class Event(object):
 
     def __init__(self, **kwargs):
         #self.eventType = kwargs.get("eventType")
+        self.userId = kwargs.get("userId")
         self.eventSrc = kwargs.get("src")
         self.ts = kwargs.get("ts")
         self.seq = kwargs.get("seq")
@@ -59,6 +67,7 @@ class Event(object):
 
     def toJSON(self):
         return {
+            "userId":self.userId,
             "eventSrc":self.eventSrc,
             "ts":self.ts,
             "seq":self.seq,
@@ -79,7 +88,7 @@ class RequestEvent(Event):
     def __init__(self, **kwargs):
         super(RequestEvent, self).__init__(**kwargs)
         self.eventType = Event.TYPE_REQUEST
-        self.canonicalMsg = kwargs.get("canonicalMsg")
+        #self.canonicalMsg = kwargs.get("canonicalMsg")
         self.eventResult = kwargs.get("eventResult")
         assert self.eventResult in self.RESULTS
 
@@ -87,11 +96,19 @@ class RequestEvent(Event):
         d = super(RequestEvent, self).toJSON()
         d2 = {
             "eventType":self.eventType,
-            "canonicalMsg":self.canonicalMsg.toJSON(),
+            #"canonicalMsg":self.canonicalMsg.toJSON(),
             "eventResult":self.eventResult}
         d.update(d2)
         return d
-        
+
+    @classmethod
+    def fromJSON(cls, d):
+        #canonicalMsg = messages.CanonicalMsg.fromJSON(
+            #d.get("canonicalMsg"))
+        #d2 = copy.deepcopy(d)
+        #d2["canonicalMsg"] = canonicalMsg
+        return cls(d)
+
 class ResponseEvent(Event):
     RESPONSE_CLASS_QUESTION = "question"
     RESPONSE_CLASS_INFO = "info"
@@ -101,17 +118,26 @@ class ResponseEvent(Event):
     def __init__(self, **kwargs):
         super(ResponseEvent, self).__init__(**kwargs)
         self.eventType = Event.TYPE_RESPONSE
-        self.canonicalResponse = kwargs.get("canonicalResponse")
+        #self.canonicalResponse = kwargs.get("canonicalResponse")
         self.responseClass = kwargs.get("responseClass")
 
+    # NOTE: for now, not serializing canonicalResponse
     def toJSON(self):
         d = super(ResponseEvent, self).toJSON()
         d2 = {
             "eventType":self.eventType,
-            "canonicalResponse":self.canonicalResponse.toJSON(),
+            #"canonicalResponse":self.canonicalResponse.toJSON(),
             "responseClass":self.responseClass}
         d.update(d2)
         return d
+
+    @classmethod
+    def fromJSON(cls, d):
+        #canonicalResponse = messages.CanonicalResponse.fromJSON(
+        #    d.get("canonicalResponse"))
+        d2 = copy.deepcopy(d)
+        d2["canonicalResponse"] = None  # CanonicalResponse is not used for now.
+        return cls(d2)
 
 
 def getDefaultEventWriter():
@@ -146,12 +172,19 @@ class EventSequencer(object):
         if not self.eventWriter:
             self.eventWriter = getDefaultEventWriter()
         self.seq = 0
+        self.events = []
 
-    def write(self, event):
+    def add(self, event):
         event.seq = self.seq
         self.seq += 1
-        self.eventWriter.write(event)
+        self.events.append(event)
 
+    def flush(self):
+        def _cmp(e1, e2):
+            return cmp((e1.ts, e1.seq), (e2.ts, e2.seq))
+        for e in sorted(self.events, cmp=_cmp):
+            self.eventWriter.write(e)
+        self.events = []
 
 class EventWriter(object):
     def write(self, event):
@@ -188,11 +221,11 @@ class FileEventWriter(EventWriter):
         self.close()
 
 
-
-def test():
-    es = EventSequencer()
+def testCreateEvents():
     e1 = createRequestEvent(
+        ts=1,
         intentId="intent-get-refund",
+        userId="test-user",
         canonicalMsg=messages.CanonicalMsg(
             channel="widget",
             httpType="https",
@@ -200,7 +233,9 @@ def test():
             text="I want a refund for my last ride"),
         eventResult=RequestEvent.RESULT_NEW_INTENT)
     e2 = createResponseEvent(
+        ts=2,
         intentId="intent-get-refund",
+        userId="test-user",
         canonicalResponse=messages.CanonicalResponse(
             channel="widget",
             userId="user1",
@@ -213,7 +248,9 @@ def test():
                     inputExpected=False)]),
         responseClass=ResponseEvent.RESPONSE_CLASS_INFO)
     e3 = createResponseEvent(
+        ts=3,
         intentId="intent-get-refund",
+        userId="test-user",
         canonicalResponse=messages.CanonicalResponse(
             channel="widget",
             userId="user1",
@@ -226,15 +263,20 @@ def test():
                     displayType=messages.ResponseElement.DISPLAY_TYPE_DROPDOWN,
                     inputExpected=True)]),
         responseClass=ResponseEvent.RESPONSE_CLASS_QUESTION)
-    
-    es.write(e1)
-    es.write(e2)
-    es.write(e3)
+    return [e1, e2, e3]
+
+def testWriteEvents():
+    es = EventSequencer()
+    events = testCreateEvents()
+    events.reverse()
+    for e in events:
+        es.add(e)
+    es.flush()
 
 if __name__ == "__main__":
     logging.basicConfig()
     log.setLevel(10)
-    test()
+    testWriteEvents()
 
                     
         

@@ -134,9 +134,10 @@ class Slot(object):
             self.state = Slot.SLOT_STATE_WAITING_FILL
             e = event.createResponseEvent(
                 intentId=self.intentStr,
+                userId=canonicalResponse.userId,
                 canonicalResponse=canonicalResponse,
                 responseClass=event.ResponseEvent.RESPONSE_CLASS_QUESTION)
-            event.getEventSequencer().write(e)
+            event.getEventSequencer().add(e)
 
         # Waiting for user response
         elif self.state == Slot.SLOT_STATE_WAITING_FILL:
@@ -164,7 +165,7 @@ class Slot(object):
                         intentId=self.intentStr,
                         canonicalResponse=canonicalResponse,
                         responseClass=event.ResponseEvent.RESPONSE_CLASS_QUESTION)
-                    event.getEventSequencer().write(e)
+                    event.getEventSequencer().add(e)
                     
                     return self.filled
             # Otherwise we just take the whole utterance and incorporate it.

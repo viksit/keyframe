@@ -205,9 +205,10 @@ class GenericActionObject(keyframe.actions.ActionObject):
         canonicalResponse = self.respond(resp, botStateUid=botState.getUid())
         e = keyframe.event.createResponseEvent(
             intentId=self.originalIntentStr,
+            userId=canonicalResponse.userId,
             canonicalResponse=canonicalResponse,
             responseClass=keyframe.event.ResponseEvent.RESPONSE_CLASS_INTENT_RESPONSE)
-        keyframe.event.getEventSequencer().write(e)
+        keyframe.event.getEventSequencer().add(e)
         return keyframe.constants.BOT_REQUEST_STATE_PROCESSED
 
     def getSlots(self):

@@ -82,6 +82,17 @@ class CanonicalMsg(object):
             "msgSrc": self.msgSrc
         }
 
+    @classmethod
+    def fromJSON(cls, d):
+        return cls(
+            channel=d.get("channel"),
+            httpType=d.get("httpType"),
+            userId=d.get("userId"),
+            text=d.get("text"),
+            botStateUid=d.get("botStateUid"),
+            msgSrc=d.get("msgSrc"))
+
+
 class CanonicalResponse(object):
     """Must support a common way to represent data that can then
     be transformed to the suitable format for any channel.
