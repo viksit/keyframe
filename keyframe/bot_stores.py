@@ -59,15 +59,15 @@ BotMetaStore
 }
 """
 
-def getBotMetaStore(kvStore=None):
+def getBotMetaStore(kvStore=None, config=None):
     if not kvStore:
-        kvStore = store_api.get_kv_store()  # will use defaults
+        kvStore = store_api.get_kv_store(config=config)  # will use defaults
     bms = BotMetaStore(kvStore)
     return bms
 
 # Utility helpful function.
-def getJsonSpec(accountId, agentId):
-    bms = getBotMetaStore()
+def getJsonSpec(accountId, agentId, kvStore=None, config=None):
+    bms = getBotMetaStore(kvStore=kvStore, config=config)
     return bms.getJsonSpec(accountId, agentId)
 
 class BotMetaStore(object):
