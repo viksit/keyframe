@@ -28,12 +28,12 @@ class ActionObject(object):
     Each AO can be serialized and deserialized from botstate.
     Botstate is stored via the KV store api.
     """
-    SLOTS_TYPE_SEQUENTIAL = "slots-type-sequential"
+    #SLOTS_TYPE_SEQUENTIAL = "slots-type-sequential"
     SLOTS_TYPE_CONDITIONAL = "slots-type-conditional"
 
-    RESPONSE_TYPE_TEXT = "response-type-text"
-    RESPONSE_TYPE_WEBHOOK = "response-type-webhook"
-    RESPONSE_TYPE_ZENDESK = "response-type-zendesk"
+    #RESPONSE_TYPE_TEXT = "response-type-text"
+    #RESPONSE_TYPE_WEBHOOK = "response-type-webhook"
+    #RESPONSE_TYPE_ZENDESK = "response-type-zendesk"
 
     def __init__(self, **kwargs):
         # TODO - get rid of this does not seem to be used
@@ -45,7 +45,7 @@ class ActionObject(object):
         self.kvStore = kwargs.get("kvStore")
         self.slotObjects = kwargs.get("slotObjects")
         self.filledSlots = {}
-        self.newIntent = kwargs.get("newIntent")
+        self.newTopic = kwargs.get("newTopic")
         self.botState = None
         self.init()
 
@@ -66,14 +66,14 @@ class ActionObject(object):
 
     @classmethod
     def createActionObject(
-            cls, intentStr, canonicalMsg, botState,
+            cls, topicId, canonicalMsg, botState,
             userProfile, requestState, api, channelClient, actionObjectParams={},
-            apiResult=None, newIntent=None):
+            apiResult=None, newTopic=None):
         log.debug("ActionObject.createActionObject(%s)", locals())
         """
         Create a new action object from the given data
         canonicalMsg, apiResult, intentStr
-        slots, messages, channelClient, actionObjectParams, apiResult, newIntent
+        slots, messages, channelClient, actionObjectParams, apiResult, newTopic
 
         """
         runAPICall = False
@@ -107,16 +107,16 @@ class ActionObject(object):
         actionObject.canonicalMsg = canonicalMsg
         actionObject.channelClient = channelClient
         actionObject.requestState = requestState
-        actionObject.originalIntentStr = intentStr
+        actionObject.originalTopicId = topicId
         actionObject.userProfile = userProfile
         actionObject.botState = botState
         actionObject.apiResult = apiResult
-        actionObject.newIntent = newIntent
+        actionObject.newTopic = newTopic
         actionObject.instanceId = None
-        if newIntent:
+        if newTopic:
             actionObject.instanceId = cls.createActionObjectId()
         actionObject.originalUtterance = None
-        if actionObject.newIntent:
+        if actionObject.newTopic:
             log.debug("set originalUtterance to input (%s)",
                       canonicalMsg.text)
             actionObject.originalUtterance = canonicalMsg.text
@@ -130,8 +130,14 @@ class ActionObject(object):
         return "k-ao-%s" % (x[5:],)
 
     @classmethod
-    def getIntentStrFromJSON(cls, actionObjectJSON):
-        return actionObjectJSON.get("origIntentStr")
+    def getTopicIdFromJSON(cls, actionObjectJSON):
+        #return actionObjectJSON.get("origIntentStr")
+        return actionObjectJSON.get("topic_id")
+
+    @classmethod
+    def getActionObjectClassFromJSON(cls, actionObjectJSON):
+        # TODO(now)
+        raise NotImplementedError()
 
     def fromJSONObject(self, actionObjectJSON):
         """
@@ -163,6 +169,8 @@ class ActionObject(object):
           False if all slots haven't been filled yet or something went wrong.
 
         """
+        # NOTE: This is overridden by generic_action slotfill, so effectively
+        # it will not be used.
         log.debug("slotFill(%s)", locals())
         for slotObject in self.slotObjects:
             log.debug("slotObject: %s", slotObject)
@@ -196,59 +204,14 @@ class ActionObject(object):
         raise NotImplementedError()
 
     def processWrapper(self, botState):
-        if self.transitionMsg and self.newIntent:
-            log.debug("sending transition msg back: %s", self.transitionMsg)
-            self.respond(
-                self.transitionMsg,
-                responseType=messages.ResponseElement.RESPONSE_TYPE_TRANSITIONMSG,
-                botStateUid=botState.getUid())
-
-        # Fill slots
-        log.info("processWrapper: botstate: %s, reqstate: %s", botState, self.requestState)
+        # Old processWrapper called transitionmsg and did response.
+        # but now ActionObject is just a shell for slots.
         allFilled = self.slotFill(botState)
-        log.debug("allFilled: %s", allFilled)
+        #TODO(now): What does this mean??
         if allFilled is False:
             return constants.BOT_REQUEST_STATE_PROCESSED
-
-        # Call process function only when slot data is filled up
-        self.filledSlots = {}
-        entityNameValues = {}
-        transcript = []
-        if self.originalUtterance:
-            log.debug("adding original utterance to transcript (%s)",
-                      self.originalUtterance)
-            transcript.append("> %s" % (self.originalUtterance,))
-        # TODO: Need to add the original msg. Not clear if this is being stored.
-        for s in self.slotObjects:
-            log.debug("processing slot: %s", s)
-            if s.slotType == slot_fill.Slot.SLOT_TYPE_HIDDEN:
-                for (k,v) in s.customFields.iteritems():
-                    entityNameValues[k] = v
-            else:
-                self.filledSlots[s.name] = s.value  # Backward compat + easy to use.
-                self.filledSlots["%s_prompt" % (s.name,)] = s.prompt()
-                self.filledSlots["%s_response" % (s.name,)] = s.value
-                transcript.append("prompt> %s" % (s.prompt(),))
-                transcript.append("> %s" % (s.value,))
-                transcript.append("")
-                log.debug("adding key: %s, value: %s to entityNameValues",
-                          s.entityName, s.value)
-                # entityName can be the same in multiple slots. Only update
-                # if the slot has a value.
-                if s.value or s.entityName not in entityNameValues:
-                    if s.entityName in entityNameValues:
-                        log.warn("entityName %s is being overwritten")
-                    entityNameValues[s.entityName] = s.value
-        self.filledSlots["transcript"] = "\n".join(transcript)
-        self.filledSlots.update(entityNameValues)
-
-        requestState = self.process(botState)
-        # should we save bot state here?
-        # reset slots now that we're filled
-        self.resetSlots()
-        if botState and self.getClearWaitingAction():
-            botState.clearWaiting()
-        return requestState
+        if allFilled:
+            return constants.BOT_REQUEST_STATE_PROCESSED
 
     @classmethod
     def _createActionObjectKey(cls, canonicalMsg, id):
@@ -264,7 +227,8 @@ class ActionObject(object):
         
         return {
             "actionObjectClassName": self.__class__.__name__,
-            "origIntentStr": self.originalIntentStr,
+            #"origIntentStr": self.originalIntentStr,
+            "origTopicId": self.originalTopicId,
             "slotObjects": serializedSlotObjects,
             "originalUtterance": self.originalUtterance,
             "instanceId": self.instanceId
@@ -276,28 +240,8 @@ class ActionObject(object):
     #         canonicalMsg, text, responseType,
     #         responseMeta=messages.ResponseMeta(
     #             apiResult=self.apiResult,
-    #             newIntent=self.newIntent,
+    #             newTopic=self.newTopic,
     #             intentStr=self.originalIntentStr,
     #             actionObjectInstanceId=self.instanceId))
     #     self.channelClient.sendResponse(cr)
 
-    def respond(self, text, canonicalMsg=None, responseType=None, botStateUid=None):
-        log.debug("ActionObject.respond(%s)", locals())
-        if not canonicalMsg:
-            canonicalMsg = self.canonicalMsg
-        if not responseType:
-            responseType = messages.ResponseElement.RESPONSE_TYPE_RESPONSE
-
-        cr = messages.createTextResponse(
-            self.canonicalMsg,
-            text,
-            responseType,
-            responseMeta=messages.ResponseMeta(
-                apiResult=self.apiResult,
-                newIntent=self.newIntent,
-                intentStr=self.originalIntentStr,
-                actionObjectInstanceId=self.instanceId),
-            botStateUid=botStateUid)
-
-        self.channelClient.sendResponse(cr)
-        return constants.BOT_REQUEST_STATE_PROCESSED

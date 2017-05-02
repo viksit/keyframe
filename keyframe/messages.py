@@ -104,16 +104,16 @@ class CanonicalResponse(object):
         }
 
 class ResponseMeta(object):
-    def __init__(self, apiResult=None, newIntent=None, intentStr=None,
+    def __init__(self, apiResult=None, newTopic=None, topicId=None,
                  actionObjectInstanceId=None):
         self.apiResult = apiResult
-        self.newIntent = newIntent
-        self.intentStr = intentStr
+        self.newTopic = newTopic
+        self.topicId = topicId
         self.actionObjectInstanceId = actionObjectInstanceId
 
     def __repr__(self):
-        return "ResponseMeta(apiResult=%s, newIntent=%s, intentStr=%s, actionObjectInstanceId=%s)" % (
-            self.apiResult, self.newIntent, self.intentStr, self.actionObjectInstanceId)
+        return "ResponseMeta(apiResult=%s, newTopic=%s, topicId=%s, actionObjectInstanceId=%s)" % (
+            self.apiResult, self.newTopic, self.topicId, self.actionObjectInstanceId)
 
     def toJSON(self):
         d = None
@@ -130,8 +130,8 @@ class ResponseMeta(object):
                 if e:
                     entitiesDict["entity_dict"] = e.entity_dict
         return {"apiResult":d,
-                "newIntent":self.newIntent,
-                "intentStr":self.intentStr,
+                "newTopic":self.newTopic,
+                "topicId":self.topicId,
                 "actionObjectInstanceId":self.actionObjectInstanceId}
 
 class ResponseElement(object):

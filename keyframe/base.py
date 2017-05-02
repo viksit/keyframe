@@ -50,7 +50,7 @@ class BaseBot(object):
 
         # self.slotFill = slot_fill.SlotFill()
 
-        self.intentActions = {}
+        #self.topicActions = {}
         self.intentThresholds = {}
         self.keywordIntents = {}
         self.regexIntents = {}
@@ -299,13 +299,14 @@ class BaseBot(object):
         assert actionObjectCls is not None, "No action objects were registered for this intent"
         return (intentStr, intentScore, actionObjectCls, apiResult)
 
-    def createActionObject(self, actionObjectCls, intentStr,
+    def createActionObject(self, topicId,
                            canonicalMsg, botState,
                            userProfile, requestState,
-                           apiResult=None, newIntent=None):
+                           apiResult=None, newTopic=None):
         log.debug("BaseBot.createActionObject(%s)", locals())
-        return actionObjectCls.createActionObject(
-            intentStr, canonicalMsg, botState,
+        return actions.ActionObject.createActionObject(
+            topicId,
+            canonicalMsg, botState,
             userProfile, requestState, self.api, self.channelClient,
             apiResult=apiResult, newIntent=newIntent)
 
@@ -348,23 +349,6 @@ class BaseBot(object):
 
 
     def handle(self, **kwargs):
-
-        """
-        When the user creates a bot object, we initialize all the action objects needed
-        in the interaction graph and initialize, and store.
-
-        We then map these initialized objects into the hashmap which contains intents.
-
-        For a given intent, this hashmap is what's used to determine which action object
-        to invoke.
-
-        Before we initialize the action object we check if there's a version already stored.
-        If there isn't, then we do a new one, else we retrieve it from the old one.
-
-        If we see botcmd, then handle as a botcmd action rather than going through intent/keyword
-        action.
-
-        """
         log.debug("BaseBot.handle(%s)", locals())
         canonicalMsg = kwargs.get("canonicalMsg")
         botState = kwargs.get("botState")
@@ -384,49 +368,27 @@ class BaseBot(object):
         else:
             log.debug("not a botcmd")
 
-        waitingActionJson = botState.getWaiting()
-        checkIntent = True
-        # Check the type of input
-        if canonicalMsg.msgType == messages.CanonicalMsg.MSG_TYPE_SLOT_OPTION:
-            assert waitingAction, "msg type slot option but no waiting action"
-            checkIntent = False
+        while True:
+            actionStateJson = botState.getWaiting()
+            newTopic = False
+            log.debug("actionJson: %s", actionStateJson)
+            if actionStateJson:
+                topicId = actionStateJson.get("origTopicId")
+            else:
+                topicId = self.getStartTopic()
+                log.debug("got START topic: %s", topicId)
+                newTopic = True
+            actionObject = self.createActionObject(
+                topicId,
+                canonicalMsg, botState, userProfile,
+                requestState, newTopic=newTopic)
+            if actionStateJson:
+                actionObject.fromJSONObject(actionStateJson)
 
-        preemptWaitingAction = False
-        if checkIntent:
-            intentStr, intentScore, actionObjectCls, apiResult = self._getActionObjectFromIntentHandlers(canonicalMsg)
-            log.debug("GetActionObjectFromIntentHandlers: intent: %s cls: %s", intentStr, actionObjectCls)
-            intentActionObject = self.createActionObject(
-                actionObjectCls,
-                intentStr, canonicalMsg, botState, userProfile,
-                requestState, apiResult=apiResult, newIntent=True)
-            log.debug("intentActionObject: %s", intentActionObject)
-            preemptThreshold = intentActionObject.getPreemptWaitingActionThreshold()
-            if preemptThreshold and float(preemptThreshold) <= intentScore:
-                preemptWaitingAction = True
-
-        if not preemptWaitingAction:
-            log.debug("waitingActionJson: %s", waitingActionJson)
-            if waitingActionJson:
-                intentStr = actions.ActionObject.getIntentStrFromJSON(waitingActionJson)
-                actionObjectCls = self.intentActions.get(intentStr)
-                log.debug("actionObjectCls: %s", actionObjectCls)
-                waitingActionObject = self.createActionObject(
-                    actionObjectCls, intentStr,
-                    canonicalMsg, botState, userProfile,
-                    requestState, newIntent=False)
-                waitingActionObject.fromJSONObject(waitingActionJson)
-                #self.sendDebugResponse(botState, canonicalMsg)
-                requestState = waitingActionObject.processWrapper(botState)
-
-        if requestState != constants.BOT_REQUEST_STATE_PROCESSED:
+            requestState = actionObject.processWrapper(botState)
             log.debug("requestState: %s", requestState)
-            log.debug("botState: %s", botState)
-            #self.sendDebugResponse(botState, canonicalMsg)
-            requestState = intentActionObject.processWrapper(botState)
-            log.debug("requeststate: %s", requestState)
-
-        if requestState != constants.BOT_REQUEST_STATE_PROCESSED:
-            raise Exception("Unprocessed message")
+            if requestState == constants.BOT_REQUEST_STATE_PROCESSED:
+                break
 
         if botState.changed:
             self.putBotState(
@@ -436,3 +398,10 @@ class BaseBot(object):
                 botStateUid=botState.getUid()
             )
         return requestState
+
+
+    def getStartActionObject(
+            self, canonicalMsg, botState, userProfile, requestState):
+        # TODO(now)
+        raise NotImplementedError()
+

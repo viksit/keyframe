@@ -20,10 +20,11 @@ class Slot(object):
     SLOT_TYPE_INPUT = "slot-type-input"
     SLOT_TYPE_INFO = "slot-type-info"
     SLOT_TYPE_HIDDEN = "slot-type-hidden"
+    SLOT_TYPE_ACTION = "slot-type-action"
 
     # TODO(viksit): overwrite the instance variables from the class variable
 
-    def __init__(self, apiResult=None, newIntent=None, intentStr=None):
+    def __init__(self, apiResult=None, newTopic=None, topicId=None):
         # If there are multiple slots with the same class, the slot definition
         # will have to override this and give some names.
         self.name = re.sub(r"(.)([A-Z])", r"\1_\2", self.__class__.__name__).lower()
@@ -38,8 +39,8 @@ class Slot(object):
         self.optionsList = None
         self.entityType = None
         self.apiResult = apiResult
-        self.newIntent = newIntent
-        self.intentStr = intentStr
+        self.newTopic = newTopic
+        self.topicId = topicId
         self.canonicalMsg = None
         self.displayType = None
         self.slotType = None
@@ -172,8 +173,8 @@ class Slot(object):
                 responseType,
                 responseMeta=messages.ResponseMeta(
                     apiResult=self.apiResult,
-                    newIntent=self.newIntent,
-                    intentStr=self.intentStr),
+                    newTopic=self.newTopic,
+                    topicId=self.topicId),
                 displayType=self.displayType,
                 botStateUid=botStateUid)
         elif self.entityType == "ATTACHMENTS":
@@ -183,8 +184,8 @@ class Slot(object):
                 responseType,
                 responseMeta=messages.ResponseMeta(
                     apiResult=self.apiResult,
-                    newIntent=self.newIntent,
-                    intentStr=self.intentStr),
+                    newTopic=self.newTopic,
+                    topicId=self.topicId),
                 botStateUid=botStateUid)
         else:
             cr = messages.createTextResponse(
@@ -193,8 +194,8 @@ class Slot(object):
                 responseType,
                 responseMeta=messages.ResponseMeta(
                     apiResult=self.apiResult,
-                    newIntent=self.newIntent,
-                    intentStr=self.intentStr),
+                    newTopic=self.newTopic,
+                    topicId=self.topicId),
                 botStateUid=botStateUid,
                 inputExpected=True)
         channelClient.sendResponse(cr)

@@ -58,6 +58,8 @@ class BotState(object):
         """Get an action object waiting for input, remove it
         from waiting, and return it (like a pop except this is not a stack).
         """
+        if not self._waiting:
+            return None
         tmp = self._waiting
         self._waiting = None
         self.changed = True

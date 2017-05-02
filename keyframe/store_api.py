@@ -20,10 +20,12 @@ TYPE_DYNAMODB = "type-dynamodb"
 TYPE_LOCALFILE = "type-localfile"
 TYPE_INMEMORY = "type-inmemory"
 
+DEFAULT_KV_STORE_TYPE = os.getenv("KEYFRAME_KV_STORE_TYPE", TYPE_DYNAMODB)
+
 def get_kv_store(kvstype=None, config=None):
     if not kvstype:
         #kvstype = TYPE_LOCALFILE
-        kvstype = TYPE_DYNAMODB
+        kvstype = DEFAULT_KV_STORE_TYPE
     if not config:
         config = keyframe.config.getConfig()
     if kvstype == TYPE_S3:

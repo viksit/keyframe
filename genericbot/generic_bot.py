@@ -46,49 +46,33 @@ class GenericBot(keyframe.base.BaseBot):
 
     def configFromJson(self):
         log.debug("GenericBot.configFromJson()")
-        intents = self.specJson.get("intents")
-        for (intentId, intentProperties) in intents.iteritems():
-            log.debug("intentId: %s", intentId)
-            #log.debug("intentId: %s, intentProperties: %s",
-            #          intentId, intentProperties)
-            intentType = intentProperties.get("intent_type")
-            if intentType == "api" or intentType == "unknown":
-                i = keyframe.dsl.APIIntent(label=intentId)
-                self.intentEvalSet.add(i)
-                self.intentActions[intentId] = generic_action.GenericActionObject
-            elif intentType == "keyword":
-                intentKeywords = intentProperties.get("intent_data")
-                assert intentKeywords, "keywords intent must have keywords"
-                assert isinstance(intentKeywords, list), "keywords intent must have a list of keywords"
-                i = keyframe.dsl.KeywordIntent(
-                    label=intentId,
-                    keywords=intentKeywords)
-                self.intentEvalSet.add(i)
-                self.intentActions[intentId] = generic_action.GenericActionObject
-            elif intentType == "default":
-                log.debug("adding intentType default with label: %s", intentId)
-                i = keyframe.dsl.DefaultIntent(label=intentId)
-                self.intentEvalSet.add(i)
-                self.intentActions[intentId] = generic_action.GenericActionObject
-            else:
-                raise Exception("Unknown intentType: %s" % (intentType,))
+        # Nothing else to do here.
 
-    def createActionObject(self, actionObjectCls, intentStr,
+    def getStartTopic(self):
+        x = self.specJson.get("start_topic")
+        assert x, "Bot spec must have a start topic"
+        return x
+
+    def getStartActionObjectJsonXXX(self):
+        startActionObjectName = self.specJson.get("start_topic")
+        assert startActionObjectName, "Bot spec must have start_topic"
+        startActionObjectJson = self.specJson.get("topics", {}).get(
+            startActionObjectName)
+        assert startActionObjectJson, "Bot spec does not have topic: %s" % (
+            startActionObjectName,)
+        return startActionObjectJson
+
+    def createActionObject(self, topicId,
                            canonicalMsg, botState,
                            userProfile, requestState,
-                           apiResult=None, newIntent=None):
-        #log.debug("GenericBot.createActionObject(%s) called", locals())
-        if actionObjectCls == generic_action.GenericActionObject:
-            actionObjectSpecJson = self.specJson.get(
-                "intents", {}).get(intentStr)
-            #log.debug("creating GenericActionObject with json: %s",
-            #          actionObjectSpecJson)
-            return actionObjectCls.createActionObject(
-                actionObjectSpecJson,
-                intentStr, canonicalMsg, botState,
-                userProfile, requestState, self.api, self.channelClient,
-                apiResult=apiResult, newIntent=newIntent)
-        return actionObjectCls.createActionObject(
-            intentStr, canonicalMsg, botState,
+                           apiResult=None, newTopic=None):
+        log.debug("GenericBot.createActionObject(%s) called", locals())
+        actionObjectSpecJson = self.specJson.get(
+            "topics", {}).get(topicId)
+        #log.debug("creating GenericActionObject with json: %s",
+        #          actionObjectSpecJson)
+        return generic_action.GenericActionObject.createActionObject(
+            actionObjectSpecJson, topicId,
+            canonicalMsg, botState,
             userProfile, requestState, self.api, self.channelClient,
-            apiResult=apiResult, newIntent=newIntent)
+            apiResult=apiResult, newTopic=newTopic)

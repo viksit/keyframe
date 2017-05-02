@@ -57,113 +57,6 @@ class GenericActionObject(keyframe.actions.ActionObject):
                     attachmentUrls.append(fUrl)
         return attachmentUrls
 
-    def fetchWebhook(self, webhook, filledSlots, slotObjects):
-        # To render a templatized url with custom parameters
-        url = webhook.get("api_url")
-        custom = webhook.get("api_params", "{}")
-        custom = json.loads(custom) # convert to dict
-        entities = filledSlots
-        requestBody = webhook.get("api_body")
-        requestAuth = webhook.get("api_auth")  # Assume basic auth for now.
-
-        # Response
-        urlTemplate = Template(url)
-        templatedURL = urlTemplate.render({"custom": custom, "entities": entities})
-        log.debug("URL to fetch: %s" % (templatedURL,))
-        requestBodyJsonObject = None
-        if requestBody:
-            log.info("requestBody: %s", requestBody)
-            templatedRequestBody = Template(requestBody).render(
-                {"custom": custom, "entities": entities})
-            log.info("templatedRequestBody (%s): %s", type(templatedRequestBody), templatedRequestBody)
-            requestBodyJsonObject = json.loads(templatedRequestBody)
-
-        urlPieces = urlparse.urlparse(templatedURL)
-        log.debug("urlPieces: %s" % (urlPieces,))
-        response = {}
-        if not (len(urlPieces.scheme) > 0 and len(urlPieces.netloc) > 0):
-            raise Exception("bad api url: %s", templatedUrl)
-
-        requestAuthTuple = None
-        if requestAuth:
-            requestAuthTuple = tuple(requestAuth.split(":"))
-            assert len(requestAuthTuple) == 2, "requestAuth must be a string with format username:password. (%s)" % (requestAuth,)
-
-        if requestBodyJsonObject:
-            log.info("making POST request: url: %s, json: %s, auth: %s",
-                      templatedURL, requestBodyJsonObject, requestAuthTuple)
-            response = requests.post(
-                templatedURL, json=requestBodyJsonObject, auth=requestAuthTuple)
-        else:
-            response = requests.get(templatedURL, auth=requestAuthTuple)
-        if response.status_code not in (200, 201, 202):
-            log.exception("webhook call failed. status_code: %s", response.status_code)
-            raise Exception("webhook call failed. status_code: %s" % (response.status_code,))
-        log.info("response (%s): %s" % (type(response), response))
-        responseJsonObj = {}
-        try:
-            responseJsonObj = response.json()
-        except ValueError as ve:
-            log.warn("could not get json from response to webhook")
-
-        # We've called the webhook with params, now take response
-        # And make it available to the text response
-
-        r = webhook.get("response_text", {})
-        textResponseTemplate = Template(r)
-        renderedResponse = textResponseTemplate.render({
-            "entities": filledSlots,
-            "response": responseJsonObj
-        })
-        return renderedResponse
-
-    def doStructuredResponse(self, structuredMsg):
-        rt = structuredMsg["response_type"]
-        if rt != "email":
-            log.warn("unknown response_type: %s", rt)
-            return None
-        toAddr = Template(structuredMsg.get("to")).render(self.filledSlots)
-        subject = Template(structuredMsg.get("subject")).render(self.filledSlots)
-        emailContent = Template(structuredMsg.get("body")).render(self.filledSlots)
-        r = keyframe.email.send(toAddr, subject, emailContent)
-        responseContent = "<no response specified>"
-        if r:
-            responseContent = structuredMsg.get(
-                "success_response",
-                structuredMsg.get("response", responseContent))
-        else:
-            responseContent = structuredMsg.get(
-                "failure_response",
-                structuredMsg.get("response", responseContent))
-        return Template(responseContent).render(self.filledSlots)
-
-    def processZendesk(self, botState):
-        zc = copy.deepcopy(self.zendeskConfig.get("request"))
-        for (k,v) in self.zendeskConfig.get("request").iteritems():
-            log.debug("k: %s, v: %s", k, v)
-            zc[k] = Template(v).render(
-                {"entities":self.filledSlots})
-        if zc.get("attachments"):
-            if zc.get("attachments").lower() in (
-                    "none", "no", "no attachments"):
-                zc["attachments"] = None
-            if zc.get("attachments").lower() == "all":
-                attachmentUrls = self.getAttachmentUrls(
-                    self.filledSlots, self.slotObjects)
-                zc["attachments"] = attachmentUrls
-            else:
-                attachmentUrl = Template(zc.get("attachments")).render(
-                    {"entities":self.filledSlots})
-                zc["attachments"] = [attachmentUrl]
-        zr = zendesk.createTicket(zc)
-        log.debug("zr (%s): %s", type(zr), zr)
-        respTemplate = "A ticket has been filed: {{ticket.url}}"
-        respTemplate = self.zendeskConfig.get("response_text", respTemplate)
-        log.debug("respTemplate: %s", respTemplate)
-        _t = Template(respTemplate)
-        resp = _t.render(zr)
-        log.debug("after processing zendesk, resp: %s", resp)
-        return resp
 
     def process(self, botState):
         log.debug("GenericAction.process called")
@@ -224,6 +117,8 @@ class GenericActionObject(keyframe.actions.ActionObject):
         return self.ENTITY_TYPE_CLASS_MAP.get("FREETEXT")
 
     def slotFill(self, botState):
+        """Return True if all slots are filled, false otherwise.
+        """
         if self.slotsType == self.SLOTS_TYPE_CONDITIONAL:
             return self.slotFillConditional(botState)
         else:
@@ -272,25 +167,25 @@ class GenericActionObject(keyframe.actions.ActionObject):
             "nextSlotToFillName", self.nextSlotToFill)
 
     @classmethod
-    def createActionObject(cls, specJson, intentStr, canonicalMsg, botState,
+    def createActionObject(cls, specJson, topicId, canonicalMsg, botState,
                            userProfile, requestState, api, channelClient,
                            actionObjectParams={},
-                           apiResult=None, newIntent=None):
+                           apiResult=None, newTopic=None):
         log.debug("GenericActionObject.createActionObject(%s)", locals())
 
         # Create a GenericActionObject using specJson
         actionObject = cls()
         actionObject.specJson = specJson
-        actionObject.msg = specJson.get("text")
-        actionObject.transitionMsg = specJson.get("transition_text")
+        #actionObject.msg = specJson.get("text")
+        #actionObject.transitionMsg = specJson.get("transition_text")
         actionObject.slotsType = specJson.get(
-            "slots_type", cls.SLOTS_TYPE_SEQUENTIAL)
-        actionObject.responseType = specJson.get(
-            "response_type", cls.RESPONSE_TYPE_TEXT)
+            "slots_type", cls.SLOTS_TYPE_CONDITIONAL)
+        #actionObject.responseType = specJson.get(
+        #    "response_type", cls.RESPONSE_TYPE_TEXT)
         # TODO: This has to be enforced in the UI.
         #assert actionObject.msg, "No text field in json: %s" % (specJson,)
-        if not actionObject.msg:
-            actionObject.msg = "<No msg provided by agent spec.>"
+        #if not actionObject.msg:
+        #    actionObject.msg = "<No msg provided by agent spec.>"
         slots = specJson.get("slots", [])
 
         slotObjects = []
@@ -304,15 +199,25 @@ class GenericActionObject(keyframe.actions.ActionObject):
             gc = None
             if slotType == slot_fill.Slot.SLOT_TYPE_INFO:
                 gc = generic_slot.GenericInfoSlot(
-                    apiResult=apiResult, newIntent=newIntent, intentStr=intentStr)
+                    apiResult=apiResult, newTopic=newTopic,
+                    topicId=topicId, channelClient=channelClient)
             elif slotType == slot_fill.Slot.SLOT_TYPE_HIDDEN:
                 gc = generic_slot.GenericHiddenSlot(
-                    apiResult=apiResult, newIntent=newIntent, intentStr=intentStr)
+                    apiResult=apiResult, newTopic=newTopic,
+                    topicId=topicId)
                 gc.customFields = slotSpec.get("custom_fields")
                 assert gc.customFields, "Hidden slot must have customFields"
-            else:
+            elif slotType == slot_fill.Slot.SLOT_TYPE_ACTION:
+                gc = generic_slot.GenericActionSlot(
+                    apiResult=apiResult, newTopic=newTopic,
+                    topicId=topicId, channelClient=channelClient)
+                gc.actionSpec = slotSpec.get("action_spec")
+                assert gc.actionSpec, "Action slot must have actionSpec"
+            elif slotType == slot_fill.Slot.SLOT_TYPE_INPUT:
                 gc = generic_slot.GenericSlot(
-                    apiResult=apiResult, newIntent=newIntent, intentStr=intentStr)
+                    apiResult=apiResult, newTopic=newTopic, topicId=topicId)
+            else:
+                raise Exception("Unknown slot type (%s)" % (slotType,))
 
             gc.slotType = slotType
             gc.promptMsg = slotSpec.get("prompt")
@@ -354,7 +259,7 @@ class GenericActionObject(keyframe.actions.ActionObject):
             if entityType == "OPTIONS":
                 optionsList = slotSpec.get("options_list")
                 if not optionsList:
-                    raise Exception("must have options_list for slot %s in action object for intent %s" % (gc.name, intentStr))
+                    raise Exception("must have options_list for slot %s in action object for topic %s" % (gc.name, topicId))
                 # From the current UI, the list is specified as a string, but from a newer UI it is a list.
                 if isinstance(optionsList, basestring):
                     gc.optionsList = [e.strip() for e in optionsList.strip().split(",") if e.strip()]
@@ -383,12 +288,12 @@ class GenericActionObject(keyframe.actions.ActionObject):
             log.debug("actionObject.nextSlotToFillName: %s",
                       actionObject.nextSlotToFillName)
         actionObject.apiResult = apiResult
-        actionObject.newIntent = newIntent
+        actionObject.newTopic = newTopic
         actionObject.instanceId = None
-        if newIntent:
+        if newTopic:
             actionObject.instanceId = cls.createActionObjectId()
         actionObject.originalUtterance = None
-        if actionObject.newIntent:
+        if actionObject.newTopic:
             log.debug("set originalUtterance to input (%s)",
                       canonicalMsg.text)
             actionObject.originalUtterance = canonicalMsg.text
@@ -400,7 +305,7 @@ class GenericActionObject(keyframe.actions.ActionObject):
         actionObject.canonicalMsg = canonicalMsg
         actionObject.channelClient = channelClient
         actionObject.requestState = requestState
-        actionObject.originalIntentStr = intentStr
+        actionObject.originalTopicId = topicId
         actionObject.webhook = specJson.get("webhook")
         actionObject.zendeskConfig = specJson.get("zendesk")
         log.debug("createActionObject: %s", actionObject)
