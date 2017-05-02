@@ -56,6 +56,19 @@ class GenericHiddenSlot(keyframe.slot_fill.Slot):
         self.filled = True
         return self.filled
 
+class GenericTransferSlot(GenericSlot):
+    def __init__(self, apiResult=None, newTopic=None,
+                 promptMsg=None, topicId=None, channelClient=None):
+        super(GenericSlot, self).__init__(
+            apiResult=apiResult, newTopic=newTopic, topicId=topicId)
+        self.transferRef = None
+
+    transfer_topic_re = re.compile("[
+    def getTransferTopic(self):
+        
+    def fill(self, canonicalMsg, apiResult, channelClient, botState):
+        raise Exception("This should not be called!!")
+
 class GenericInfoSlot(GenericSlot):
     def __init__(self, apiResult=None, newTopic=None,
                  promptMsg=None, topicId=None,

@@ -130,23 +130,27 @@ class GenericActionObject(keyframe.actions.ActionObject):
         Returns:
           True if all required slots are filled.
           False if all required slots haven't been filled yet or something went wrong.
-
         """
         log.info("slotFillConditional called")
         while True:
             assert self.nextSlotToFillName, "No nextSlotToFillName!"
             slotObject = self.slotObjectsByName[self.nextSlotToFillName]
             assert slotObject
+            if slotObject.slotType == Slot.SLOT_TYPE_TRANSFER:
+                transferTopicId = slotObject.getTransferTopic()
+                assert transferTopicId, "Trying to transfer without transferTopicId"
+                botState.setTransferTopicId(transferTopicId)
+                return constants.BOT_REQUEST_STATE_TRANSFER
             filled = slotObject.fill(
                 self.canonicalMsg, self.apiResult, self.channelClient,
                 botState)
             if not filled:
                 botState.putWaiting(self.toJSONObject())
                 log.debug("slotFillConditional: returning False - not filled")
-                return False
+                return constants.BOT_REQUEST_STATE_PROCESSED
             if not slotObject.slotTransitions:
                 log.debug("slotFillConditional: returning True")
-                return True
+                return constants.BOT_REQUEST_STATE_PROCESSED
             self.nextSlotToFillName = slotObject.slotTransitions.get(
                 slotObject.value)
             log.debug("self.nextSlotToFillName: %s", self.nextSlotToFillName)
@@ -154,7 +158,7 @@ class GenericActionObject(keyframe.actions.ActionObject):
                 self.nextSlotToFillName = slotObject.slotTransitions.get("__default__")
             if not self.nextSlotToFillName:
                 log.debug("slotFillConditional: returning True")
-                return True
+                return constants.BOT_REQUEST_STATE_PROCESSED
 
     def toJSONObject(self):
         jsonObject = super(GenericActionObject, self).toJSONObject()
@@ -216,6 +220,11 @@ class GenericActionObject(keyframe.actions.ActionObject):
             elif slotType == slot_fill.Slot.SLOT_TYPE_INPUT:
                 gc = generic_slot.GenericSlot(
                     apiResult=apiResult, newTopic=newTopic, topicId=topicId)
+            elif slotType == slot_fill.Slot.SLOT_TYPE_TRANSFER:
+                gc = generic_slot.GenericTransferSlot(
+                    apiResult=apiResult, newTopic=newTopic, topicId=topicId)
+                gc.transferRef = slotSpec.get("transfer_ref")
+                assert gc.transferRef, "Transfer slots must have transfer_ref defined"
             else:
                 raise Exception("Unknown slot type (%s)" % (slotType,))
 

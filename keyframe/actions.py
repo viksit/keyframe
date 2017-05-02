@@ -180,21 +180,10 @@ class ActionObject(object):
                     botState)
                 if filled is False:
                     botState.putWaiting(self.toJSONObject())
-                    return False
+                    return constants.BOT_REQUEST_STATE_PROCESSED
 
         # End slot filling
-        # Now, all slots for this should be filled.
-        allFilled = True
-
-        # Is this necessary?
-        for slotObject in self.slotObjects:
-            if not slotObject.filled:
-                allFilled = False
-                break
-
-        # Save state before returning
-        # This can be better done as a decorator
-        return allFilled
+        return constants.BOT_REQUEST_STATE_PROCESSED
 
 
     def process(self, botState):
@@ -206,12 +195,7 @@ class ActionObject(object):
     def processWrapper(self, botState):
         # Old processWrapper called transitionmsg and did response.
         # but now ActionObject is just a shell for slots.
-        allFilled = self.slotFill(botState)
-        #TODO(now): What does this mean??
-        if allFilled is False:
-            return constants.BOT_REQUEST_STATE_PROCESSED
-        if allFilled:
-            return constants.BOT_REQUEST_STATE_PROCESSED
+        return self.slotFill(botState)
 
     @classmethod
     def _createActionObjectKey(cls, canonicalMsg, id):

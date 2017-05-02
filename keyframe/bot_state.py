@@ -20,6 +20,13 @@ class BotState(object):
         self.debug = False
         self.uid = None
         self.previousUid = None
+        self.transferTopicId = None
+
+    def getTransferTopicId(self):
+        return self.transferTopicId
+
+    def setTransferTopicId(self, ttId):
+        self.transferTopicId = ttId
 
     def setUid(self, uid):
         self.uid = uid

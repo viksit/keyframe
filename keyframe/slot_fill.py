@@ -21,6 +21,7 @@ class Slot(object):
     SLOT_TYPE_INFO = "slot-type-info"
     SLOT_TYPE_HIDDEN = "slot-type-hidden"
     SLOT_TYPE_ACTION = "slot-type-action"
+    SLOT_TYPE_TRANSFER = "slot-type-transfer"
 
     # TODO(viksit): overwrite the instance variables from the class variable
 

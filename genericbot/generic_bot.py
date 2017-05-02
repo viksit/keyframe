@@ -3,6 +3,7 @@ from __future__ import print_function
 import copy
 from collections import defaultdict
 import sys
+import re
 
 import logging
 
@@ -48,7 +49,11 @@ class GenericBot(keyframe.base.BaseBot):
         log.debug("GenericBot.configFromJson()")
         # Nothing else to do here.
 
-    def getStartTopic(self):
+    debug_topic_re = re.compile("\[topic=([^\]]+)\]")
+    def getStartTopic(self, canonicalMsg):
+        x = self.debug_topic_re.match(canonicalMsg.text.lower())
+        if x:
+            return x.groups()[0]
         x = self.specJson.get("start_topic")
         assert x, "Bot spec must have a start topic"
         return x

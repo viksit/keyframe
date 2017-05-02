@@ -368,16 +368,22 @@ class BaseBot(object):
         else:
             log.debug("not a botcmd")
 
+        transferTopicId = None
         while True:
-            actionStateJson = botState.getWaiting()
-            newTopic = False
-            log.debug("actionJson: %s", actionStateJson)
-            if actionStateJson:
-                topicId = actionStateJson.get("origTopicId")
+            if transferTopicId:
+                topicId = transferTopicId
+                transferTopicId = None
+                newTopic = True  # TODO(now): not sure about this one.
             else:
-                topicId = self.getStartTopic()
-                log.debug("got START topic: %s", topicId)
-                newTopic = True
+                actionStateJson = botState.getWaiting()
+                newTopic = False
+                log.debug("actionJson: %s", actionStateJson)
+                if actionStateJson:
+                    topicId = actionStateJson.get("origTopicId")
+                else:
+                    topicId = self.getStartTopic(canonicalMsg)
+                    log.debug("got START topic: %s", topicId)
+                    newTopic = True
             actionObject = self.createActionObject(
                 topicId,
                 canonicalMsg, botState, userProfile,
@@ -389,6 +395,8 @@ class BaseBot(object):
             log.debug("requestState: %s", requestState)
             if requestState == constants.BOT_REQUEST_STATE_PROCESSED:
                 break
+            if requestState == constants.BOT_REQUEST_STATE_TRANSFER:
+                transferTopicId = botState.getTransferTopicId()
 
         if botState.changed:
             self.putBotState(
