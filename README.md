@@ -66,7 +66,7 @@ See gbot.py. Logging is set by GBOT_LOG_LEVEL env var for genericbot, keyframe a
     x = json.dumps(j)
     kvStore.put_json(k, x)
 
-## Downloading a bot spec to dynamodb
+## Downloading a bot spec from dynamodb
 
     import keyframe.store_api as store_api
     import json
