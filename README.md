@@ -57,12 +57,25 @@ See gbot.py. Logging is set by GBOT_LOG_LEVEL env var for genericbot, keyframe a
     import json
     import keyframe.config
 
-    config = keyframe.config.getConfig()
+    config = keyframe.config.getConfig()  # keyframe.config.getConfig(realm='prod') for prod
     kvStore = store_api.get_kv_store(store_api.TYPE_DYNAMODB, config)
+    # k = 'botmeta.<accountId>.<agentId>'
     k = 'botmeta.3rxCO9rydbBIf3DOMb9lFh.94e0d0a482664965abc63e13638636e2'
     s = open('/Users/nishant/work/keyframe/genericbot/example-configs/lyft_test.json','r').read()
     j = json.loads(s)
     x = json.dumps(j)
     kvStore.put_json(k, x)
 
+## Downloading a bot spec to dynamodb
 
+    import keyframe.store_api as store_api
+    import json
+    import keyframe.config
+
+    config = keyframe.config.getConfig()  # keyframe.config.getConfig(realm='prod') for prod
+    kvStore = store_api.get_kv_store(store_api.TYPE_DYNAMODB, config)
+    # k = 'botmeta.<accountId>.<agentId>'
+    k = 'botmeta.3rxCO9rydbBIf3DOMb9lFh.94e0d0a482664965abc63e13638636e2'
+    x = kvStore.get_json(k)
+    botSpec = json.loads(x)
+    
