@@ -22,12 +22,24 @@ class BotState(object):
         self.previousUid = None
         self.transferTopicId = None
         self._sessionData = {}
+        self._sessionDataType = {}
 
     def getSessionData(self):
         return self._sessionData
 
-    def addToSessionData(self, k, v):
+    def getSessionDataType(self):
+        return self._sessionDataType
+
+    def addToSessionData(self, k, v, type=None):
         self._sessionData[k] = v
+        self._sessionDataType[k] = type
+
+    def getSessionDataType(self):
+        return self._sessionDataType
+
+    def getSessionDataElement(self, k):
+        return {"value":self._sessionData.get(k),
+                "type":self._sessionDataType.get(k)}
 
     def clearSession(self):
         self._sessionData = {}

@@ -39,6 +39,15 @@
             "prompt": "Driver Resolve1: What is your email?",
             "slot_type": "slot-type-input",
             "slot_transitions": {
+              "__default__":"upload_file"
+            }
+          },
+          {
+            "entity_type": "ATTACHMENTS",
+            "name": "upload_file",
+            "prompt": "upload any files you may have",
+            "slot_type": "slot-type-input",
+            "slot_transitions": {
               "__default__":"zendesk1"
             }
           },
@@ -144,12 +153,6 @@
               "driver":"driver_problem1",
               "passenger":"passenger_problem1"
             }
-          },
-          {
-            "entity_type": "ATTACHMENTS",
-            "name": "upload_file",
-            "prompt": "upload any files you may have",
-            "slot_type": "slot-type-input"
           },
           {
             "entity_type": "FREETEXT",

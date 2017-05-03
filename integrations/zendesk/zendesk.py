@@ -164,8 +164,8 @@ def createTicket(jsonObject):
         subject=j.get("subject"),
         body=j.get("body"),
         requesterEmail=j.get("requester_email"),
-        requesterName=j.get("requester_name")
-        #attachments=j.get("attachments")
+        requesterName=j.get("requester_name"),
+        attachments=j.get("attachments")
     )
     return ticketResponse
 

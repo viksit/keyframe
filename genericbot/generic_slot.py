@@ -74,7 +74,7 @@ class GenericHiddenSlot(keyframe.slot_fill.Slot):
         self.channelClient = channelClient
         self.canonicalMsg = canonicalMsg
         for (k,v) in self.customFields.iteritems():
-            botState.addToSessionData(k, v)
+            botState.addToSessionData(k, v, self.entityType)
         self.filled = True
         return self.filled
 
@@ -234,6 +234,16 @@ class GenericActionSlot(GenericSlot):
                 emailSpec.get("response", responseContent))
         return Template(responseContent).render(self.filledSlots)
 
+    def getAttachmentUrls(self, botState):
+        urls = []
+        sessionData = botState.getSessionData()
+        for (k,v) in botState.getSessionDataType().iteritems():
+            if v == "ATTACHMENTS":
+                url = sessionData.get(k)
+                assert url, "Attachment does not have a url value (%s)" % (k,)
+                urls.append(url)
+        return urls
+
     def processZendesk(self, botState):
         zendeskConfig = self.actionSpec.get("zendesk")
         zc = copy.deepcopy(zendeskConfig.get("request"))
@@ -247,16 +257,13 @@ class GenericActionSlot(GenericSlot):
                     "none", "no", "no attachments"):
                 zc["attachments"] = None
             if zc.get("attachments").lower() == "all":
-                log.warn("attachments do not work!")
-                # TODO(now): This does not work!
-                #attachmentUrls = self.getAttachmentUrls(
-                #    self.filledSlots, self.slotObjects)
-                #zc["attachments"] = attachmentUrls
+                attachmentUrls = self.getAttachmentUrls(botState)
+                log.debug("attachmentUrls: %s", attachmentUrls)
+                zc["attachments"] = attachmentUrls
             else:
-                log.warn("attachments do not work")
-                #attachmentUrl = Template(zc.get("attachments")).render(
-                #    {"entities":self.filledSlots})
-                #zc["attachments"] = [attachmentUrl]
+                attachmentUrl = Template(zc.get("attachments")).render(
+                    {"entities":entities})
+                zc["attachments"] = [attachmentUrl]
         zr = zendesk.createTicket(zc)
         log.debug("zr (%s): %s", type(zr), zr)
         respTemplate = "A ticket has been filed: {{ticket.url}}"
