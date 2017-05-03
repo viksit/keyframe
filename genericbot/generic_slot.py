@@ -235,28 +235,32 @@ class GenericActionSlot(GenericSlot):
         return Template(responseContent).render(self.filledSlots)
 
     def processZendesk(self, botState):
-        zc = copy.deepcopy(self.zendeskConfig.get("request"))
-        for (k,v) in self.zendeskConfig.get("request").iteritems():
+        zendeskConfig = self.actionSpec.get("zendesk")
+        zc = copy.deepcopy(zendeskConfig.get("request"))
+        entities = botState.getSessionData()
+        for (k,v) in zendeskConfig.get("request").iteritems():
             log.debug("k: %s, v: %s", k, v)
             zc[k] = Template(v).render(
-                {"entities":self.filledSlots})
+                {"entities":entities})
         if zc.get("attachments"):
             if zc.get("attachments").lower() in (
                     "none", "no", "no attachments"):
                 zc["attachments"] = None
             if zc.get("attachments").lower() == "all":
+                log.warn("attachments do not work!")
                 # TODO(now): This does not work!
-                attachmentUrls = self.getAttachmentUrls(
-                    self.filledSlots, self.slotObjects)
-                zc["attachments"] = attachmentUrls
+                #attachmentUrls = self.getAttachmentUrls(
+                #    self.filledSlots, self.slotObjects)
+                #zc["attachments"] = attachmentUrls
             else:
-                attachmentUrl = Template(zc.get("attachments")).render(
-                    {"entities":self.filledSlots})
-                zc["attachments"] = [attachmentUrl]
+                log.warn("attachments do not work")
+                #attachmentUrl = Template(zc.get("attachments")).render(
+                #    {"entities":self.filledSlots})
+                #zc["attachments"] = [attachmentUrl]
         zr = zendesk.createTicket(zc)
         log.debug("zr (%s): %s", type(zr), zr)
         respTemplate = "A ticket has been filed: {{ticket.url}}"
-        respTemplate = self.zendeskConfig.get("response_text", respTemplate)
+        respTemplate = zendeskConfig.get("response_text", respTemplate)
         log.debug("respTemplate: %s", respTemplate)
         _t = Template(respTemplate)
         resp = _t.render(zr)

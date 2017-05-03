@@ -100,6 +100,7 @@ class ZendeskClient(object):
         Returns:
           (string) eg: https://lyft1450739301.zendesk.com/api/v2/tickets/442.json
         """
+        log.debug("createTicket(%s)", locals())
         # First upload attachments to zendesk and get tokens
         uploadTokens = []
         if attachments:
@@ -125,6 +126,7 @@ class ZendeskClient(object):
                 }
             }
         }
+        log.debug("ticketJson: %s", ticketJson)
         r = self.zdeskApi.ticket_create(ticketJson, complete_response=True)
         log.debug("zdeskApi.ticket_create returned: %s", r)
         if uploadTokens:
@@ -162,8 +164,9 @@ def createTicket(jsonObject):
         subject=j.get("subject"),
         body=j.get("body"),
         requesterEmail=j.get("requester_email"),
-        requesterName=j.get("requester_name"),
-        attachments=j.get("attachments"))
+        requesterName=j.get("requester_name")
+        #attachments=j.get("attachments")
+    )
     return ticketResponse
 
 def test():

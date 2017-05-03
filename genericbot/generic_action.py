@@ -316,8 +316,6 @@ class GenericActionObject(keyframe.actions.ActionObject):
         actionObject.channelClient = channelClient
         actionObject.requestState = requestState
         actionObject.originalTopicId = topicId
-        actionObject.webhook = specJson.get("webhook")
-        actionObject.zendeskConfig = specJson.get("zendesk")
         log.debug("createActionObject: %s", actionObject)
         # Action object now contains all the information needed to resolve this action
         return actionObject
