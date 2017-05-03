@@ -21,6 +21,16 @@ class BotState(object):
         self.uid = None
         self.previousUid = None
         self.transferTopicId = None
+        self._sessionData = {}
+
+    def getSessionData(self):
+        return self._sessionData
+
+    def addToSessionData(self, k, v):
+        self._sessionData[k] = v
+
+    def clearSession(self):
+        self._sessionData = {}
 
     def getTransferTopicId(self):
         return self.transferTopicId
@@ -54,6 +64,7 @@ class BotState(object):
     def clear(self):
         self._waiting = None
         self._lastResult = None
+        self._sessionData = {}
         self.changed = True
 
     def clearWaiting(self):
@@ -95,7 +106,8 @@ class BotState(object):
             "waiting":self._waiting,
             "last_result": self._lastResult,
             "uid": self.uid,
-            "previous_uid": self.previousUid
+            "previous_uid": self.previousUid,
+            "session_data": self._sessionData
         }
 
     @classmethod
@@ -111,4 +123,5 @@ class BotState(object):
         botState._lastResult = jsonObject.get("last_result")
         botState.uid = jsonObject.get("uid")
         botState.previousUid = jsonObject.get("previous_uid")
+        botState._sessionData = jsonObject.get("session_data")
         return botState

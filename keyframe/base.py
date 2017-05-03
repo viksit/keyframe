@@ -370,6 +370,9 @@ class BaseBot(object):
 
         transferTopicId = None
         while True:
+            topicId = None
+            actionStateJson = None
+            newTopic = None
             if transferTopicId:
                 topicId = transferTopicId
                 transferTopicId = None
@@ -380,10 +383,11 @@ class BaseBot(object):
                 log.debug("actionJson: %s", actionStateJson)
                 if actionStateJson:
                     topicId = actionStateJson.get("origTopicId")
-                else:
-                    topicId = self.getStartTopic(canonicalMsg)
-                    log.debug("got START topic: %s", topicId)
-                    newTopic = True
+            if not topicId:
+                topicId = self.getStartTopic(canonicalMsg)
+                log.debug("got START topic: %s", topicId)
+                newTopic = True
+                botState.clearSession()
             actionObject = self.createActionObject(
                 topicId,
                 canonicalMsg, botState, userProfile,

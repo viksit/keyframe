@@ -1,6 +1,26 @@
+import json
+import logging
+import urlparse
+import copy
+import uuid
+from collections import defaultdict
+import sys
+from jinja2 import Template
+import requests
+import json
+from six import iteritems, add_metaclass
+import traceback
+import integrations.zendesk.zendesk as zendesk
+
+import logging
+
 import keyframe.slot_fill
 import keyframe.dsl
 import keyframe.messages
+import keyframe.utils
+import keyframe.constants as constants
+
+log = logging.getLogger(__name__)
 
 class GenericSlot(keyframe.slot_fill.Slot):
     def __init__(self, apiResult=None, newTopic=None,
@@ -26,11 +46,11 @@ class GenericSlot(keyframe.slot_fill.Slot):
     def respond(self, text, canonicalMsg, responseType=None, botStateUid=None):
         log.debug("GenericSlot.respond(%s)", locals())
 
-        cr = messages.createTextResponse(
-            self.canonicalMsg,
+        cr = keyframe.messages.createTextResponse(
+            canonicalMsg,
             text,
             responseType,
-            responseMeta=messages.ResponseMeta(
+            responseMeta=keyframe.messages.ResponseMeta(
                 apiResult=self.apiResult,
                 newTopic=self.newTopic),
             botStateUid=botStateUid)
@@ -53,6 +73,8 @@ class GenericHiddenSlot(keyframe.slot_fill.Slot):
         self.apiResult = apiResult
         self.channelClient = channelClient
         self.canonicalMsg = canonicalMsg
+        for (k,v) in self.customFields.iteritems():
+            botState.addToSessionData(k, v)
         self.filled = True
         return self.filled
 
@@ -61,10 +83,10 @@ class GenericTransferSlot(GenericSlot):
                  promptMsg=None, topicId=None, channelClient=None):
         super(GenericSlot, self).__init__(
             apiResult=apiResult, newTopic=newTopic, topicId=topicId)
-        self.transferRef = None
+        self.transferTopicId = None
 
-    transfer_topic_re = re.compile("[
-    def getTransferTopic(self):
+    def getTransferTopicId(self):
+        return self.transferTopicId
         
     def fill(self, canonicalMsg, apiResult, channelClient, botState):
         raise Exception("This should not be called!!")
@@ -100,10 +122,10 @@ class GenericInfoSlot(GenericSlot):
         self.filled = True
         return self.filled
 
-class GenericActionSlot(keyframe.slot_fill.Slot):
+class GenericActionSlot(GenericSlot):
     def __init__(self, apiResult=None, newTopic=None,
                  topicId=None, channelClient=None):
-        super(GenericSlot, self).__init__(
+        super(GenericActionSlot, self).__init__(
             apiResult=apiResult, newTopic=newTopic,
             topicId=topicId)
         self.channelClient = channelClient
@@ -124,26 +146,26 @@ class GenericActionSlot(keyframe.slot_fill.Slot):
         actionType = self.actionSpec.get("action_type").lower()
         if actionType == "zendesk":
             resp = self.processZendesk(botState)
-        elif actionType == "email":
-            resp = self.doStructuredResponse(
-                self.actionSpec.get("email"))
+        #elif actionType == "email":
+        #    resp = self.doStructuredResponse(
+        #        self.actionSpec.get("email"), botState)
         elif actionType == "webhook":
             resp = self.fetchWebhook(
-                self.actionSpec.get("webhook"))
+                self.actionSpec.get("webhook"), botState)
         else:
             raise Exception("Unknown actionType (%s)" % (actionType,))
         return self.respond(
             resp, canonicalMsg, botStateUid=botState.getUid())
 
-    def fetchWebhook(self, webhook, filledSlots, slotObjects):
+    def fetchWebhook(self, webhook, botState):
         # To render a templatized url with custom parameters
         url = webhook.get("api_url")
         custom = webhook.get("api_params", "{}")
         custom = json.loads(custom) # convert to dict
-        entities = filledSlots
+        entities = botState.getSessionData()
         requestBody = webhook.get("api_body")
         requestAuth = webhook.get("api_auth")  # Assume basic auth for now.
-
+        log.debug("fetchWebhook entities: %s", entities)
         # Response
         urlTemplate = Template(url)
         templatedURL = urlTemplate.render({"custom": custom, "entities": entities})
@@ -190,7 +212,7 @@ class GenericActionSlot(keyframe.slot_fill.Slot):
         r = webhook.get("response_text", {})
         textResponseTemplate = Template(r)
         renderedResponse = textResponseTemplate.render({
-            "entities": filledSlots,
+            "entities": entities,
             "response": responseJsonObj
         })
         return renderedResponse
@@ -223,6 +245,7 @@ class GenericActionSlot(keyframe.slot_fill.Slot):
                     "none", "no", "no attachments"):
                 zc["attachments"] = None
             if zc.get("attachments").lower() == "all":
+                # TODO(now): This does not work!
                 attachmentUrls = self.getAttachmentUrls(
                     self.filledSlots, self.slotObjects)
                 zc["attachments"] = attachmentUrls

@@ -12,6 +12,7 @@ from six import iteritems, add_metaclass
 import traceback
 import keyframe.email
 
+import keyframe.constants as constants
 import keyframe.actions
 import keyframe.dsl as dsl
 import keyframe.slot_fill as slot_fill
@@ -136,8 +137,8 @@ class GenericActionObject(keyframe.actions.ActionObject):
             assert self.nextSlotToFillName, "No nextSlotToFillName!"
             slotObject = self.slotObjectsByName[self.nextSlotToFillName]
             assert slotObject
-            if slotObject.slotType == Slot.SLOT_TYPE_TRANSFER:
-                transferTopicId = slotObject.getTransferTopic()
+            if slotObject.slotType == slot_fill.Slot.SLOT_TYPE_TRANSFER:
+                transferTopicId = slotObject.getTransferTopicId()
                 assert transferTopicId, "Trying to transfer without transferTopicId"
                 botState.setTransferTopicId(transferTopicId)
                 return constants.BOT_REQUEST_STATE_TRANSFER
@@ -223,8 +224,8 @@ class GenericActionObject(keyframe.actions.ActionObject):
             elif slotType == slot_fill.Slot.SLOT_TYPE_TRANSFER:
                 gc = generic_slot.GenericTransferSlot(
                     apiResult=apiResult, newTopic=newTopic, topicId=topicId)
-                gc.transferRef = slotSpec.get("transfer_ref")
-                assert gc.transferRef, "Transfer slots must have transfer_ref defined"
+                gc.transferTopicId = slotSpec.get("transfer_topic_id")
+                assert gc.transferTopicId, "Transfer slots must have transfer_topic_id defined"
             else:
                 raise Exception("Unknown slot type (%s)" % (slotType,))
 
