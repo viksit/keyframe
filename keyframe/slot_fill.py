@@ -117,7 +117,7 @@ class Slot(object):
             log.debug("(1) state: %s", self.state)
             log.debug("parseoriginal: %s", self.parseOriginal)
             if self.parseOriginal is True:
-                fillResult = self._extractSlotFromSentence(canonicalMsg.text)
+                fillResult = self._extractSlotFromSentence(canonicalMsg)
                 log.debug("fillresult: %s", fillResult)
                 if fillResult:
                     self.value = fillResult

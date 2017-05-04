@@ -119,20 +119,20 @@ class GenericBotHTTPAPI(generic_bot_api.GenericBotAPI):
         log.info("(::) agentId: %s, accountId: %s", agentId, accountId)
         log.debug("configJson: %s", configJson)
 
-        intentModelId = configJson.get("config_json").get("intent_model_id")
-        modelParams = configJson.get("config_json").get("params")
+        #intentModelId = configJson.get("config_json").get("intent_model_id")
+        modelParams = configJson.get("config_json").get("intent_model_params")
 
         api = None
-        log.debug("intent_model_id: %s, modelParams: %s",
-                  intentModelId, modelParams)
-        if intentModelId:
+        log.debug("modelParams: %s",
+                  modelParams)
+        if modelParams:
             apicfg = {
                 "account_id": accountId,
                 "account_secret": accountSecret,
                 "hostname": cfg.MYRA_API_HOSTNAME
             }
             api = client.connect(apicfg)
-            api.set_intent_model(intentModelId)
+            #api.set_intent_model(intentModelId)
             api.set_params(modelParams)
 
         self.bot = generic_bot.GenericBot(

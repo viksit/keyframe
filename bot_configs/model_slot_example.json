@@ -1,6 +1,6 @@
 {
   "config_json": {
-    "start_topic":"default",
+    "start_topic":"nlp_start",
     "topics": {
       "driver_resolve1": {
         "topic_id":"driver_resolve1",
@@ -88,8 +88,8 @@
             "name": "passengers_hidden_1",
             "entityName": "",
             "custom_fields":{
-              "issue_type":"Driver::Drivers Issue::Drivers Detail",
-              "view_type":"Driver support tier 2"
+              "issue_type":"Passenger::Passenger Issue::Passenger Detail",
+              "view_type":"Passenger support tier 2"
             },
             "entity_type": "FREETEXT",
             "slot_transitions":{
@@ -133,7 +133,7 @@
         "slots_start": "info1",
         "slots_type": "slots-type-conditional"
       },
-      "default":{
+      "nlp_start":{
         "topic_id":"default",
         "_id": "question_a14da32f1fc44d14a71c031b34f8f37d",
         "_title": "Start model",
@@ -150,9 +150,10 @@
             "slot_type": "slot-type-intent-model",
             "intent_model_id":"intent-model-test1",
             "parse_response":true,
+            "parse_original":true,
             "slot_transitions": {
               "driver":"driver_resolve1_transfer",
-              "passenger":"driver_resolve1_transfer"
+              "passenger":"passenger_resolve1_transfer"
             }
           },
           {
@@ -227,7 +228,7 @@
         "slots_type": "slots-type-conditional"
       }
     },
-    "params": {
+    "intent_model_params": {
       "outlier_cutoff": ""
     }
   }
