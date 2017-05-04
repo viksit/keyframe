@@ -49,22 +49,21 @@ class GenericCmdlineHandler(BotCmdLineHandler):
             configJson = bms.getJsonSpec(accountId, agentId)
 
         cj = configJson.get("config_json")
-        intentModelId = cj.get("intent_model_id")
-        modelParams = cj.get("params")
+        intentModelParams = cj.get("intent_model_params")
 
         # TODO: inject json and have the GenericBot decipher it!!
         api = None
-        log.debug("GOT intent_model_id: %s, modelParams: %s",
-                  intentModelId, modelParams)
-        if intentModelId:
+        log.debug("GOT intentModelParams: %s",
+                  intentModelParams)
+        if intentModelParams:
             apicfg = {
                 "account_id": accountId,
                 "account_secret": accountSecret,
                 "hostname": self.cfg.MYRA_API_HOSTNAME
             }
             api = client.connect(apicfg)
-            api.set_intent_model(intentModelId)
-            api.set_params(modelParams)
+            #api.set_intent_model(intentModelId)
+            api.set_params(intentModelParams)
         self.bot = generic_bot.GenericBot(
             kvStore=self.kvStore, configJson=configJson.get("config_json"), api=api)
         self.bot.setChannelClient(self.channelClient)

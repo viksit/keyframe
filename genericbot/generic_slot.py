@@ -117,6 +117,7 @@ class GenericIntentModelSlot(GenericSlot):
             log.debug("GOT label from direct: %s", label)
             return label
         log.debug("Calling intent model")
+        urlParams = {}
         if canonicalMsg.rid:
             urlParams = {"rid":canonicalMsg.rid}
         apiResult = self.api.get(

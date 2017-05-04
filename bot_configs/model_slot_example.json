@@ -1,14 +1,12 @@
 {
   "config_json": {
-    "start_topic":"nlp_start",
+    "start_topic":"structured1",
     "topics": {
       "driver_resolve1": {
         "topic_id":"driver_resolve1",
         "_title": "Driver Resolve1",
         "api_id": "",
         "clear_waiting_action": null,
-        "parse_original": "false",
-        "parse_response": "false",
         "slots": [
           {
             "slot_type": "slot-type-hidden",
@@ -80,8 +78,6 @@
         "_title": "Passenger Resolve1",
         "api_id": "",
         "clear_waiting_action": null,
-        "parse_original": "false",
-        "parse_response": "false",
         "slots": [
           {
             "slot_type": "slot-type-hidden",
@@ -140,8 +136,6 @@
         "api_id": "",
         "clear_waiting_action": null,
         "topic_type": "default",
-        "parse_original": "false",
-        "parse_response": "false",
         "slots": [
           {
             "entity_type": "FREETEXT",
@@ -179,8 +173,6 @@
         "api_id": "",
         "clear_waiting_action": null,
         "topic_type": "default",
-        "parse_original": "false",
-        "parse_response": "false",
         "slots": [
           {
             "entity_type": "OPTIONS",

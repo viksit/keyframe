@@ -347,7 +347,7 @@ class BaseBot(object):
             botStateUid=botState.getUid())
         return constants.BOT_REQUEST_STATE_PROCESSED
 
-
+    topic_re = re.compile("\[topic=([^\]]+)\]")
     def handle(self, **kwargs):
         log.debug("BaseBot.handle(%s)", locals())
         canonicalMsg = kwargs.get("canonicalMsg")
@@ -373,16 +373,23 @@ class BaseBot(object):
             topicId = None
             actionStateJson = None
             newTopic = None
-            if transferTopicId:
-                topicId = transferTopicId
-                transferTopicId = None
-                newTopic = True  # TODO(now): not sure about this one.
-            else:
-                actionStateJson = botState.getWaiting()
-                newTopic = False
-                log.debug("actionJson: %s", actionStateJson)
-                if actionStateJson:
-                    topicId = actionStateJson.get("origTopicId")
+            x = self.topic_re.match(canonicalMsg.text.lower())
+            if x:
+                topicId = x.groups()[0]
+                newTopic = True
+                botState.clearSession()
+                canonicalMsg.text = canonicalMsg.text.replace(x.group(), "")
+            if not topicId:
+                if transferTopicId:
+                    topicId = transferTopicId
+                    transferTopicId = None
+                    newTopic = True  # TODO(now): not sure about this one.
+                else:
+                    actionStateJson = botState.getWaiting()
+                    newTopic = False
+                    log.debug("actionJson: %s", actionStateJson)
+                    if actionStateJson:
+                        topicId = actionStateJson.get("origTopicId")
             if not topicId:
                 topicId = self.getStartTopic(canonicalMsg)
                 log.debug("got START topic: %s", topicId)

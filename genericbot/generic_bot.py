@@ -49,11 +49,7 @@ class GenericBot(keyframe.base.BaseBot):
         log.debug("GenericBot.configFromJson()")
         # Nothing else to do here.
 
-    debug_topic_re = re.compile("\[topic=([^\]]+)\]")
     def getStartTopic(self, canonicalMsg):
-        x = self.debug_topic_re.match(canonicalMsg.text.lower())
-        if x:
-            return x.groups()[0]
         x = self.specJson.get("start_topic")
         assert x, "Bot spec must have a start topic"
         return x
@@ -74,6 +70,7 @@ class GenericBot(keyframe.base.BaseBot):
         log.debug("GenericBot.createActionObject(%s) called", locals())
         actionObjectSpecJson = self.specJson.get(
             "topics", {}).get(topicId)
+        assert actionObjectSpecJson, "No spec for topicId: %s" % (topicId,)
         #log.debug("creating GenericActionObject with json: %s",
         #          actionObjectSpecJson)
         return generic_action.GenericActionObject.createActionObject(
