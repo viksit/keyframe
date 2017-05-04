@@ -11,6 +11,7 @@ import json
 from six import iteritems, add_metaclass
 import traceback
 import integrations.zendesk.zendesk as zendesk
+import re
 
 import logging
 
@@ -90,6 +91,42 @@ class GenericTransferSlot(GenericSlot):
         
     def fill(self, canonicalMsg, apiResult, channelClient, botState):
         raise Exception("This should not be called!!")
+
+class GenericIntentModelSlot(GenericSlot):
+    def __init__(self, apiResult=None, newTopic=None,
+                 promptMsg=None, topicId=None,
+                 channelClient=None, api=None):
+        super(GenericIntentModelSlot, self).__init__(
+            apiResult=apiResult, newTopic=newTopic,
+            topicId=topicId, channelClient=channelClient)
+        self.intentModelId = None
+        self.outlierCutoff = None
+        self.outlierFrac = None
+        self.api = api
+
+    intent_str_re = re.compile("\[intent=([^\]]+)\]")
+    def _extractDirect(self, canonicalMsg):
+        x = self.intent_str_re.match(canonicalMsg.text)
+        if x:
+            return x.groups()[0]
+        return None
+
+    def _extractSlotFromSentence(self, canonicalMsg):
+        label = self._extractDirect(canonicalMsg)
+        if label:
+            log.debug("GOT label from direct: %s", label)
+            return label
+        log.debug("Calling intent model")
+        if canonicalMsg.rid:
+            urlParams = {"rid":canonicalMsg.rid}
+        apiResult = self.api.get(
+            canonicalMsg.text,
+            intent_model_id=self.intentModelId,
+            url_params=urlParams,
+            outlier_cutoff=self.outlierCutoff,
+            outlier_frac=self.outlierFrac)
+        log.debug("GenericIntentModelSlot.fill apiResult: %s", apiResult)
+        return apiResult.intent.label
 
 class GenericInfoSlot(GenericSlot):
     def __init__(self, apiResult=None, newTopic=None,
@@ -240,6 +277,8 @@ class GenericActionSlot(GenericSlot):
         for (k,v) in botState.getSessionDataType().iteritems():
             if v == "ATTACHMENTS":
                 url = sessionData.get(k)
+                if url.lower() in ("no","none","no attachment"):
+                    continue
                 assert url, "Attachment does not have a url value (%s)" % (k,)
                 urls.append(url)
         return urls

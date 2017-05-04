@@ -22,6 +22,7 @@ class Slot(object):
     SLOT_TYPE_HIDDEN = "slot-type-hidden"
     SLOT_TYPE_ACTION = "slot-type-action"
     SLOT_TYPE_TRANSFER = "slot-type-transfer"
+    SLOT_TYPE_INTENT_MODEL = "slot-type-intent-model"
 
     # TODO(viksit): overwrite the instance variables from the class variable
 
@@ -138,7 +139,7 @@ class Slot(object):
             # If we want the incoming response to be put through an entity extractor
             if self.parseResponse is True:
                 log.debug("parse response is true")
-                fillResult = self._extractSlotFromSentence(canonicalMsg.text)
+                fillResult = self._extractSlotFromSentence(canonicalMsg)
                 if fillResult:
                     self.value = fillResult
                     botState.addToSessionData(self.name, self.value, self.entityType)
@@ -204,13 +205,14 @@ class Slot(object):
                 inputExpected=True)
         channelClient.sendResponse(cr)
 
-    def _extractSlotFromSentence(self, text):
+    def _extractSlotFromSentence(self, canonicalMsg):
         """
         Take a given sentence.
         For the current slot, run the entity_extract_fn() on it
 
         The return value of this is what we give to the result
         """
+        text = canonicalMsg.text
         res = None
         log.info("_extractSlotFromSentence: %s with entity: %s", self.name, self.entity)
         res = self.entity.entity_extract_fn(text=text, apiResult=self.apiResult)

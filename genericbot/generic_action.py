@@ -206,6 +206,13 @@ class GenericActionObject(keyframe.actions.ActionObject):
                 gc = generic_slot.GenericInfoSlot(
                     apiResult=apiResult, newTopic=newTopic,
                     topicId=topicId, channelClient=channelClient)
+            elif slotType == slot_fill.Slot.SLOT_TYPE_INTENT_MODEL:
+                gc = generic_slot.GenericIntentModelSlot(
+                    apiResult=apiResult, newTopic=newTopic,
+                    topicId=topicId, channelClient=channelClient, api=api)
+                gc.intentModelId = slotSpec.get("intent_model_id")
+                gc.outlierCutoff = slotSpec.get("outlier_cutoff")
+                gc.outlierFrac = slotSpec.get("outlier_frac")
             elif slotType == slot_fill.Slot.SLOT_TYPE_HIDDEN:
                 gc = generic_slot.GenericHiddenSlot(
                     apiResult=apiResult, newTopic=newTopic,
@@ -254,6 +261,7 @@ class GenericActionObject(keyframe.actions.ActionObject):
                 parseResponse = getattr(gc, "parseResponse")
                 log.debug("slotSpec does not specify parseResponse - getting default: %s", parseResponse)
             gc.parseResponse = parseResponse
+            log.debug("for slot %s, parseResponse: %s", gc.name, gc.parseResponse)
 
             gc.displayType = slotSpec.get("slot_input_display_type",
                                           messages.ResponseElement.DISPLAY_TYPE_TEXT)

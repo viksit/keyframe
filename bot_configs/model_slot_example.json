@@ -1,0 +1,234 @@
+{
+  "config_json": {
+    "start_topic":"default",
+    "topics": {
+      "driver_resolve1": {
+        "topic_id":"driver_resolve1",
+        "_title": "Driver Resolve1",
+        "api_id": "",
+        "clear_waiting_action": null,
+        "parse_original": "false",
+        "parse_response": "false",
+        "slots": [
+          {
+            "slot_type": "slot-type-hidden",
+            "name": "drivers_hidden_1",
+            "entityName": "",
+            "custom_fields":{
+              "topic":"D::Foo::Bar",
+              "issue_type":"Driver::Drivers Issue::Drivers Detail",
+              "view_type":"Driver support tier 2"
+            },
+            "entity_type": "FREETEXT",
+            "slot_transitions":{
+              "__default__":"info1"
+            }
+          },
+          {
+            "entity_type": "FREETEXT",
+            "name": "info1",
+            "prompt": "Driver Resolve1: Please provide following info",
+            "slot_type": "slot-type-info",
+            "slot_transitions": {
+              "__default__":"email"
+            }
+          },
+          {
+            "entity_type": "EMAIL",
+            "name": "email",
+            "prompt": "Driver Resolve1: What is your email?",
+            "slot_type": "slot-type-input",
+            "slot_transitions": {
+              "__default__":"upload_file"
+            }
+          },
+          {
+            "entity_type": "ATTACHMENTS",
+            "name": "upload_file",
+            "prompt": "upload any files you may have",
+            "slot_type": "slot-type-input",
+            "slot_transitions": {
+              "__default__":"zendesk1"
+            }
+          },
+          {
+            "entity_type": "FREETEXT",
+            "name": "zendesk1",
+            "slot_type": "slot-type-action",
+            "action_spec":{
+              "action_type":"zendesk",
+              "zendesk":{
+                "request":{
+                  "api_host": "https://lyft1450739301.zendesk.com",
+                  "auth": "admin.lyft@myralabs.com:rnA6JY4sr9TTonk1PxaLs0twQs3e6KAxe3svkr65",
+                  "subject":"MyraLabs: {{entities.issue_type}}",
+                  "body": "user_type: {{entities.user_type}} topic: {{entities.topic}} description:{{entities.driver_problem1}} issue type: {{entities.issue_type}}",
+                  "requester_name": "MyraLabs Test",
+                  "requester_email": "{{entities.email}}",
+                  "attachments":"all"
+                },
+                "response_text":"Thank for your input. A ticket ({{ticket.url}}) has been created for you and we will get back to you asap."
+              }
+            }
+          }
+        ],
+        "slots_start": "info1",
+        "slots_type": "slots-type-conditional"
+      },
+      "passenger_resolve1": {
+        "topic_id":"passenger_resolve1",
+        "_title": "Passenger Resolve1",
+        "api_id": "",
+        "clear_waiting_action": null,
+        "parse_original": "false",
+        "parse_response": "false",
+        "slots": [
+          {
+            "slot_type": "slot-type-hidden",
+            "name": "passengers_hidden_1",
+            "entityName": "",
+            "custom_fields":{
+              "issue_type":"Driver::Drivers Issue::Drivers Detail",
+              "view_type":"Driver support tier 2"
+            },
+            "entity_type": "FREETEXT",
+            "slot_transitions":{
+              "__default__":"passenger_info1"
+            }
+          },
+          {
+            "entity_type": "FREETEXT",
+            "name": "passenger_info1",
+            "prompt": "Passenger Resolve1: Please provide following info",
+            "slot_type": "slot-type-info",
+            "slot_transitions": {
+              "__default__":"email1"
+            }
+          },
+          {
+            "entity_type": "EMAIL",
+            "name": "email1",
+            "prompt": "Passenger Resolve1: What is your email?",
+            "slot_type": "slot-type-input",
+            "slot_transitions": {
+              "__default__":"webhook1"
+            }
+          },
+          {
+            "entity_type": "FREETEXT",
+            "name": "webhook1",
+            "slot_type": "slot-type-action",
+            "action_spec":{
+              "action_type":"webhook",
+              "webhook": {
+                "response_text": "",
+                "api_name": "API TEST",
+                "api_url": "http://localhost:8081/json?email={{entities.email1}}",
+                "api_body": "{\"ticket\":\n {\"subject\": \"{{entities.user_type}}\",\n  \"comment\":\n  {\"body\": \"view_type: {{entities.view_type}} issue_type: {{entities.issue_type}}\"}\n }\n}",
+                "response_text":"the webhook status is {{response.status}}"
+              }
+            }
+          }
+        ],
+        "slots_start": "info1",
+        "slots_type": "slots-type-conditional"
+      },
+      "default":{
+        "topic_id":"default",
+        "_id": "question_a14da32f1fc44d14a71c031b34f8f37d",
+        "_title": "Start model",
+        "api_id": "",
+        "clear_waiting_action": null,
+        "topic_type": "default",
+        "parse_original": "false",
+        "parse_response": "false",
+        "slots": [
+          {
+            "entity_type": "FREETEXT",
+            "name": "problem_statement",
+            "prompt": "Hello I am Jarvis. Please describe your problem in short.",
+            "slot_type": "slot-type-intent-model",
+            "intent_model_id":"intent-model-test1",
+            "parse_response":true,
+            "slot_transitions": {
+              "driver":"driver_resolve1_transfer",
+              "passenger":"driver_resolve1_transfer"
+            }
+          },
+          {
+            "entity_type": "FREETEXT",
+            "name": "passenger_resolve1_transfer",
+            "slot_type": "slot-type-transfer",
+            "transfer_topic_id":"passenger_resolve1"
+          },
+          {
+            "entity_type": "FREETEXT",
+            "name": "driver_resolve1_transfer",
+            "slot_type": "slot-type-transfer",
+            "transfer_topic_id":"driver_resolve1"
+          }
+        ],
+        "slots_start": "problem_statement",
+        "slots_type": "slots-type-conditional"
+      },
+      "structured1": {
+        "topic_id":"structured1",
+        "_id": "question_a14da32f1fc44d14a71c031b34f8f792",
+        "_title": "Start topic",
+        "api_id": "",
+        "clear_waiting_action": null,
+        "topic_type": "default",
+        "parse_original": "false",
+        "parse_response": "false",
+        "slots": [
+          {
+            "entity_type": "OPTIONS",
+            "name": "user_type",
+            "options_list": "driver, passenger",
+            "prompt": "What is your role?",
+            "slot_type": "slot-type-input",
+            "slot_transitions": {
+              "driver":"driver_problem1",
+              "passenger":"passenger_problem1"
+            }
+          },
+          {
+            "entity_type": "FREETEXT",
+            "name": "driver_problem1",
+            "prompt": "Driver please describe your issue",
+            "slot_type": "slot-type-input",
+            "slot_transitions": {
+              "__default__":"driver_resolve1_transfer"
+            }
+          },
+          {
+            "entity_type": "FREETEXT",
+            "name": "passenger_problem1",
+            "prompt": "Passenger please describe your issue",
+            "slot_type": "slot-type-input",
+            "slot_transitions": {
+              "__default__":"passenger_resolve1_transfer"
+            }
+          },
+          {
+            "entity_type": "FREETEXT",
+            "name": "passenger_resolve1_transfer",
+            "slot_type": "slot-type-transfer",
+            "transfer_topic_id":"passenger_resolve1"
+          },
+          {
+            "entity_type": "FREETEXT",
+            "name": "driver_resolve1_transfer",
+            "slot_type": "slot-type-transfer",
+            "transfer_topic_id":"driver_resolve1"
+          }
+        ],
+        "slots_start": "user_type",
+        "slots_type": "slots-type-conditional"
+      }
+    },
+    "params": {
+      "outlier_cutoff": ""
+    }
+  }
+}
