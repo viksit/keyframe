@@ -10,12 +10,14 @@ import keyframe.base
 import keyframe.dsl
 import keyframe.actions
 import generic_action
+import keyframe.constants as constants
 
 log = logging.getLogger(__name__)
 
 class DefaultActionObject(keyframe.actions.ActionObject):
     def process(self):
-        return self.respond("I did not understand what you said!")
+        self.respond("I did not understand what you said!")
+        return constants.BOT_REQUEST_STATE_PROCESSED
 
 class GenericBot(keyframe.base.BaseBot):
 

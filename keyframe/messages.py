@@ -52,7 +52,7 @@ class CanonicalMsg(object):
 
     def __init__(self, channel, httpType, userId, text,
                  actualName=None, rid=None, msgType=None,
-                 botStateUid=None):
+                 botStateUid=None, msgSrc=None):
         self.channel = channel
         self.httpType = httpType
         self.userId = userId
@@ -64,12 +64,13 @@ class CanonicalMsg(object):
             self.msgType = self.MSG_TYPE_FREETEXT
         assert self.msgType in CanonicalMsg.MSG_TYPES
         self.botStateUid = botStateUid
+        self.msgSrc = msgSrc
 
     def __repr__(self):
         return ("CanonicalMsg(channel=%s, httpType=%s, userId=%s, "
-                "text=%s, rid=%s, botStateUid=%s)") % \
+                "text=%s, rid=%s, botStateUid=%s, msgSrc=%s)") % \
             (self.channel, self.httpType, self.userId,
-             self.text, self.rid, self.botStateUid)
+             self.text, self.rid, self.botStateUid, self.msgSrc)
 
     def toJSON(self):
         return {
@@ -77,8 +78,20 @@ class CanonicalMsg(object):
             "httpType": self.httpType,
             "userId": self.userId,
             "text": self.text,
-            "botStateUid": self.botStateUid
+            "botStateUid": self.botStateUid,
+            "msgSrc": self.msgSrc
         }
+
+    @classmethod
+    def fromJSON(cls, d):
+        return cls(
+            channel=d.get("channel"),
+            httpType=d.get("httpType"),
+            userId=d.get("userId"),
+            text=d.get("text"),
+            botStateUid=d.get("botStateUid"),
+            msgSrc=d.get("msgSrc"))
+
 
 class CanonicalResponse(object):
     """Must support a common way to represent data that can then

@@ -35,7 +35,8 @@ bot = BaseBot(kvStore=kvStore)
 class DigitActionObject(ActionObject):
     def process(self):
         resp = "Some 5 digit number was shown!!!!!!!"
-        return self.respond(resp)
+        self.respond(resp)
+        return constants.BOT_REQUEST_STATE_PROCESSED
 
 @bot.intent(IntentModel.greeting)
 class GreetingActionObject(ActionObject):
@@ -71,7 +72,8 @@ class GreetingActionObject(ActionObject):
     def process(self):
         print("slots: ", self.filledSlots)
         resp = "Hi there, {user_slot}, your phone is {phone_slot} and your email is {email_slot}!".format(**self.filledSlots)
-        return self.respond(resp)
+        self.respond(resp)
+        return constants.BOT_REQUEST_STATE_PROCESSED
 
 
 # ------
@@ -137,7 +139,8 @@ class CreateIntentActionObject(ActionObject):
     def process(self):
         message = "(example) Sure, I'll create the meeting for you with : {date_slot} {person_slot} {bank_slot} {city_slot}".format(**self.filledSlots)
         resp = message
-        return self.respond(resp)
+        self.respond(resp)
+        return constants.BOT_REQUEST_STATE_PROCESSED
 
 @bot.intent(IntentModel.cancel)
 class CancelIntentActionObject(ActionObject):
@@ -145,7 +148,8 @@ class CancelIntentActionObject(ActionObject):
     def process(self):
         message = "Sure, I'll cancel the meeting for you"
         resp = message
-        return self.respond(resp)
+        self.respond(resp)
+        return constants.BOT_REQUEST_STATE_PROCESSED
 
 # -----
 @bot.intent(IntentModel.default)
@@ -153,7 +157,8 @@ class DefaultActionObject(ActionObject):
 
     def process(self):
         resp = "Looks like I didn't get what you said!"
-        return self.respond(resp)
+        self.respond(resp)
+        return constants.BOT_REQUEST_STATE_PROCESSED
 
 # Deployment for command line
 class CalendarCmdlineHandler(BotCmdLineHandler):

@@ -1,12 +1,14 @@
 import sys
 import logging
 import inspect
-import messages
-import misc
 from six import add_metaclass
 import re
-from dsl import BaseEntity
 import json
+
+from dsl import BaseEntity
+import messages
+import misc
+import event
 
 log = logging.getLogger(__name__)
 
@@ -61,7 +63,8 @@ class Slot(object):
             "required": self.required,
             "optionsList":self.optionsList,
             "entityName":self.entityName,
-            "slotType":self.slotType
+            "slotType":self.slotType,
+            "intentStr":self.intentStr
         }
 
     def fromJSONObject(self, j):
@@ -76,7 +79,8 @@ class Slot(object):
         self.entity = BaseEntity.fromJSON(j.get("entity"))
         self.required = j.get("required")
         self.optionsList = j.get("optionsList"),
-        self.slotType = j.get("slotType")
+        self.slotType = j.get("slotType"),
+        self.intentStr = j.get("intentStr")
 
     def init(self, **kwargs):
         self.channelClient = kwargs.get("channelClient")
@@ -123,11 +127,17 @@ class Slot(object):
 
             # The original sentence didn't have any items to fill this slot
             # Send a response
-            self._createAndSendResponse(
+            canonicalResponse = self._createAndSendResponse(
                 self.prompt(), channelClient,
                 responseType=messages.ResponseElement.RESPONSE_TYPE_SLOTFILL,
                 botStateUid=botState.getUid())
             self.state = Slot.SLOT_STATE_WAITING_FILL
+            e = event.createResponseEvent(
+                intentId=self.intentStr,
+                userId=canonicalResponse.userId,
+                canonicalResponse=canonicalResponse,
+                responseClass=event.ResponseEvent.RESPONSE_CLASS_QUESTION)
+            event.getEventSequencer().add(e)
 
         # Waiting for user response
         elif self.state == Slot.SLOT_STATE_WAITING_FILL:
@@ -145,12 +155,18 @@ class Slot(object):
                     # currently this is an inifnite loop.
                     # TODO(viksit/nishant): add a nice way to control this.
                     msg = "You entered an incorrect value for %s. Please enter again." % self.name
-                    self._createAndSendResponse(
+                    canonicalResponse = self._createAndSendResponse(
                         msg, channelClient,
                         responseType=messages.ResponseElement.RESPONSE_TYPE_SLOTFILL_RETRY,
                         botStateUid=botState.getUid())
                     self.state = Slot.SLOT_STATE_WAITING_FILL
                     self.filled = False
+                    e = event.createResponseEvent(
+                        intentId=self.intentStr,
+                        canonicalResponse=canonicalResponse,
+                        responseClass=event.ResponseEvent.RESPONSE_CLASS_QUESTION)
+                    event.getEventSequencer().add(e)
+                    
                     return self.filled
             # Otherwise we just take the whole utterance and incorporate it.
             else:
@@ -198,6 +214,7 @@ class Slot(object):
                 botStateUid=botStateUid,
                 inputExpected=True)
         channelClient.sendResponse(cr)
+        return cr
 
     def _extractSlotFromSentence(self, text):
         """

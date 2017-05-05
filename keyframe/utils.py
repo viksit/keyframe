@@ -80,3 +80,5 @@ def getUUID():
 def timestampUid():
     return "%i_%s" % (round(time.time()*1000), random.randint(0,1000))
 
+def getTimestampMillis():
+    return round(time.time()*1000)

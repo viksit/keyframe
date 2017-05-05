@@ -16,6 +16,7 @@ import utils
 from bot_state import BotState
 import actions
 import constants
+import event
 
 from six import iteritems, add_metaclass
 
@@ -59,8 +60,6 @@ class BaseBot(object):
 
         self.intentSlots = defaultdict(lambda: [])
         self.debug = True
-
-
         self.init()
 
     def init(self):
@@ -366,6 +365,7 @@ class BaseBot(object):
 
         """
         log.debug("BaseBot.handle(%s)", locals())
+        requestEventTs = utils.getTimestampMillis()
         canonicalMsg = kwargs.get("canonicalMsg")
         botState = kwargs.get("botState")
         userProfile = kwargs.get("userProfile")
@@ -407,16 +407,27 @@ class BaseBot(object):
         if not preemptWaitingAction:
             log.debug("waitingActionJson: %s", waitingActionJson)
             if waitingActionJson:
-                intentStr = actions.ActionObject.getIntentStrFromJSON(waitingActionJson)
-                actionObjectCls = self.intentActions.get(intentStr)
+                intentStrWaiting = actions.ActionObject.getIntentStrFromJSON(waitingActionJson)
+                actionObjectCls = self.intentActions.get(intentStrWaiting)
                 log.debug("actionObjectCls: %s", actionObjectCls)
                 waitingActionObject = self.createActionObject(
-                    actionObjectCls, intentStr,
+                    actionObjectCls, intentStrWaiting,
                     canonicalMsg, botState, userProfile,
                     requestState, newIntent=False)
                 waitingActionObject.fromJSONObject(waitingActionJson)
                 #self.sendDebugResponse(botState, canonicalMsg)
                 requestState = waitingActionObject.processWrapper(botState)
+
+                # Currently, if a waiting action object returns with below
+                # status, => slotfill. If not, then the utterance was treated
+                # as a new intent.
+                if requestState == constants.BOT_REQUEST_STATE_PROCESSED:
+                    e = event.createRequestEvent(
+                        ts=requestEventTs,
+                        userId=canonicalMsg.userId,
+                        intentId=intentStrWaiting, canonicalMsg=canonicalMsg,
+                        eventResult=event.RequestEvent.RESULT_ANSWER)
+                    event.getEventSequencer().add(e)
 
         if requestState != constants.BOT_REQUEST_STATE_PROCESSED:
             log.debug("requestState: %s", requestState)
@@ -425,8 +436,18 @@ class BaseBot(object):
             requestState = intentActionObject.processWrapper(botState)
             log.debug("requeststate: %s", requestState)
 
+            if requestState == constants.BOT_REQUEST_STATE_PROCESSED:
+                e = event.createRequestEvent(
+                    ts=requestEventTs,
+                    userId=canonicalMsg.userId,
+                    intentId=intentStr, canonicalMsg=canonicalMsg,
+                    eventResult=event.RequestEvent.RESULT_NEW_INTENT)
+                event.getEventSequencer().add(e)
+
         if requestState != constants.BOT_REQUEST_STATE_PROCESSED:
             raise Exception("Unprocessed message")
+
+        event.getEventSequencer.flush()
 
         if botState.changed:
             self.putBotState(
