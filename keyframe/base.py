@@ -375,10 +375,12 @@ class BaseBot(object):
             newTopic = None
             x = self.topic_re.match(canonicalMsg.text.lower())
             if x:
-                topicId = x.groups()[0]
-                newTopic = True
-                botState.clearSession()
-                canonicalMsg.text = canonicalMsg.text.replace(x.group(), "")
+                tmp1 = x.groups()[0].lower()
+                if tmp1 != "default":
+                    topicId = tmp1
+                    newTopic = True
+                    botState.clearSession()
+                    canonicalMsg.text = canonicalMsg.text.replace(x.group(), "")
             if not topicId:
                 if transferTopicId:
                     topicId = transferTopicId

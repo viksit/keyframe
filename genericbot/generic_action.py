@@ -241,6 +241,7 @@ class GenericActionObject(keyframe.actions.ActionObject):
             #assert gc.promptMsg, "slot %s must have a prompt" % (slotSpec,)
 
             gc.name = slotSpec.get("name")
+            gc.descName = slotSpec.get("desc_name")
             assert gc.name, "slot %s must have a name" % (slotSpec,)
             gc.entityName = slotSpec.get("entityName", gc.name)
 

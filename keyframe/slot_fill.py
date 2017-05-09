@@ -46,6 +46,7 @@ class Slot(object):
         self.canonicalMsg = None
         self.displayType = None
         self.slotType = None
+        self.descName = None
 
     def __repr__(self):
         return "%s" % (json.dumps(self.toJSONObject()),)
@@ -54,6 +55,7 @@ class Slot(object):
         return {
             "className": self.__class__.__name__,
             "name": self.name,
+            "descName": self.descName,
             "filled": self.filled,
             "value": self.value,
             "validated": self.validated,
@@ -69,6 +71,7 @@ class Slot(object):
 
     def fromJSONObject(self, j):
         self.name = j.get("name")
+        self.descName = j.get("descName")
         self.entityName = j.get("entityName")
         self.filled = j.get("filled")
         self.value = j.get("value")

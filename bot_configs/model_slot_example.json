@@ -11,6 +11,7 @@
           {
             "slot_type": "slot-type-hidden",
             "name": "drivers_hidden_1",
+            "desc_name": "drivers hidden 1",
             "entityName": "",
             "custom_fields":{
               "topic":"D::Foo::Bar",
@@ -25,6 +26,7 @@
           {
             "entity_type": "FREETEXT",
             "name": "info1",
+            "desc_name":"drivers informational",
             "prompt": "Driver Resolve1: Please provide following info",
             "slot_type": "slot-type-info",
             "slot_transitions": {
@@ -34,6 +36,7 @@
           {
             "entity_type": "EMAIL",
             "name": "email",
+            "desc_name":"email",
             "prompt": "Driver Resolve1: What is your email?",
             "slot_type": "slot-type-input",
             "slot_transitions": {
@@ -43,6 +46,7 @@
           {
             "entity_type": "ATTACHMENTS",
             "name": "upload_file",
+            "desc_name": "upload file",
             "prompt": "upload any files you may have",
             "slot_type": "slot-type-input",
             "slot_transitions": {
