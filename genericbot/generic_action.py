@@ -138,6 +138,9 @@ class GenericActionObject(keyframe.actions.ActionObject):
             slotObject = self.slotObjectsByName[self.nextSlotToFillName]
             assert slotObject
             if slotObject.slotType == slot_fill.Slot.SLOT_TYPE_TRANSFER:
+                slotObject.sendMessageIfAny(
+                    self.canonicalMsg, self.apiResult, self.channelClient,
+                    botState)
                 transferTopicId = slotObject.getTransferTopicId()
                 assert transferTopicId, "Trying to transfer without transferTopicId"
                 botState.setTransferTopicId(transferTopicId)

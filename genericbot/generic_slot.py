@@ -39,7 +39,7 @@ class GenericSlot(keyframe.slot_fill.Slot):
     #optionsList = None
 
     def prompt(self):
-        assert self.promptMsg
+        #assert self.promptMsg
         if self.entityType == "OPTIONS":
             return self.promptMsg
         return self.promptMsg
@@ -88,7 +88,28 @@ class GenericTransferSlot(GenericSlot):
 
     def getTransferTopicId(self):
         return self.transferTopicId
-        
+
+    def sendMessageIfAny(
+            self, canonicalMsg, apiResult, channelClient, botState):
+        if not self.prompt():
+            return
+        self.apiResult = apiResult
+        self.channelClient = channelClient
+        self.canonicalMsg = canonicalMsg
+        # We need to send inputExpected = False for this info slot,
+        # so don't use self._createAndSendResponse.
+        cr = keyframe.messages.createTextResponse(
+            self.canonicalMsg,
+            self.prompt(),
+            keyframe.messages.ResponseElement.RESPONSE_TYPE_RESPONSE,
+            responseMeta=keyframe.messages.ResponseMeta(
+                apiResult=self.apiResult,
+                newTopic=self.newTopic,
+                topicId=self.topicId),
+            botStateUid=botState.getUid(),
+            inputExpected=False)
+        channelClient.sendResponse(cr)
+
     def fill(self, canonicalMsg, apiResult, channelClient, botState):
         raise Exception("This should not be called!!")
 

@@ -148,11 +148,19 @@
             "slot_type": "slot-type-intent-model",
             "intent_model_id":"intent-model-test1",
             "parse_response":true,
-            "parse_original":true,
+            "parse_original":false,
             "slot_transitions": {
               "driver":"driver_resolve1_transfer",
-              "passenger":"passenger_resolve1_transfer"
+              "passenger":"passenger_resolve1_transfer",
+              "__unknown__":"unknown_resolve1_transfer"
             }
+          },
+          {
+            "entity_type": "FREETEXT",
+            "name": "unknown_resolve1_transfer",
+            "slot_type": "slot-type-transfer",
+            "transfer_topic_id":"structured1",
+            "prompt":"Sorry I could not understand that. Please answer the following questions so I can better help you."
           },
           {
             "entity_type": "FREETEXT",
