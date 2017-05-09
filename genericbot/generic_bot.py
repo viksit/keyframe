@@ -54,15 +54,6 @@ class GenericBot(keyframe.base.BaseBot):
         assert x, "Bot spec must have a start topic"
         return x
 
-    def getStartActionObjectJsonXXX(self):
-        startActionObjectName = self.specJson.get("start_topic")
-        assert startActionObjectName, "Bot spec must have start_topic"
-        startActionObjectJson = self.specJson.get("topics", {}).get(
-            startActionObjectName)
-        assert startActionObjectJson, "Bot spec does not have topic: %s" % (
-            startActionObjectName,)
-        return startActionObjectJson
-
     def createActionObject(self, topicId,
                            canonicalMsg, botState,
                            userProfile, requestState,

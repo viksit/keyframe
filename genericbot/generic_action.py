@@ -43,7 +43,7 @@ class GenericActionObject(keyframe.actions.ActionObject):
             return self.specJson.get("clear_waiting_action", False)
         return False
 
-    def getAttachmentUrls(self, filledSlots, slotObjects):
+    def getAttachmentUrlsXXXX(self, filledSlots, slotObjects):
         attachmentUrls = []
         for so in slotObjects:
             if so.entityType == "ATTACHMENTS":
@@ -59,7 +59,7 @@ class GenericActionObject(keyframe.actions.ActionObject):
         return attachmentUrls
 
 
-    def process(self, botState):
+    def processXXXX(self, botState):
         log.debug("GenericAction.process called")
         resp = ""
         structuredMsg = None
