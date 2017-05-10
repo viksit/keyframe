@@ -162,6 +162,7 @@ class GenericActionObject(keyframe.actions.ActionObject):
             if not self.nextSlotToFillName:
                 self.nextSlotToFillName = slotObject.slotTransitions.get("__default__")
             if not self.nextSlotToFillName:
+                assert slotObject.slotType != slot_fill.Slot.SLOT_TYPE_INTENT_MODEL, "Intent slots should always have an edge to another slot"
                 log.debug("slotFillConditional: returning True")
                 return constants.BOT_REQUEST_STATE_PROCESSED
 
