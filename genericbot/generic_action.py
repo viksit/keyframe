@@ -134,6 +134,7 @@ class GenericActionObject(keyframe.actions.ActionObject):
         """
         log.info("slotFillConditional called")
         while True:
+            log.info("self.nextSlotToFillName: %s", self.nextSlotToFillName)
             assert self.nextSlotToFillName, "No nextSlotToFillName!"
             slotObject = self.slotObjectsByName[self.nextSlotToFillName]
             assert slotObject
@@ -306,7 +307,13 @@ class GenericActionObject(keyframe.actions.ActionObject):
         actionObject.slotObjects = slotObjects
         actionObject.slotObjectsByName = slotObjectsByName
         if slotObjects:
-            actionObject.nextSlotToFillName = slotObjects[0].name
+            if actionObject.slotsType == cls.SLOTS_TYPE_CONDITIONAL:
+                # All keys must exist in dict
+                actionObject.nextSlotToFillName = slotObjectsByName[
+                    specJson["slots_start"]].name
+            else:
+                raise Exception("bad actionObject.slotsType: %s" % (
+                    actionObject.slotsType,))
             log.debug("actionObject.nextSlotToFillName: %s",
                       actionObject.nextSlotToFillName)
         actionObject.apiResult = apiResult
