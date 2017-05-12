@@ -9,17 +9,73 @@ magic.
 
 ## To debug most things
 
+#### gbot/gbot.py
+GenericBotHTTPAPI(generic_bot_api.GenericBotAPI)
+
+##### GenericBotAPI
+Contains the highest level wrapper that creates a channelClient,
+creates a botAPI with that channelClient, calls handle on botAPI.
+
+##### GenricBotHTTPAPI
+Entry point for the HTTP service (/run_agent).
+Functions to get the botSpec json from store.
+calls GenericBotHTTPAPI.requestHandler with the event.
+Contains getBot(), which creates the bot object (injecting into it
+everything it needs like kvStore, configJson, api, other configs).
+
+#### keyframe/bot_api.py
+
+##### BotAPI
+handleMsg: handles the incoming msg by creating the bot (calling getBot),
+and calling process on the bot.
+
+
+#### genericbot/generic_bot.py
+##### GenericBot(keyframe.base.BaseBot)
+Doesn't do much, except override createActionObject and calls
+generic_action.GenericActionObject.createActionObject instead of its base class.
+
 #### keyframe/base.py
-BaseBot: Has many of the core functionalities of the bot.
-* BotState and UserProfile get/put.
-* _getActionObjectFromIntentHandlers
-* handle(canonicalMsg, BotState, UserProfile): Main function handling utterance.
+##### BaseBot
+###### process
+Increments the botstate (this is for going back to previous state).
+Calls handle (see below).
 
-#### keyframe/actions.py
-* processWrapper: Actually handles the user utterance.
+###### *handle*
+This is the main logic loop of the bot.
+Checks for botcmd and executes and returns if it is a botcmd.
+Loops executing the right topics. This includes
+* getting a start topic if required.
+* dealing with topic transfer.
+* continuing with an existing topic (botState.getWaiting())
+* Calls createActionObject(topicId,..)
+* Then calls processWrapper on the actionObject.
 
-#### keyframe/generic_action.py
-* createActionObject(cls, specJson,...)  - creates the ActionObject & Slots from the json spec.
+#### genericbot/generic_action.py
+Contains two important functions.
+
+##### GenericActionObject.slotFill[Conditional]
+Main slotFill loop to traverse the slot graph and fill the slots.
+Deal with the different types of slots, get the right slot type and call *fill*
+on it. Depending on its return, loop to the next slot or exit.
+
+##### GenericActionObject.createActionObject
+Creates the actionObject from the json spec. A lot of code here.
+
+### Code for slots is divided into generic_slot.py and slot_fill.py
+
+#### genericbot/generic_slot.py
+##### GenericHiddenSlot
+* Overrides fill
+##### GenericTransferSlot
+* Overrides fill
+##### GenericIntentModelSlot
+* Does not override fill, but overrides two other functions to do with extracting from utterance.
+##### GenericInfoSlot
+* Overrides fill
+##### GenericActionSlot
+* Overrides fill. Contains all code for different actions - webhook, email, zendesk.
+
 
 
 ## Making calls to lambda

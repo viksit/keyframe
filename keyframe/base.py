@@ -256,49 +256,6 @@ class BaseBot(object):
         log.debug("RETURNING DEBUG action: %s", d)
         return d
 
-    def _getActionObjectFromIntentHandlers(self, canonicalMsg):
-
-        # Support default intent.
-        intentStr = None
-
-        # For now, simply go through the list and return the first one that comes up.
-        # In the future, we could do something different.
-        # If no intents are matched we just return whatever is mapped to a default intent.
-        apiResult = None
-        intentScore = 1
-        defaultIntent = None
-        # debug
-        r = self._getDebugActionObject(canonicalMsg)
-        if r:
-            return (r["intentStr"], r.get("intentScore",1),
-                    r["actionObjectCls"], r.get("apiResult"))
-
-        for intentObj in self.intentEvalSet:
-            log.debug("intentObj: %s", intentObj)
-            if isinstance(intentObj, dsl.DefaultIntent):
-                defaultIntent = intentObj
-                continue
-            evalRet = intentObj.field_eval_fn(
-                myraAPI = self.api, # If no API is passed to bot, this will be None
-                canonicalMsg = canonicalMsg,
-                apiResult = apiResult
-                )
-            apiResult = evalRet.get("api_result")
-            if evalRet["result"]:
-                intentStr = intentObj.label
-                log.debug("found intentStr: %s", intentStr)
-                log.debug("api Result: %s", apiResult)
-                intentScore = evalRet.get("score", intentScore)
-                break
-        # No non-default intent detected.
-        if not intentStr and defaultIntent:
-            intentStr = defaultIntent.label
-        log.debug("intentStr: %s", intentStr)
-        # We now check if this intent has any registered action objects.
-        actionObjectCls = self.intentActions.get(intentStr, None)
-        assert actionObjectCls is not None, "No action objects were registered for this intent"
-        return (intentStr, intentScore, actionObjectCls, apiResult)
-
     def createActionObject(self, topicId,
                            canonicalMsg, botState,
                            userProfile, requestState,

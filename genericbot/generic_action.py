@@ -43,59 +43,6 @@ class GenericActionObject(keyframe.actions.ActionObject):
             return self.specJson.get("clear_waiting_action", False)
         return False
 
-    def getAttachmentUrlsXXXX(self, filledSlots, slotObjects):
-        attachmentUrls = []
-        for so in slotObjects:
-            if so.entityType == "ATTACHMENTS":
-                fUrl = filledSlots.get(so.name)
-                if fUrl:
-                    if fUrl.lower() in ("nope", "none", "no", "na"):
-                        log.debug("slot %s does not have an attachment", so.name)
-                        continue
-                    if not fUrl.startswith("http"):
-                        log.exception("file to upload is not a valid url (%s)", fUrl)
-                        raise Exception("file to upload is not a valid url (%s)" % (fUrl,))
-                    attachmentUrls.append(fUrl)
-        return attachmentUrls
-
-
-    def processXXXX(self, botState):
-        log.debug("GenericAction.process called")
-        resp = ""
-        structuredMsg = None
-        log.debug("self.responseType: %s", self.responseType)
-        if self.responseType == self.RESPONSE_TYPE_ZENDESK:
-            assert self.zendeskConfig
-            resp = self.processZendesk(botState)
-
-        if self.responseType == self.RESPONSE_TYPE_WEBHOOK:
-            assert self.webhook and len(self.webhook.items())
-            resp = self.fetchWebhook(self.webhook, self.filledSlots, self.slotObjects)
-
-        if self.responseType == self.RESPONSE_TYPE_TEXT:
-            try:
-                log.debug("MSG: %s, (%s)", self.msg, type(self.msg))
-                structuredMsg = json.loads(self.msg)
-            except ValueError as ve:
-                #traceback.print_exc()
-                log.info("msg is not json - normal response processing")
-
-            if structuredMsg:
-                if "response_type" in structuredMsg:
-                    resp = self.doStructuredResponse(structuredMsg)
-                else:
-                    log.warn("no response_type found in json - skipping structured response")
-
-        log.debug("resp 1: %s", resp)
-        if not resp:
-            responseTemplate = Template(self.msg)
-            log.debug("responseTemplate: %s", responseTemplate)
-            _d = {"entities":self.filledSlots}
-            log.debug("calling responseTemplate.render with dict: %s", _d)
-            resp = responseTemplate.render(_d)
-        # Final response
-        return self.respond(resp, botStateUid=botState.getUid())
-
     def getSlots(self):
         raise Exception("This should not be used")
 
