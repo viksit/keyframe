@@ -358,6 +358,8 @@ class BaseBot(object):
                 log.debug("got START topic: %s", topicId)
                 newTopic = True
                 botState.clearSession()
+
+            # Now we should have a topicId
             actionObject = self.createActionObject(
                 topicId,
                 canonicalMsg, botState, userProfile,
