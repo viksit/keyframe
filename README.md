@@ -9,7 +9,7 @@ Make sure the userId and userSecret correspond to the agents that you will be ac
 env GBOT_LOG_LEVEL=20 rlwrap python gbot.py  http db 3rxCO9rydbBIf3DOMb9lFh 4b94f2de6d6554a006099c963e586d47485f9b4d
 ```
 
-You can also point gbot to call the local inference_proxy to debug.
+You can also point gbot to call the local api server which can also point to a local inference proxy to debug.
 
 ```
 env GBOT_LOG_LEVEL=20 MYRA_API_HOSTNAME="localhost:7097"  rlwrap python gbot.py  http db 3rxCO9rydbBIf3DOMb9lFh 4b94f2de6d6554a006099c963e586d47485f9b4d
