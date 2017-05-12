@@ -3,6 +3,20 @@
 magic.
 
 ## Running generic bot locally (to receive requests from local myra api server most probably).
+Make sure the userId and userSecret correspond to the agents that you will be accessing.
+`
+env GBOT_LOG_LEVEL=20 rlwrap python gbot.py  http db 3rxCO9rydbBIf3DOMb9lFh 4b94f2de6d6554a006099c963e586d47485f9b4d
+`
+You can also point gbot to call the local inference_proxy to debug.
+`
+env GBOT_LOG_LEVEL=20 MYRA_API_HOSTNAME="localhost:7097"  rlwrap python gbot.py  http db 3rxCO9rydbBIf3DOMb9lFh 4b94f2de6d6554a006099c963e586d47485f9b4d
+`
+To debug keyframe with a custom bot spec via a file, you can download the bot spec (via a button in the UI) and then point gbot to it - it will use this botspec regardless of what is in the http call.
+`
+env KEYFRAME_KV_STORE_TYPE=type-localfile GBOT_LOG_LEVEL=10 MYRA_API_HOSTNAME="localhost:7097" rlwrap python gbot.py  cmd file 3rxCO9rydbBIf3DOMb9lFh 4b94f2de6d6554a006099c963e586d47485f9b4d  /Users/nishant/Downloads/nishant-topics-test-2.keyframe-config_6.json 
+`
+
+
 `
 (keyframe1) ~/work/keyframe/gbot $ python gbot.py http db 2>&1 | tee /tmp/gbot.log.$(date +%s)
 `
