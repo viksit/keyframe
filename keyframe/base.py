@@ -28,7 +28,7 @@ from ordered_set import OrderedSet
 # TODO: move logging out into a nicer function/module
 
 log = logging.getLogger(__name__)
-log.setLevel(10)
+#log.setLevel(10)
 
 class BaseBot(object):
 
@@ -350,7 +350,8 @@ class BaseBot(object):
                     topicId = transferTopicId
                     transferTopicId = None
                     newTopic = True
-                    # TODO(now): should botState.clear() be called????
+                    # TODO(now): For a non (diagnostic -> resolution) transfer,
+                    # botState.clear() should probably be called!
                 else:
                     actionStateJson = botState.getWaiting()
                     newTopic = False
