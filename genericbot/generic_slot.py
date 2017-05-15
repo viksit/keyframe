@@ -167,9 +167,12 @@ class GenericInfoSlot(GenericSlot):
         self.canonicalMsg = canonicalMsg
         # We need to send inputExpected = False for this info slot,
         # so don't use self._createAndSendResponse.
+        responseMsg = Template(self.prompt()).render(
+            {"entities":botState.getSessionData(),
+             "utterances":botState.getSessionUtterances()})
         cr = keyframe.messages.createTextResponse(
             self.canonicalMsg,
-            self.prompt(),
+            responseMsg,
             keyframe.messages.ResponseElement.RESPONSE_TYPE_RESPONSE,
             responseMeta=keyframe.messages.ResponseMeta(
                 apiResult=self.apiResult,
@@ -227,13 +230,16 @@ class GenericActionSlot(GenericSlot):
         log.debug("fetchWebhook entities: %s", entities)
         # Response
         urlTemplate = Template(url)
-        templatedURL = urlTemplate.render({"custom": custom, "entities": entities})
+        templatedURL = urlTemplate.render(
+            {"custom": custom, "entities": entities,
+             "utterances":botState.getSessionUtterances()})
         log.debug("URL to fetch: %s" % (templatedURL,))
         requestBodyJsonObject = None
         if requestBody:
             log.info("requestBody: %s", requestBody)
             templatedRequestBody = Template(requestBody).render(
-                {"custom": custom, "entities": entities})
+                {"custom": custom, "entities": entities,
+                 "utterances":botState.getSessionUtterances()})
             log.info("templatedRequestBody (%s): %s", type(templatedRequestBody), templatedRequestBody)
             requestBodyJsonObject = json.loads(templatedRequestBody)
 
@@ -272,8 +278,8 @@ class GenericActionSlot(GenericSlot):
         textResponseTemplate = Template(r)
         renderedResponse = textResponseTemplate.render({
             "entities": entities,
-            "response": responseJsonObj
-        })
+            "response": responseJsonObj,
+            "utterances": botState.getSessionUtterances()})
         return renderedResponse
 
 
@@ -312,7 +318,8 @@ class GenericActionSlot(GenericSlot):
         for (k,v) in zendeskConfig.get("request").iteritems():
             log.debug("k: %s, v: %s", k, v)
             zc[k] = Template(v).render(
-                {"entities":entities})
+                {"entities":entities,
+                 "utterances":botState.getSessionUtterances()})
         if zc.get("attachments"):
             if zc.get("attachments").lower() in (
                     "none", "no", "no attachments"):
@@ -323,7 +330,8 @@ class GenericActionSlot(GenericSlot):
                 zc["attachments"] = attachmentUrls
             else:
                 attachmentUrl = Template(zc.get("attachments")).render(
-                    {"entities":entities})
+                    {"entities":entities,
+                     "utterances":botState.getSessionUtterances()})
                 zc["attachments"] = [attachmentUrl]
         zr = zendesk.createTicket(zc)
         log.debug("zr (%s): %s", type(zr), zr)

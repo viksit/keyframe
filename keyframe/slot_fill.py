@@ -126,7 +126,10 @@ class Slot(object):
                 log.debug("fillresult: %s", fillResult)
                 if fillResult:
                     self.value = fillResult
-                    botState.addToSessionData(self.name, self.value, self.entityType)
+                    botState.addToSessionData(
+                        self.name, self.value, self.entityType)
+                    botState.addToSessionUtterances(
+                        self.name, canonicalMsg.text, self.entityType)
                     self.filled = True
                     return self.filled
 
@@ -147,7 +150,10 @@ class Slot(object):
                 fillResult = self._extractSlotFromSentence(canonicalMsg)
                 if fillResult:
                     self.value = fillResult
-                    botState.addToSessionData(self.name, self.value, self.entityType)
+                    botState.addToSessionData(
+                        self.name, self.value, self.entityType)
+                    botState.addToSessionUtterances(
+                        self.name, canonicalMsg.text, self.entityType)
                     self.filled = True
                 else:
                     # We notify the user that this value is invalid.
@@ -167,6 +173,8 @@ class Slot(object):
                 fillResult = self.canonicalMsg.text
                 self.value = fillResult
                 botState.addToSessionData(self.name, self.value, self.entityType)
+                botState.addToSessionUtterances(
+                    self.name, canonicalMsg.text, self.entityType)
                 self.filled = True
         return self.filled
 

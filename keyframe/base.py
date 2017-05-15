@@ -28,7 +28,7 @@ from ordered_set import OrderedSet
 # TODO: move logging out into a nicer function/module
 
 log = logging.getLogger(__name__)
-#log.setLevel(10)
+log.setLevel(10)
 
 class BaseBot(object):
 
@@ -112,10 +112,14 @@ class BaseBot(object):
         return self.botStateClass.fromJSONObject(jsonObject)
 
     def putBotState(self, userId, channel, botState, botStateUid):
+        #log.debug("putBotState(%s)", locals())
         k = self._botStateKey(userId, channel)
+        botState.setWriteTime(time.time())
+        botStateJson = botState.toJSONObject()
         self.kvStore.put_json(k, botState.toJSONObject())
         # Always also add to history.
-        self.putBotStateHistory(userId, channel, botState, botStateUid)
+        if botStateUid:
+            self.putBotStateHistory(userId, channel, botState, botStateUid)
 
     def putBotStateHistory(self, userId, channel, botState, botStateUid):
         k = self._botStateHistoryKey(userId, channel, botStateUid)
@@ -334,30 +338,48 @@ class BaseBot(object):
             if x:
                 tmp1 = x.groups()[0].lower()
                 if tmp1 == "default":
-                    topicId = self.getStartTopic(canonicalMsg)
+                    topicId = self.getStartTopic()
                     newTopic = True
-                    botState.clearSession()
                 else:
                     topicId = tmp1
                     newTopic = True
-                    botState.clearSession()
+                botState.clear()
                 canonicalMsg.text = canonicalMsg.text.replace(x.group(), "")
             if not topicId:
                 if transferTopicId:
                     topicId = transferTopicId
                     transferTopicId = None
-                    newTopic = True  # TODO(now): not sure about this one.
+                    newTopic = True
+                    # TODO(now): should botState.clear() be called????
                 else:
                     actionStateJson = botState.getWaiting()
                     newTopic = False
                     log.debug("actionJson: %s", actionStateJson)
                     if actionStateJson:
-                        topicId = actionStateJson.get("origTopicId")
+                        lastWriteTime = botState.getWriteTime()
+                        currentTime = time.time()
+                        log.debug("lastWriteTime: %s, currentTime: %s",
+                                  lastWriteTime, currentTime)
+                        if lastWriteTime and lastWriteTime > currentTime - self.config.BOTSTATE_TTL_SECONDS: 
+                            topicId = actionStateJson.get("origTopicId")
+                        else:
+                            log.debug("SESSION TIMED OUT")
+                            cr = messages.createTextResponse(
+                                canonicalMsg,
+                                "Your session has timed out.",
+                                messages.ResponseElement.RESPONSE_TYPE_RESPONSE,
+                                #botStateUid=botState.getUid(),
+                                inputExpected=False)
+                            self.channelClient.sendResponse(cr)
+                            canonicalMsg.text = ""
+                            botState.clear()
+                            actionStateJson = None
+
             if not topicId:
-                topicId = self.getStartTopic(canonicalMsg)
+                topicId = self.getStartTopic()
                 log.debug("got START topic: %s", topicId)
                 newTopic = True
-                botState.clearSession()
+                botState.clear()
 
             # Now we should have a topicId
             actionObject = self.createActionObject(

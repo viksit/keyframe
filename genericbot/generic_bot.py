@@ -49,7 +49,7 @@ class GenericBot(keyframe.base.BaseBot):
         log.debug("GenericBot.configFromJson()")
         # Nothing else to do here.
 
-    def getStartTopic(self, canonicalMsg):
+    def getStartTopic(self):
         x = self.specJson.get("start_topic")
         assert x, "Bot spec must have a start topic"
         return x

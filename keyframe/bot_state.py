@@ -13,6 +13,9 @@ class BotState(object):
     """
 
     def __init__(self):
+        self.init()
+
+    def init(self):
         self._waiting = None
         # Json-compatible structure that allows
         self._lastResult = None  # CanonicalResult
@@ -23,9 +26,35 @@ class BotState(object):
         self.transferTopicId = None
         self._sessionData = {}
         self._sessionDataType = {}
+        self._sessionUtterances = {}
+        self._sessionUtterancesType = {}
+        self.sessionIntent = None
+        self.writeTime = None
+
+    def getWriteTime(self):
+        return self.writeTime
+
+    def setWriteTime(self, t):
+        # as a float seconds from epoch. (time.time())
+        self.writeTime = t
+
+    def setSessionIntent(self, intentStr):
+        self.sessionIntent = intentStr
+
+    def getSessionIntent(self):
+        return self.sessionIntent
 
     def getSessionData(self):
         return self._sessionData
+
+    def getSessionDataType(self):
+        return self._sessionDataType
+
+    def getSessionUtterances(self):
+        return self._sessionUtterances
+
+    def getSessionUtterancesType(self):
+        return self._sessionUtterancesType
 
     def getSessionDataType(self):
         return self._sessionDataType
@@ -34,6 +63,10 @@ class BotState(object):
         self._sessionData[k] = v
         self._sessionDataType[k] = type
 
+    def addToSessionUtterances(self, k, v, type=None):
+        self._sessionUtterances[k] = v
+        self._sessionUtterancesType[k] = type
+
     def getSessionDataType(self):
         return self._sessionDataType
 
@@ -41,8 +74,13 @@ class BotState(object):
         return {"value":self._sessionData.get(k),
                 "type":self._sessionDataType.get(k)}
 
-    def clearSession(self):
+    def clearSessionXXX(self):
         self._sessionData = {}
+        self._sessionUtterances = {}
+        self._sessionDataType = {}
+        self._sessionUtterancesType = {}
+        self.transferTopicId = None
+        self.clearWaiting()
 
     def getTransferTopicId(self):
         return self.transferTopicId
@@ -74,9 +112,7 @@ class BotState(object):
         self.debug = debug
 
     def clear(self):
-        self._waiting = None
-        self._lastResult = None
-        self._sessionData = {}
+        self.init()
         self.changed = True
 
     def clearWaiting(self):
@@ -119,7 +155,11 @@ class BotState(object):
             "last_result": self._lastResult,
             "uid": self.uid,
             "previous_uid": self.previousUid,
-            "session_data": self._sessionData
+            "session_data": self._sessionData,
+            "session_data_type": self._sessionDataType,
+            "session_utterances": self._sessionUtterances,
+            "session_utterances_type": self._sessionUtterancesType,
+            "write_time":self.writeTime
         }
 
     @classmethod
@@ -136,4 +176,8 @@ class BotState(object):
         botState.uid = jsonObject.get("uid")
         botState.previousUid = jsonObject.get("previous_uid")
         botState._sessionData = jsonObject.get("session_data")
+        botState._sessionDataType = jsonObject.get("session_data_type")
+        botState._sessionUtterances = jsonObject.get("session_utterances")
+        botState._sessionUtterancesType = jsonObject.get("session_utterances_type")
+        botState.writeTime = jsonObject.get("write_time")
         return botState

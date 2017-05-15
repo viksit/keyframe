@@ -13,7 +13,7 @@ import keyframe.config
 
 log = logging.getLogger(__name__)
 # To debug, just set the level for this module.
-#log.setLevel(10)
+log.setLevel(20)
 
 TYPE_S3 = "type-s3"
 TYPE_DYNAMODB = "type-dynamodb"
