@@ -95,6 +95,17 @@ class GenericBotHTTPAPI(generic_bot_api.GenericBotAPI):
                 GenericBotHTTPAPI.configJson = current_app.config.get("config_json")
                 assert GenericBotHTTPAPI.configJson
 
+                if "cmd_mode" in current_app.config and \
+                   current_app.config["cmd_mode"] == "http":
+                    log.info("Running in flask deployment mode")
+                    agentId = kwargs.get("agentId")
+                    accountId = kwargs.get("accountId")
+                    accountSecret = kwargs.get("accountSecret")
+                    
+                    GenericBotHTTPAPI.agentId = agentId
+                    GenericBotHTTPAPI.accountId = accountId
+                    GenericBotHTTPAPI.accountSecret = accountSecret
+
             # We're in Flask deployment mode (run_mode is "DB")
             else:
                 log.info("Running in flask deployment mode")
@@ -116,7 +127,8 @@ class GenericBotHTTPAPI(generic_bot_api.GenericBotAPI):
         accountSecret = GenericBotHTTPAPI.accountSecret
         agentId = GenericBotHTTPAPI.agentId
         configJson = GenericBotHTTPAPI.configJson
-        log.info("(::) agentId: %s, accountId: %s", agentId, accountId)
+        log.info("(::) agentId: %s, accountId: %s, accountSecret: %s",
+                 agentId, accountId, accountSecret)
         log.debug("configJson: %s", configJson)
 
         #intentModelId = configJson.get("config_json").get("intent_model_id")
@@ -126,11 +138,15 @@ class GenericBotHTTPAPI(generic_bot_api.GenericBotAPI):
         log.debug("modelParams: %s",
                   modelParams)
         if modelParams:
+            assert accountId and accountSecret and cfg.MYRA_API_HOSTNAME, \
+                "gbot has modelParams but cannot create api because no api params"
+        if accountId and accountSecret and cfg.MYRA_API_HOSTNAME:
             apicfg = {
                 "account_id": accountId,
                 "account_secret": accountSecret,
                 "hostname": cfg.MYRA_API_HOSTNAME
             }
+            log.info("creating api with cfg: %s", apicfg)
             api = client.connect(apicfg)
             #api.set_intent_model(intentModelId)
             api.set_params(modelParams)
@@ -419,6 +435,7 @@ if __name__ == "__main__":
             sys.exit(1)
 
     elif cmd == "http":
+        app.config["cmd_mode"] = cmd
         app.config["run_mode"] = runtype
         app.config["config_json"] = d
         app.run(debug=True)
