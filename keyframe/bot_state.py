@@ -1,3 +1,5 @@
+import time
+
 import messages
 import channel_client
 import fb
@@ -29,7 +31,26 @@ class BotState(object):
         self._sessionUtterances = {}
         self._sessionUtterancesType = {}
         self.sessionIntent = None
+        self.sessionStartTime = None
+        self.sessionId = None
         self.writeTime = None
+
+    def _createSessionId(self, userId, ts):
+        return "kf_ses_%i_%s" % (ts, random.randint(0,1000))
+
+    def startSession(self, userId, ts=None):
+        self.clear()
+        if not ts:
+            ts = round(time.time()*1000)
+        self.sessionStartTime = ts
+        self.sessionId = self._createSessionId(userId, ts)
+
+    def getSessionStartTime(self):
+        return self.sessionStartTime
+
+    def setSessionStartTime(self, t):
+        # as a float seconds from epoch. (time.time())
+        self.sessionStartTime = t
 
     def getWriteTime(self):
         return self.writeTime

@@ -291,6 +291,7 @@ class BaseBot(object):
 
         if msg.find("clear state") > -1:
             botState.clear()
+            # Don't start a user session on botcmd clear state!
             self.putBotState(
                 userId=canonicalMsg.userId,
                 channel=canonicalMsg.channel,
@@ -344,6 +345,7 @@ class BaseBot(object):
                     topicId = tmp1
                     newTopic = True
                 botState.clear()
+                botState.startSession(canonicalMsg.userId)
                 canonicalMsg.text = canonicalMsg.text.replace(x.group(), "")
             if not topicId:
                 if transferTopicId:
@@ -381,6 +383,7 @@ class BaseBot(object):
                 log.debug("got START topic: %s", topicId)
                 newTopic = True
                 botState.clear()
+                botState.startSession(canonicalMsg.userId)
 
             # Now we should have a topicId
             actionObject = self.createActionObject(
