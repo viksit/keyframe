@@ -64,6 +64,14 @@ class ActionObject(object):
         slotClasses = [i for i in allClasses if type(i) is type and issubclass(i, slot_fill.Slot)]
         return slotClasses
 
+    def getTopicType(self):
+        if self.originalTopicId.startswith("question_"):
+            return "resolution"
+        elif self.originalTopicId.startswith("topic"):
+            return "diagnostic"
+        else:
+            raise Exception("cannot get topicType (topicId: %s)" % (self.originalTopicId,))
+
     @classmethod
     def createActionObject(
             cls, topicId, canonicalMsg, botState,

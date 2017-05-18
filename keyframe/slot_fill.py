@@ -234,6 +234,9 @@ class Slot(object):
         # Return final result
         return res
 
+    def getActionType(self):
+        return None
+
     def get(self):
         pass
 

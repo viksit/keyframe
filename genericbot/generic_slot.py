@@ -193,6 +193,11 @@ class GenericActionSlot(GenericSlot):
         self.channelClient = channelClient
         self.actionSpec = None
 
+    def getActionType(self):
+        if not self.actionSpec:
+            return None
+        return self.actionSpec.get("action_type")
+
     def prompt(self):
         raise Exception("Action slots do not have prompts")
 

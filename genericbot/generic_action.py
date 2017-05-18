@@ -20,6 +20,8 @@ import generic_slot
 import keyframe.messages as messages
 import keyframe.utils
 import integrations.zendesk.zendesk as zendesk
+import keyframe.event_writer as event_writer
+import keyframe.event
 
 log = logging.getLogger(__name__)
 #log.setLevel(20)
@@ -96,21 +98,46 @@ class GenericActionObject(keyframe.actions.ActionObject):
             filled = slotObject.fill(
                 self.canonicalMsg, self.apiResult, self.channelClient,
                 botState)
+
+            responseEvent = keyframe.event.createEvent(
+                eventType="response", src="agent",
+                sessionStatus=None, # to be filled below
+                sessionId=botState.getSessionId(),
+                userId=self.canonicalMsg.userId,
+                topicId=self.originalTopicId,
+                topicType=self.getTopicType(),
+                slotId=slotObject.name,
+                slotType=slotObject.slotType,
+                actionType=slotObject.getActionType(),
+                responseType=None  # to be filled below
+            )
+            eventWriter = event_writer.getWriter()
+            if filled:
+                responseEvent.responseType = "fill"
             if not filled:
+                responseEvent.responseType = "prompt"
                 botState.putWaiting(self.toJSONObject())
                 log.debug("slotFillConditional: returning False - not filled")
+                eventWriter.write(responseEvent.toJSONStr())
                 return constants.BOT_REQUEST_STATE_PROCESSED
             if not slotObject.slotTransitions:
                 log.debug("slotFillConditional: returning True")
+                if self.getTopicType() == "resolution":
+                    responseEvent.sessionStatus = "end"
+                eventWriter.write(responseEvent.toJSONStr())
                 return constants.BOT_REQUEST_STATE_PROCESSED
             self.nextSlotToFillName = slotObject.slotTransitions.get(
                 slotObject.value)
-            log.debug("self.nextSlotToFillName: %s", self.nextSlotToFillName)
+            log.info("self.nextSlotToFillName: %s", self.nextSlotToFillName)
             if not self.nextSlotToFillName:
                 self.nextSlotToFillName = slotObject.slotTransitions.get("__default__")
             if not self.nextSlotToFillName:
                 assert slotObject.slotType != slot_fill.Slot.SLOT_TYPE_INTENT_MODEL, "Intent slots should always have an edge to another slot"
-                log.debug("slotFillConditional: returning True")
+                log.info("slotFillConditional: returning True")
+                if self.getTopicType() == "resolution":
+                    responseEvent.sessionStatus = "end"
+            eventWriter.write(responseEvent.toJSONStr())
+            if not self.nextSlotToFillName:
                 return constants.BOT_REQUEST_STATE_PROCESSED
 
     def toJSONObject(self):
@@ -133,16 +160,8 @@ class GenericActionObject(keyframe.actions.ActionObject):
         # Create a GenericActionObject using specJson
         actionObject = cls()
         actionObject.specJson = specJson
-        #actionObject.msg = specJson.get("text")
-        #actionObject.transitionMsg = specJson.get("transition_text")
         actionObject.slotsType = specJson.get(
             "slots_type", cls.SLOTS_TYPE_CONDITIONAL)
-        #actionObject.responseType = specJson.get(
-        #    "response_type", cls.RESPONSE_TYPE_TEXT)
-        # TODO: This has to be enforced in the UI.
-        #assert actionObject.msg, "No text field in json: %s" % (specJson,)
-        #if not actionObject.msg:
-        #    actionObject.msg = "<No msg provided by agent spec.>"
         slots = specJson.get("slots", [])
 
         slotObjects = []

@@ -1,4 +1,5 @@
 import time
+import random
 
 import messages
 import channel_client
@@ -44,6 +45,10 @@ class BotState(object):
             ts = round(time.time()*1000)
         self.sessionStartTime = ts
         self.sessionId = self._createSessionId(userId, ts)
+        self.changed = True
+
+    def getSessionId(self):
+        return self.sessionId
 
     def getSessionStartTime(self):
         return self.sessionStartTime
@@ -180,7 +185,9 @@ class BotState(object):
             "session_data_type": self._sessionDataType,
             "session_utterances": self._sessionUtterances,
             "session_utterances_type": self._sessionUtterancesType,
-            "write_time":self.writeTime
+            "write_time":self.writeTime,
+            "session_intent":self.sessionIntent,
+            "session_id":self.sessionId
         }
 
     @classmethod
@@ -201,4 +208,6 @@ class BotState(object):
         botState._sessionUtterances = jsonObject.get("session_utterances")
         botState._sessionUtterancesType = jsonObject.get("session_utterances_type")
         botState.writeTime = jsonObject.get("write_time")
+        botState.sessionIntent = jsonObject.get("session_intent")
+        botState.sessionId = jsonObject.get("session_id")
         return botState
