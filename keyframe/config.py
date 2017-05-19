@@ -30,6 +30,9 @@ class Config(object):
     BOTSTATE_HISTORY_TTL_SECONDS = BOTSTATE_TTL_SECONDS
     INTENT_SCORE_THRESHOLD = 0.7
 
+    KINESIS_AWS_REGION = "us-west-2"
+    KINESIS_STREAM_NAME = "kf-events-raw-dev"
+
     DYNAMODB_AWS_REGION = "us-west-2"
     KV_STORE_S3_BUCKET = "ml-dev"
 

@@ -2,6 +2,10 @@ import os
 import datetime
 import logging
 
+import boto3
+
+import keyframe.config
+
 log = logging.getLogger(__name__)
 
 
@@ -50,6 +54,21 @@ class FileWriter(Writer):
 
     def __del__(self):
         self._close()
+
+class KinesisStreamWriter(Writer):
+    def __init__(self, config=None):
+        self.config = config
+        if not self.config:
+            self.config = keyframe.config.getConfig()
+        self.kstream = boto3.client(
+            'kinesis',
+            region_name=self.config.KINESIS_AWS_REGION,
+            aws_access_key_id=self.config.AWS_ACCESS_KEY_ID,
+            aws_secret_access_key=self.config.AWS_SECRET_ACCESS_KEY)
+
+    def write(self, s):
+        self.kstream.put_record(
+            StreamName=self.config.KINESIS_STREAM_NAME
 
 def test():
     w = getWriter()
