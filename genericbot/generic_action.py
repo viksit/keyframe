@@ -118,13 +118,13 @@ class GenericActionObject(keyframe.actions.ActionObject):
                 responseEvent.responseType = "prompt"
                 botState.putWaiting(self.toJSONObject())
                 log.debug("slotFillConditional: returning False - not filled")
-                eventWriter.write(responseEvent.toJSONStr())
+                eventWriter.write(responseEvent.toJSONStr(), responseEvent.userId)
                 return constants.BOT_REQUEST_STATE_PROCESSED
             if not slotObject.slotTransitions:
                 log.debug("slotFillConditional: returning True")
                 if self.getTopicType() == "resolution":
                     responseEvent.sessionStatus = "end"
-                eventWriter.write(responseEvent.toJSONStr())
+                eventWriter.write(responseEvent.toJSONStr(), responseEvent.userId)
                 return constants.BOT_REQUEST_STATE_PROCESSED
             self.nextSlotToFillName = slotObject.slotTransitions.get(
                 slotObject.value)
@@ -136,7 +136,7 @@ class GenericActionObject(keyframe.actions.ActionObject):
                 log.info("slotFillConditional: returning True")
                 if self.getTopicType() == "resolution":
                     responseEvent.sessionStatus = "end"
-            eventWriter.write(responseEvent.toJSONStr())
+            eventWriter.write(responseEvent.toJSONStr(), responseEvent.userId)
             if not self.nextSlotToFillName:
                 return constants.BOT_REQUEST_STATE_PROCESSED
 

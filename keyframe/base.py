@@ -419,7 +419,7 @@ class BaseBot(object):
                     topicType=actionObject.getTopicType(),
                     payload=canonicalMsg.toJSON())
                 eventWriter = event_writer.getWriter()
-                eventWriter.write(requestEvent.toJSONStr())
+                eventWriter.write(requestEvent.toJSONStr(), requestEvent.userId)
                 wroteEvent = True
 
             requestState = actionObject.processWrapper(botState)

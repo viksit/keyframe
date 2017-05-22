@@ -2,14 +2,19 @@ import random
 import time
 import json
 
+EVENT_VERSION = 2
+
 def createEvent(**kwargs):
-    ts = int(round(time.time()*1000))
+    _t = time.time()
+    tsMs = int(round(_t*1000))
+    ts = int(round(_t))
     eventType = kwargs.get("eventType")
     assert eventType, "must have eventType to create an event"
     eventId = Event.createEventId(eventType, ts)
     assert "ts" not in kwargs
     assert "eventId" not in kwargs
     kwargs["ts"] = ts
+    kwargs["tsMs"] = tsMs
     kwargs["eventId"] = eventId
     return Event(**kwargs)
 
@@ -20,6 +25,9 @@ class Event(object):
             eventType, ts, random.randint(0,1000))
 
     def __init__(self, **kwargs):
+        self.version = kwargs.get("version")  # integer
+        if not self.version:
+            self.version = EVENT_VERSION
         self.eventType = kwargs.get("eventType")  # request, response
         self.src = kwargs.get("src")  # user, widget, agent
         self.sessionStatus = kwargs.get("sessionStatus")  # start, end
@@ -27,6 +35,7 @@ class Event(object):
         self.sessionId = kwargs.get("sessionId")
         self.userId = kwargs.get("userId")
         self.ts = kwargs.get("ts")
+        self.tsMs = kwargs.get("tsMs")
         self.topicId = kwargs.get("topicId")
         self.topicType = kwargs.get("topicType")
         self.slotId = kwargs.get("slotId")
@@ -37,6 +46,7 @@ class Event(object):
 
     def toJSON(self):
         return {
+            "version":self.version,
             "event_type":self.eventType,
             "src":self.src,
             "session_status":self.sessionStatus,
@@ -44,6 +54,7 @@ class Event(object):
             "session_id":self.sessionId,
             "user_id":self.userId,
             "ts":self.ts,
+            "ts_ms":self.tsMs,
             "topic_id":self.topicId,
             "topic_type":self.topicType,
             "slot_id":self.slotId,

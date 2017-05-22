@@ -1,6 +1,7 @@
 import os
 import datetime
 import logging
+import json
 
 import boto3
 
@@ -10,6 +11,7 @@ log = logging.getLogger(__name__)
 
 
 WRITER_TYPE_FILE = "file"
+WRITER_TYPE_KINESIS = "kinesis"
 WRITER_TYPE_DEVNULL = "devnull"
 
 _writer = None
@@ -17,11 +19,15 @@ def getWriter():
     global _writer
     if not _writer:
         writerType = os.getenv("KEYFRAME_EVENT_WRITER_TYPE",
-                               WRITER_TYPE_FILE)
+                               WRITER_TYPE_KINESIS)
         if writerType == WRITER_TYPE_FILE:
             _writer = FileWriter()
         elif writerType == WRITER_TYPE_DEVNULL:
             _writer = DevNullWriter()
+        elif writerType == WRITER_TYPE_KINESIS:
+            _writer = KinesisStreamWriter()
+        else:
+            raise Exception("Unknown event writer type (%s)", writerType)
     return _writer
 
 class Writer(object):
@@ -29,7 +35,7 @@ class Writer(object):
         raise NotImplementedError()
 
 class DevNullWriter(Writer):
-    def write(self, eventJson):
+    def write(self, data, partitionKey=None):
         log.debug("devnull writer dropping event")
 
 
@@ -44,8 +50,8 @@ class FileWriter(Writer):
         log.info("opening file for writer: %s", self.f)
         self.fd = open(self.f, "a")
 
-    def write(self, s):
-        self.fd.write("%s\n" % (s,))
+    def write(self, data, partitionKey=None):
+        self.fd.write("%s\n" % (data,))
         self.fd.flush()
 
     def _close(self):
@@ -56,25 +62,36 @@ class FileWriter(Writer):
         self._close()
 
 class KinesisStreamWriter(Writer):
-    def __init__(self, config=None):
+    def __init__(self, config=None, kinesisStreamName=None):
         self.config = config
         if not self.config:
             self.config = keyframe.config.getConfig()
         self.kstream = boto3.client(
             'kinesis',
             region_name=self.config.KINESIS_AWS_REGION,
-            aws_access_key_id=self.config.AWS_ACCESS_KEY_ID,
-            aws_secret_access_key=self.config.AWS_SECRET_ACCESS_KEY)
+            aws_access_key_id=self.config.KINESIS_USER_ACCESS_KEY_ID,
+            aws_secret_access_key=self.config.KINESIS_USER_SECRET_ACCESS_KEY)
+        self.kinesisStreamName = self.config.KINESIS_STREAM_NAME
 
-    def write(self, s):
+    def write(self, data, partitionKey):
         self.kstream.put_record(
-            StreamName=self.config.KINESIS_STREAM_NAME
+            StreamName=self.kinesisStreamName,
+            Data=data,
+            PartitionKey=partitionKey)
 
-def test():
-    w = getWriter()
+
+def testFileWriter():
+    w = FileWriter()
     w.write("event1")
     w.write("event2")
     w._close()
     w2 = FileWriter(f=w.f)
     w2.write("event3")
+
+def testKinesisWriter():
+    w = KinesisStreamWriter()
+    w.write(json.dumps({"event_id":"1234", "user_id":"u1"}), "u1")
+    w.write(json.dumps({"event_id":"1235", "user_id":"u2"}), "u2")
+    w.write(json.dumps({"event_id":"1236", "user_id":"u3"}), "u3")
+    w.write(json.dumps({"event_id":"1237", "user_id":"u1"}), "u1")
 
