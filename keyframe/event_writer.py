@@ -71,7 +71,9 @@ class KinesisStreamWriter(Writer):
             region_name=self.config.KINESIS_AWS_REGION,
             aws_access_key_id=self.config.KINESIS_USER_ACCESS_KEY_ID,
             aws_secret_access_key=self.config.KINESIS_USER_SECRET_ACCESS_KEY)
-        self.kinesisStreamName = self.config.KINESIS_STREAM_NAME
+        self.kinesisStreamName = kinesisStreamName
+        if not self.kinesisStreamName:
+            self.kinesisStreamName = self.config.KINESIS_STREAM_NAME
 
     def write(self, data, partitionKey):
         self.kstream.put_record(

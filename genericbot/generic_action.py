@@ -109,11 +109,15 @@ class GenericActionObject(keyframe.actions.ActionObject):
                 slotId=slotObject.name,
                 slotType=slotObject.slotType,
                 actionType=slotObject.getActionType(),
-                responseType=None  # to be filled below
+                responseType=None,  # to be filled below
+                ticketFiled=False,  # updated if required below
+                resolutionStatus=False
             )
             eventWriter = event_writer.getWriter()
             if filled:
                 responseEvent.responseType = "fill"
+                if slotObject.getActionType() == "zendesk":
+                    responseEvent.ticketFiled = True
             if not filled:
                 responseEvent.responseType = "prompt"
                 botState.putWaiting(self.toJSONObject())
@@ -124,6 +128,7 @@ class GenericActionObject(keyframe.actions.ActionObject):
                 log.debug("slotFillConditional: returning True")
                 if self.getTopicType() == "resolution":
                     responseEvent.sessionStatus = "end"
+                    responseEvent.resolutionStatus = True
                 eventWriter.write(responseEvent.toJSONStr(), responseEvent.userId)
                 return constants.BOT_REQUEST_STATE_PROCESSED
             self.nextSlotToFillName = slotObject.slotTransitions.get(
@@ -136,6 +141,7 @@ class GenericActionObject(keyframe.actions.ActionObject):
                 log.info("slotFillConditional: returning True")
                 if self.getTopicType() == "resolution":
                     responseEvent.sessionStatus = "end"
+                    responseEvent.resolutionStatus = True
             eventWriter.write(responseEvent.toJSONStr(), responseEvent.userId)
             if not self.nextSlotToFillName:
                 return constants.BOT_REQUEST_STATE_PROCESSED

@@ -33,7 +33,7 @@ class Config(object):
     KINESIS_USER_ACCESS_KEY_ID = "AKIAII26HBVXJUNGKT5A"
     KINESIS_USER_SECRET_ACCESS_KEY = "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"
     KINESIS_AWS_REGION = "us-west-2"
-    KINESIS_STREAM_NAME = "kf-events-raw-dev"
+    KINESIS_STREAM_NAME = os.getenv("KINESIS_STREAM_NAME","kf-events-raw-dev")
 
     DYNAMODB_AWS_REGION = "us-west-2"
     KV_STORE_S3_BUCKET = "ml-dev"

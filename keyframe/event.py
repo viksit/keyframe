@@ -43,9 +43,13 @@ class Event(object):
         self.actionType = kwargs.get("actionType")
         self.responseType = kwargs.get("responseType")  # prompt, fill
         self.payload = kwargs.get("payload")  # must be a json-compatible data structure (i.e. string, dict)
+        self.ticketFiled = kwargs.get("ticketFiled")
+        self.resolutionStatus = kwargs.get("resolutionStatus")
 
     def toJSON(self):
         return {
+            "resolution_status":self.resolutionStatus,
+            "ticket_filed":self.ticketFiled,
             "version":self.version,
             "event_type":self.eventType,
             "src":self.src,
