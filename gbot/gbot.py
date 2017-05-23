@@ -86,6 +86,9 @@ class GenericBotHTTPAPI(generic_bot_api.GenericBotAPI):
         """
         Given a key to db, fetch json from there
         """
+        agentId = kwargs.get("agentId")
+        accountId = kwargs.get("accountId")
+        accountSecret = kwargs.get("accountSecret")
         bms = bot_stores.BotMetaStore(kvStore)
         with app.app_context():
 
@@ -98,9 +101,6 @@ class GenericBotHTTPAPI(generic_bot_api.GenericBotAPI):
                 if "cmd_mode" in current_app.config and \
                    current_app.config["cmd_mode"] == "http":
                     log.info("Running in flask deployment mode")
-                    agentId = kwargs.get("agentId")
-                    accountId = kwargs.get("accountId")
-                    accountSecret = kwargs.get("accountSecret")
                     
                     GenericBotHTTPAPI.agentId = agentId
                     GenericBotHTTPAPI.accountId = accountId
@@ -383,7 +383,7 @@ def ping():
 
 
 if __name__ == "__main__":
-    usage = "gbot.py [cmd/http] [file/db] [file: <accountId> <accountSecret> <path to json spec> / db: <accountId> <accountSecret> <agentId>]"
+    usage = "gbot.py [cmd/http] [file/db] <accountId> <accountSecret> <agentId> [file: <path to json spec>]"
     assert len(sys.argv) > 2, usage
 
     #logging.basicConfig()
@@ -405,9 +405,11 @@ if __name__ == "__main__":
         accountId = sys.argv[3]
     if len(sys.argv) > 4:
         accountSecret = sys.argv[4]
+    if len(sys.argv) > 5:
+        agentId = sys.argv[5]
 
     if runtype == "file":
-        jsonFile = sys.argv[5]
+        jsonFile = sys.argv[6]
         if os.path.isfile(jsonFile):
             configJson = json.loads(open(jsonFile).read())
             #d['config_json'] = configJson
@@ -417,16 +419,13 @@ if __name__ == "__main__":
                   jsonFile, file=sys.stderr)
             sys.exit(1)
         log.debug("config_json: %s", d['config_json'])
-    elif runtype == "db":
-        if len(sys.argv) > 5:
-            agentId = sys.argv[5]
 
     if cmd == "cmd":
         c = generic_cmdline.GenericCmdlineHandler(config_json=d, accountId=accountId, accountSecret = accountSecret, agentId=agentId, kvStore=kvStore, cfg=cfg)
         c.begin()
 
     elif cmd == "script":
-        scriptFile = sys.argv[6]
+        scriptFile = sys.argv[7]
         c = generic_cmdline.ScriptHandler(config_json=d, accountId=accountId, accountSecret = accountSecret, agentId=agentId, kvStore=kvStore, cfg=cfg)
         c.scriptFile(scriptFile=scriptFile)
         num_errors = c.executeScript()

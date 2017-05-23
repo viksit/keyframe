@@ -41,6 +41,8 @@ class GenericCmdlineHandler(BotCmdLineHandler):
         accountId = self.kwargs.get("accountId")
         accountSecret = self.kwargs.get("accountSecret")
         configJson = self.kwargs.get("config_json")
+        agentId = self.kwargs.get("agentId")
+
         log.debug("configJson: %s", configJson)
         bms = bot_stores.BotMetaStore(kvStore=self.kvStore)
         if not len(configJson.keys()):
@@ -65,7 +67,7 @@ class GenericCmdlineHandler(BotCmdLineHandler):
             #api.set_intent_model(intentModelId)
             api.set_params(intentModelParams)
         self.bot = generic_bot.GenericBot(
-            kvStore=self.kvStore, configJson=configJson.get("config_json"), api=api)
+            kvStore=self.kvStore, configJson=configJson.get("config_json"), api=api, accountId=accountId, agentId=agentId)
         self.bot.setChannelClient(self.channelClient)
 
 
