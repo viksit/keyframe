@@ -81,7 +81,7 @@ class KinesisStreamWriter(Writer):
             StreamName=self.kinesisStreamName,
             Data=data,
             PartitionKey=partitionKey)
-        log.info("put record into kstream")
+        log.info("wrote to streamname: %s", self.kinesisStreamName)
 
 def testFileWriter():
     w = FileWriter()
