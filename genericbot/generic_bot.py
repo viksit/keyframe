@@ -54,7 +54,8 @@ class GenericBot(keyframe.base.BaseBot):
         assert x, "Bot spec must have a start topic"
         return x
 
-    def createActionObject(self, topicId,
+    def createActionObject(self, accountId, agentId,
+                           topicId,
                            canonicalMsg, botState,
                            userProfile, requestState,
                            apiResult=None, newTopic=None):
@@ -65,6 +66,7 @@ class GenericBot(keyframe.base.BaseBot):
         #log.debug("creating GenericActionObject with json: %s",
         #          actionObjectSpecJson)
         return generic_action.GenericActionObject.createActionObject(
+            accountId, agentId,
             actionObjectSpecJson, topicId,
             canonicalMsg, botState,
             userProfile, requestState, self.api, self.channelClient,

@@ -74,13 +74,14 @@ class KinesisStreamWriter(Writer):
         self.kinesisStreamName = kinesisStreamName
         if not self.kinesisStreamName:
             self.kinesisStreamName = self.config.KINESIS_STREAM_NAME
+        log.info("created KinesisStreamWriter with kstreamname: %s", self.kinesisStreamName)
 
     def write(self, data, partitionKey):
         self.kstream.put_record(
             StreamName=self.kinesisStreamName,
             Data=data,
             PartitionKey=partitionKey)
-
+        log.info("put record into kstream")
 
 def testFileWriter():
     w = FileWriter()
