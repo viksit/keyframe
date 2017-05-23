@@ -16,6 +16,8 @@ import utils
 from bot_state import BotState
 import actions
 import constants
+import event
+import event_writer
 
 from six import iteritems, add_metaclass
 
@@ -291,6 +293,7 @@ class BaseBot(object):
 
         if msg.find("clear state") > -1:
             botState.clear()
+            # Don't start a user session on botcmd clear state!
             self.putBotState(
                 userId=canonicalMsg.userId,
                 channel=canonicalMsg.channel,
@@ -330,10 +333,16 @@ class BaseBot(object):
             log.debug("not a botcmd")
 
         transferTopicId = None
+        newSession = False
+
+        wroteEvent = False
+
         while True:
             topicId = None
             actionStateJson = None
             newTopic = None
+
+            # check for [topic=xxxx]
             x = self.topic_re.match(canonicalMsg.text.lower())
             if x:
                 tmp1 = x.groups()[0].lower()
@@ -344,7 +353,10 @@ class BaseBot(object):
                     topicId = tmp1
                     newTopic = True
                 botState.clear()
+                botState.startSession(canonicalMsg.userId)
+                newSession = True
                 canonicalMsg.text = canonicalMsg.text.replace(x.group(), "")
+
             if not topicId:
                 if transferTopicId:
                     topicId = transferTopicId
@@ -381,6 +393,8 @@ class BaseBot(object):
                 log.debug("got START topic: %s", topicId)
                 newTopic = True
                 botState.clear()
+                botState.startSession(canonicalMsg.userId)
+                newSession = True
 
             # Now we should have a topicId
             actionObject = self.createActionObject(
@@ -389,6 +403,24 @@ class BaseBot(object):
                 requestState, newTopic=newTopic)
             if actionStateJson:
                 actionObject.fromJSONObject(actionStateJson)
+
+            sessionStatus = None
+            if newSession:
+                sessionStatus = "start"
+
+            # Only write the request event once.
+            if not wroteEvent:
+                requestEvent = event.createEvent(
+                    eventType="request", src="user",
+                    sessionStatus=sessionStatus,
+                    sessionId=botState.getSessionId(),
+                    userId=canonicalMsg.userId,
+                    topicId=topicId,
+                    topicType=actionObject.getTopicType(),
+                    payload=canonicalMsg.toJSON())
+                eventWriter = event_writer.getWriter()
+                eventWriter.write(requestEvent.toJSONStr(), requestEvent.userId)
+                wroteEvent = True
 
             requestState = actionObject.processWrapper(botState)
             log.debug("requestState: %s", requestState)

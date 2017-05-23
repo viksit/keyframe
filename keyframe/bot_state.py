@@ -1,3 +1,6 @@
+import time
+import random
+
 import messages
 import channel_client
 import fb
@@ -29,7 +32,30 @@ class BotState(object):
         self._sessionUtterances = {}
         self._sessionUtterancesType = {}
         self.sessionIntent = None
+        self.sessionStartTime = None
+        self.sessionId = None
         self.writeTime = None
+
+    def _createSessionId(self, userId, ts):
+        return "kf_ses_%i_%s" % (ts, random.randint(0,1000))
+
+    def startSession(self, userId, ts=None):
+        self.clear()
+        if not ts:
+            ts = round(time.time()*1000)
+        self.sessionStartTime = ts
+        self.sessionId = self._createSessionId(userId, ts)
+        self.changed = True
+
+    def getSessionId(self):
+        return self.sessionId
+
+    def getSessionStartTime(self):
+        return self.sessionStartTime
+
+    def setSessionStartTime(self, t):
+        # as a float seconds from epoch. (time.time())
+        self.sessionStartTime = t
 
     def getWriteTime(self):
         return self.writeTime
@@ -159,7 +185,10 @@ class BotState(object):
             "session_data_type": self._sessionDataType,
             "session_utterances": self._sessionUtterances,
             "session_utterances_type": self._sessionUtterancesType,
-            "write_time":self.writeTime
+            "write_time":self.writeTime,
+            "session_intent":self.sessionIntent,
+            "session_id":self.sessionId,
+            "session_start_time":self.sessionStartTime
         }
 
     @classmethod
@@ -180,4 +209,7 @@ class BotState(object):
         botState._sessionUtterances = jsonObject.get("session_utterances")
         botState._sessionUtterancesType = jsonObject.get("session_utterances_type")
         botState.writeTime = jsonObject.get("write_time")
+        botState.sessionIntent = jsonObject.get("session_intent")
+        botState.sessionId = jsonObject.get("session_id")
+        botState.sessionStartTime = jsonObject.get("session_start_time")
         return botState
