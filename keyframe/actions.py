@@ -38,6 +38,8 @@ class ActionObject(object):
     def __init__(self, **kwargs):
         # TODO - get rid of this does not seem to be used
         self.__clsid__ = utils.getUUID()
+        self.accountId = kwargs.get("accountId")
+        self.agentId = kwargs.get("agentId")
         self.apiResult = kwargs.get("apiResult")
         self.canonicalMsg = kwargs.get("canonicalMsg")
         self.state = "new"
@@ -74,7 +76,8 @@ class ActionObject(object):
 
     @classmethod
     def createActionObject(
-            cls, topicId, canonicalMsg, botState,
+            cls, accountId, agentId,
+            topicId, canonicalMsg, botState,
             userProfile, requestState, api, channelClient, actionObjectParams={},
             apiResult=None, newTopic=None):
         log.debug("ActionObject.createActionObject(%s)", locals())
@@ -87,7 +90,8 @@ class ActionObject(object):
         runAPICall = False
         #actionObject = cls(actionObjectParams)
         actionObject = cls()
-
+        actionObject.accountId = accountId
+        actionObject.agentId = agentId
         # Get the intent string and create an object from it.
         #slotClasses = slot_fill.getSlots(cls)
         slotClasses = actionObject.getSlots()

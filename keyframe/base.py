@@ -262,12 +262,13 @@ class BaseBot(object):
         log.debug("RETURNING DEBUG action: %s", d)
         return d
 
-    def createActionObject(self, topicId,
+    def createActionObject(self, accountId, agentId, topicId,
                            canonicalMsg, botState,
                            userProfile, requestState,
                            apiResult=None, newTopic=None):
         log.debug("BaseBot.createActionObject(%s)", locals())
         return actions.ActionObject.createActionObject(
+            accountId, agentId,
             topicId,
             canonicalMsg, botState,
             userProfile, requestState, self.api, self.channelClient,
@@ -398,6 +399,7 @@ class BaseBot(object):
 
             # Now we should have a topicId
             actionObject = self.createActionObject(
+                self.accountId, self.agentId,
                 topicId,
                 canonicalMsg, botState, userProfile,
                 requestState, newTopic=newTopic)
@@ -411,6 +413,8 @@ class BaseBot(object):
             # Only write the request event once.
             if not wroteEvent:
                 requestEvent = event.createEvent(
+                    accountId=self.accountId,
+                    agentId=self.agentId,
                     eventType="request", src="user",
                     sessionStatus=sessionStatus,
                     sessionId=botState.getSessionId(),

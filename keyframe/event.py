@@ -25,6 +25,8 @@ class Event(object):
             eventType, ts, random.randint(0,1000))
 
     def __init__(self, **kwargs):
+        self.accountId = kwargs.get("accountId")
+        self.agentId = kwargs.get("agentId")
         self.version = kwargs.get("version")  # integer
         if not self.version:
             self.version = EVENT_VERSION
@@ -48,6 +50,8 @@ class Event(object):
 
     def toJSON(self):
         return {
+            "account_id":self.accountId,
+            "agent_id":self.agentId,
             "resolution_status":self.resolutionStatus,
             "ticket_filed":self.ticketFiled,
             "version":self.version,

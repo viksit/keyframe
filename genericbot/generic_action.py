@@ -101,6 +101,8 @@ class GenericActionObject(keyframe.actions.ActionObject):
                 botState)
 
             responseEvent = keyframe.event.createEvent(
+                accountId=self.accountId,
+                agentId=self.agentId,
                 eventType="response", src="agent",
                 sessionStatus=None, # to be filled below
                 sessionId=botState.getSessionId(),
@@ -158,7 +160,8 @@ class GenericActionObject(keyframe.actions.ActionObject):
             "nextSlotToFillName", self.nextSlotToFill)
 
     @classmethod
-    def createActionObject(cls, specJson, topicId, canonicalMsg, botState,
+    def createActionObject(cls, accountId, agentId,
+                           specJson, topicId, canonicalMsg, botState,
                            userProfile, requestState, api, channelClient,
                            actionObjectParams={},
                            apiResult=None, newTopic=None):
@@ -166,6 +169,8 @@ class GenericActionObject(keyframe.actions.ActionObject):
 
         # Create a GenericActionObject using specJson
         actionObject = cls()
+        actionObject.accountId = accountId
+        actionObject.agentId = agentId
         actionObject.specJson = specJson
         actionObject.slotsType = specJson.get(
             "slots_type", cls.SLOTS_TYPE_CONDITIONAL)
