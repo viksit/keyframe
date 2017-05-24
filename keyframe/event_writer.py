@@ -8,7 +8,7 @@ import boto3
 import keyframe.config
 
 log = logging.getLogger(__name__)
-
+#log.setLevel(10)
 
 WRITER_TYPE_FILE = "file"
 WRITER_TYPE_KINESIS = "kinesis"
@@ -77,6 +77,7 @@ class KinesisStreamWriter(Writer):
         log.info("created KinesisStreamWriter with kstreamname: %s", self.kinesisStreamName)
 
     def write(self, data, partitionKey):
+        log.debug("KinesisStreamWriter.write(%s)", locals())
         self.kstream.put_record(
             StreamName=self.kinesisStreamName,
             Data=data,
