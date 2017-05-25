@@ -74,8 +74,6 @@ class GenericHiddenSlot(keyframe.slot_fill.Slot):
         self.apiResult = apiResult
         self.channelClient = channelClient
         self.canonicalMsg = canonicalMsg
-        for (k,v) in self.customFields.iteritems():
-            botState.addToSessionData(k, v, self.entityType)
         self.filled = True
         return self.filled
 
@@ -111,7 +109,7 @@ class GenericTransferSlot(GenericSlot):
         channelClient.sendResponse(cr)
 
     def fill(self, canonicalMsg, apiResult, channelClient, botState):
-        raise Exception("This should not be called!!")
+        raise Exception("Should not be called for GenericTransferSlot")
 
 class GenericIntentModelSlot(GenericSlot):
     def __init__(self, apiResult=None, newTopic=None,

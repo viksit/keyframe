@@ -88,6 +88,15 @@ class Slot(object):
         self.channelClient = kwargs.get("channelClient")
         self.state = "new" # or process_slot
 
+    def addCustomFieldsToSession(self, botState):
+        if self.customFields:
+            for (k,v) in self.customFields.iteritems():
+                botState.addToSessionData(k, v, self.entityType)
+
+    def fillWrapper(self, canonicalMsg, apiResult, channelClient, botState):
+        self.addCustomFieldsToSession(botState)
+        return self.fill(canonicalMsg, apiResult, channelClient, botState)
+
     def fill(self, canonicalMsg, apiResult, channelClient, botState):
         """
         if parseOriginal is true

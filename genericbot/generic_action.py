@@ -88,15 +88,15 @@ class GenericActionObject(keyframe.actions.ActionObject):
             slotObject = self.slotObjectsByName[self.nextSlotToFillName]
             assert slotObject
             if slotObject.slotType == slot_fill.Slot.SLOT_TYPE_TRANSFER:
-                # Decision was to not have a prompt for transfer slots.
-                #slotObject.sendMessageIfAny(
-                #    self.canonicalMsg, self.apiResult, self.channelClient,
-                #    botState)
+                slotObject.addCustomFieldsToSession(botState)
+                slotObject.sendMessageIfAny(
+                    self.canonicalMsg, self.apiResult, self.channelClient,
+                    botState)
                 transferTopicId = slotObject.getTransferTopicId()
                 assert transferTopicId, "Trying to transfer without transferTopicId"
                 botState.setTransferTopicId(transferTopicId)
                 return constants.BOT_REQUEST_STATE_TRANSFER
-            filled = slotObject.fill(
+            filled = slotObject.fillWrapper(
                 self.canonicalMsg, self.apiResult, self.channelClient,
                 botState)
 
@@ -227,6 +227,9 @@ class GenericActionObject(keyframe.actions.ActionObject):
             gc.descName = slotSpec.get("desc_name")
             assert gc.name, "slot %s must have a name" % (slotSpec,)
             gc.entityName = slotSpec.get("entityName", gc.name)
+
+            # Let all slots have customfields.
+            gc.customFields = slotSpec.get("custom_fields")
 
             required = slotSpec.get("required")
             if not required:

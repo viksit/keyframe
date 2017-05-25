@@ -187,7 +187,7 @@ class ActionObject(object):
         for slotObject in self.slotObjects:
             log.debug("slotObject: %s", slotObject)
             if not slotObject.filled:
-                filled = slotObject.fill(
+                filled = slotObject.fillWrapper(
                     self.canonicalMsg, self.apiResult, self.channelClient,
                     botState)
                 if filled is False:
