@@ -92,10 +92,9 @@ def testFileWriter():
     w2 = FileWriter(f=w.f)
     w2.write("event3")
 
-def testKinesisWriter():
-    w = KinesisStreamWriter()
-    w.write(json.dumps({"event_id":"1234", "user_id":"u1"}), "u1")
-    w.write(json.dumps({"event_id":"1235", "user_id":"u2"}), "u2")
-    w.write(json.dumps({"event_id":"1236", "user_id":"u3"}), "u3")
-    w.write(json.dumps({"event_id":"1237", "user_id":"u1"}), "u1")
+def testKinesisWriter(config=None, kinesisStreamName=None, numEvents=1):
+    w = KinesisStreamWriter(config, kinesisStreamName)
+    for i in range(numEvents):
+        w.write(json.dumps({"event_id":"1234", "user_id":"u1"}), "u1")
+
 

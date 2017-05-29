@@ -33,6 +33,7 @@ class Config(object):
     KINESIS_USER_ACCESS_KEY_ID = "AKIAII26HBVXJUNGKT5A"
     KINESIS_USER_SECRET_ACCESS_KEY = "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"
     KINESIS_AWS_REGION = "us-west-2"
+
     KINESIS_STREAM_NAME = os.getenv("KINESIS_STREAM_NAME","kf-events-dev")
 
     DYNAMODB_AWS_REGION = "us-west-2"
@@ -81,3 +82,5 @@ class ProdConfig(Config):
     AWS_ACCESS_KEY_ID = "AKIAJACRM3ORXT3E6HVA"
     AWS_SECRET_ACCESS_KEY = "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"
     KV_STORE_DYNAMODB_TABLE = "client_bots_kvstore_prod"
+
+    KINESIS_STREAM_NAME = os.getenv("KINESIS_STREAM_NAME","kf-events-prod")
