@@ -1,4 +1,8 @@
 import utils
+import logging
+
+log = logging.getLogger(__name__)
+#log.setLevel(10)
 
 CHANNEL_FB = "channel-fb"
 CHANNEL_SLACK = "channel-slack"
@@ -158,9 +162,12 @@ class ResponseElement(object):
     DISPLAY_TYPE_DROPDOWN = "dropdown"
     DISPLAY_TYPE_BUTTON_LIST = "buttonlist"
 
+    MSG_BREAK_TAG = "<msgbr>"
+
     def __init__(self, type, text=None, carousel=None, responseType=None,
                  responseMeta=None, optionsList=None, displayType=None,
-                 inputExpected=None, uuid=None):
+                 inputExpected=None, uuid=None,
+                 textList=None, textType="single"):
         """
         text: Text response to show user
         carousel: To render a series of images on the channel
@@ -169,6 +176,10 @@ class ResponseElement(object):
         """
         self.type = type
         self.text = text
+        # textList and textType only apply for type=ResponseElement.TYPE_TEXT
+        self.textList = textList
+        self.textType = textType  # single or list
+
         self.carousel = carousel
         self.responseType = responseType
         self.responseMeta = responseMeta
@@ -182,9 +193,11 @@ class ResponseElement(object):
     def __repr__(self):
         res = ("ResponseElement(type=%s, responseType=%s, text=%s, carousel=%s, "
                "optionsList=%s, responseMeta=%s, displayType=%s, inputExpected=%s, "
-               "uuid=%s") % (self.type, self.responseType, self.text,
-                             self.carousel, self.optionsList, self.responseMeta,
-                             self.displayType, self.inputExpected, self.uuid)
+               "uuid=%s, textType=%s, textList=%s") % (
+                   self.type, self.responseType, self.text,
+                   self.carousel, self.optionsList, self.responseMeta,
+                   self.displayType, self.inputExpected, self.uuid,
+                   self.textType, self.textList)
         return res.encode("utf-8")
 
     def toJSON(self):
@@ -195,6 +208,8 @@ class ResponseElement(object):
             "type": self.type,
             "responseType": self.responseType,
             "text": self.text,
+            "textList": self.textList,
+            "textType": self.textType,
             "carousel": self.carousel,
             "optionsList":self.optionsList,
             "responseMeta": rm,
@@ -234,12 +249,22 @@ def createAttachmentsResponse(canonicalMsg, text, responseType=None,
         responseElements=[responseElement],
         botStateUid=botStateUid)
 
+
 def createTextResponse(canonicalMsg, text, responseType=None,
                        responseMeta=None, botStateUid=None,
                        inputExpected=False):
+    textList = None
+    textType = "single"
+    x = text.split(ResponseElement.MSG_BREAK_TAG)
+    if len(x) > 1:
+        textType = "list"
+        textList = [e.strip() for e in x]
+    log.debug("textType: %s, textList: %s", textType, textList)
     responseElement = ResponseElement(
         type=ResponseElement.TYPE_TEXT,
         text=text,
+        textList=textList,
+        textType=textType,
         responseType=responseType,
         responseMeta=responseMeta,
         inputExpected=inputExpected)
