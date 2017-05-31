@@ -128,6 +128,7 @@ class GenericActionObject(keyframe.actions.ActionObject):
                 eventWriter.write(responseEvent.toJSONStr(), responseEvent.userId)
                 return constants.BOT_REQUEST_STATE_PROCESSED
             if not slotObject.slotTransitions:
+                assert slotObject.slotType != slot_fill.Slot.SLOT_TYPE_INTENT_MODEL, "Intent slots should always have an edge to another slot"
                 log.debug("slotFillConditional: returning True")
                 if self.getTopicType() == "resolution":
                     responseEvent.sessionStatus = "end"
@@ -140,7 +141,7 @@ class GenericActionObject(keyframe.actions.ActionObject):
             if not self.nextSlotToFillName:
                 self.nextSlotToFillName = slotObject.slotTransitions.get("__default__")
             if not self.nextSlotToFillName:
-                assert slotObject.slotType != slot_fill.Slot.SLOT_TYPE_INTENT_MODEL, "Intent slots should always have an edge to another slot"
+                assert slotObject.slotType != slot_fill.Slot.SLOT_TYPE_INTENT_MODEL, "No transition for value (%s) in current slot" % (slotObject.value,)
                 log.info("slotFillConditional: returning True")
                 if self.getTopicType() == "resolution":
                     responseEvent.sessionStatus = "end"
