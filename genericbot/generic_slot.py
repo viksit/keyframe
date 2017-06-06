@@ -211,17 +211,36 @@ class GenericActionSlot(GenericSlot):
         actionType = self.actionSpec.get("action_type").lower()
         if actionType == "zendesk":
             resp = self.processZendesk(botState)
-        #elif actionType == "email":
-        #    resp = self.doStructuredResponse(
-        #        self.actionSpec.get("email"), botState)
         elif actionType == "webhook":
             resp = self.fetchWebhook(
                 self.actionSpec.get("webhook"), botState)
         else:
+            resp = self.doStructuredResponse(
+                self.actionSpec.get("email"), botState)
             raise Exception("Unknown actionType (%s)" % (actionType,))
         return self.respond(
             resp, canonicalMsg, botStateUid=botState.getUid())
 
+    def doStructuredResponse(self, structuredMsg):
+        rt = structuredMsg["response_type"]
+        if rt != "email":
+            log.warn("unknown response_type: %s", rt)
+            return None
+        toAddr = Template(structuredMsg.get("to")).render(self.filledSlots)
+        subject = Template(structuredMsg.get("subject")).render(self.filledSlots)
+        emailContent = Template(structuredMsg.get("body")).render(self.filledSlots)
+        r = keyframe.email.send(toAddr, subject, emailContent)
+        responseContent = "<no response specified>"
+        if r:
+            responseContent = structuredMsg.get(
+                "success_response",
+                structuredMsg.get("response", responseContent))
+        else:
+            responseContent = structuredMsg.get(
+                "failure_response",
+                structuredMsg.get("response", responseContent))
+        return Template(responseContent).render(self.filledSlots)
+    
     def fetchWebhook(self, webhook, botState):
         # To render a templatized url with custom parameters
         url = webhook.get("api_url")
