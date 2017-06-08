@@ -1,0 +1,119 @@
+{
+  "config_json": {
+    "intent_model_params": {
+      "outlier_cutoff": "",
+      "outlier_frac": "",
+      "training_test_frac_hint": 0.22
+    },
+    "start_topic": "topic_d010171ee5b24f7197e24a775ab11bcc",
+    "topics": {
+      "question_253a27fb4f96491e9fdd2504da8d96d7": {
+        "slots": [
+          {
+            "action_spec": {
+              "action_type": "email",
+              "webhook": {
+                "api_auth": "user:password",
+                "api_body": "{\"param1\":\"hard-coded\"|",
+                "api_name": "Local Test",
+                "api_url": "http://localhost:8080/ping",
+                "response_text": "Webhook has probably been called."
+              },
+              "email": {
+                "to":"nishant@myralabs.com",
+                "subject":"Test email action",
+                "body":"This is a test email action",
+                "success_response":"Email has been sent",
+                "failure_response":"There was a problem"
+              }
+            },
+            "desc_name": "response_slot",
+            "entity_type": "FREETEXT",
+            "name": "__response__",
+            "slot_type": "slot-type-action"
+          }
+        ],
+        "slots_start": "__response__",
+        "slots_type": "slots-type-conditional",
+        "topic_id": "question_253a27fb4f96491e9fdd2504da8d96d7"
+      },
+      "question_81e99434c6cf4e56abb5ce12a6feffd1": {
+        "slots": [
+          {
+            "desc_name": "response_slot",
+            "entity_type": "FREETEXT",
+            "name": "__response__",
+            "prompt": "",
+            "slot_type": "slot-type-info"
+          }
+        ],
+        "slots_start": "__response__",
+        "slots_type": "slots-type-conditional",
+        "topic_id": "question_81e99434c6cf4e56abb5ce12a6feffd1"
+      },
+      "question_fe5293361db64f58bcd095b44387ce18": {
+        "slots": [
+          {
+            "desc_name": "response_slot",
+            "entity_type": "FREETEXT",
+            "name": "__response__",
+            "prompt": "",
+            "slot_type": "slot-type-info"
+          }
+        ],
+        "slots_start": "__response__",
+        "slots_type": "slots-type-conditional",
+        "topic_id": "question_fe5293361db64f58bcd095b44387ce18"
+      },
+      "topic_d010171ee5b24f7197e24a775ab11bcc": {
+        "slots": [
+          {
+            "custom_fields": {},
+            "desc_name": "Salutation",
+            "entity_type": null,
+            "intent_model_id": "",
+            "name": "node_51a04a407c9f4de2b6f93da4f6d2020c",
+            "parse_original": true,
+            "prompt": "Diag1 prompt: Hello there",
+            "slot_transitions": {
+              "__unknown__": "node_655f9d9638a644b2a2208e62573eb028",
+              "intent_bye": "node_5e3d7468cbf14f93a8f17901cf0e660d",
+              "intent_greeting": "node_912e026fa253445fb57172398e0ba7be"
+            },
+            "slot_type": "slot-type-intent-model"
+          },
+          {
+            "custom_fields": {
+              "code": "resolution:try_again"
+            },
+            "desc_name": "Resolution try again",
+            "entity_type": null,
+            "name": "node_655f9d9638a644b2a2208e62573eb028",
+            "prompt": "",
+            "slot_type": "slot-type-transfer",
+            "transfer_topic_id": "question_253a27fb4f96491e9fdd2504da8d96d7"
+          },
+          {
+            "custom_fields": {},
+            "desc_name": "Hello",
+            "entity_type": null,
+            "name": "node_912e026fa253445fb57172398e0ba7be",
+            "prompt": "Hello there. I am here to help.",
+            "slot_type": "slot-type-info"
+          },
+          {
+            "custom_fields": {},
+            "desc_name": "Bye",
+            "entity_type": null,
+            "name": "node_5e3d7468cbf14f93a8f17901cf0e660d",
+            "prompt": "I hope this was helpful. Bye.",
+            "slot_type": "slot-type-info"
+          }
+        ],
+        "slots_start": "node_51a04a407c9f4de2b6f93da4f6d2020c",
+        "slots_type": "slots-type-conditional",
+        "topic_id": "topic_d010171ee5b24f7197e24a775ab11bcc"
+      }
+    }
+  }
+}

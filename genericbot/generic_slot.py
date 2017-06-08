@@ -211,9 +211,9 @@ class GenericActionSlot(GenericSlot):
         actionType = self.actionSpec.get("action_type").lower()
         if actionType == "zendesk":
             resp = self.processZendesk(botState)
-        #elif actionType == "email":
-        #    resp = self.doStructuredResponse(
-        #        self.actionSpec.get("email"), botState)
+        elif actionType == "email":
+            resp = self.doEmail(
+                self.actionSpec.get("email"), botState)
         elif actionType == "webhook":
             resp = self.fetchWebhook(
                 self.actionSpec.get("webhook"), botState)
@@ -286,21 +286,20 @@ class GenericActionSlot(GenericSlot):
         return renderedResponse
 
 
-    def doEmail(self, emailSpec):
-        toAddr = Template(emailSpec.get("to")).render(self.filledSlots)
-        subject = Template(emailSpec.get("subject")).render(self.filledSlots)
-        emailContent = Template(emailSpec.get("body")).render(self.filledSlots)
+    def doEmail(self, emailSpec, botState):
+        entities = botState.getSessionData()
+        d = {"entities":entities,
+             "utterances":botState.getSessionUtterances()}
+        toAddr = Template(emailSpec.get("to")).render(d)
+        subject = Template(emailSpec.get("subject")).render(d)
+        emailContent = Template(emailSpec.get("body")).render(d)
         r = keyframe.email.send(toAddr, subject, emailContent)
         responseContent = "<no response specified>"
         if r:
-            responseContent = emailSpec.get(
-                "success_response",
-                emailSpec.get("response", responseContent))
+            responseContent = emailSpec.get("success_response")
         else:
-            responseContent = emailSpec.get(
-                "failure_response",
-                emailSpec.get("response", responseContent))
-        return Template(responseContent).render(self.filledSlots)
+            responseContent = emailSpec.get("failure_response")
+        return Template(responseContent).render(d)
 
     def getAttachmentUrls(self, botState):
         urls = []
