@@ -24,7 +24,7 @@ import keyframe.event_writer as event_writer
 import keyframe.event
 
 log = logging.getLogger(__name__)
-#log.setLevel(20)
+#log.setLevel(10)
 
 class GenericActionObject(keyframe.actions.ActionObject):
 
@@ -239,6 +239,7 @@ class GenericActionObject(keyframe.actions.ActionObject):
             gc.required = required
 
             parseOriginal = slotSpec.get("parse_original")
+            log.debug("got parseOriginal: %s from parse_original", parseOriginal)
             if not parseOriginal:
                 parseOriginal = getattr(gc, "parseOriginal")
                 log.debug("slotSpec does not specify parseOriginal - getting default :%s", parseOriginal)
@@ -309,10 +310,11 @@ class GenericActionObject(keyframe.actions.ActionObject):
             log.debug("set originalUtterance to input (%s)",
                       canonicalMsg.text)
             actionObject.originalUtterance = canonicalMsg.text
-        if runAPICall:
-            assert api, "must have an api to runAPICall"
-            apiResult = api.get(canonicalMsg.text)
-            actionObject.apiResult = apiResult
+        # No need to do this any more. Each slot will makes its own call.
+        #if runAPICall:
+        #    assert api, "must have an api to runAPICall"
+        #    apiResult = api.get(canonicalMsg.text)
+        #    actionObject.apiResult = apiResult
 
         actionObject.canonicalMsg = canonicalMsg
         actionObject.channelClient = channelClient

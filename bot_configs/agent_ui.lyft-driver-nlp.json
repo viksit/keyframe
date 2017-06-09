@@ -1,0 +1,3063 @@
+{
+  "metav3": {
+    "diag_topics": {
+      "topic_diag1": {
+        "default": false,
+        "id": "topic_diag1",
+        "name": "diag1",
+        "nodes": [],
+        "nodes_type": "",
+        "saved": {
+          "edges": [
+            {
+              "from": "default",
+              "label": "Ambassador",
+              "to": "default_ambassador"
+            },
+            {
+              "from": "default",
+              "label": "Applicant",
+              "to": "default_applicant"
+            },
+            {
+              "from": "default_applicant",
+              "label": "i want to check or change my application status",
+              "to": "default_applicant_i_want_to_check_or_change_my_application_status"
+            },
+            {
+              "from": "default_applicant_i_want_to_check_or_change_my_application_status",
+              "label": "i'd like to cancel my application",
+              "to": "default_applicant_i_want_to_check_or_change_my_application_status_i'd_like_to_cancel_my_application"
+            },
+            {
+              "from": "default_applicant",
+              "label": "creating/updating my driver profile",
+              "to": "default_applicant_creating_updating_my_driver_profile"
+            },
+            {
+              "from": "default_applicant_creating_updating_my_driver_profile",
+              "label": "my lyft car photo is wrong",
+              "to": "default_applicant_creating_updating_my_driver_profile_my_lyft_car_photo_is_wrong"
+            },
+            {
+              "from": "default_applicant",
+              "label": "driving requirements in my city",
+              "to": "default_applicant_driving_requirements_in_my_city"
+            },
+            {
+              "from": "default_applicant_i_want_to_check_or_change_my_application_status",
+              "label": "i was denied to become a driver - why",
+              "to": "default_applicant_i_want_to_check_or_change_my_application_status_i_was_denied_to_become_a_driver_-_why"
+            },
+            {
+              "from": "default_applicant_creating_updating_my_driver_profile",
+              "label": "updating drivers license",
+              "to": "default_applicant_creating_updating_my_driver_profile_updating_drivers_license"
+            },
+            {
+              "from": "default_applicant",
+              "label": "express drive rental program",
+              "to": "default_applicant_express_drive_rental_program"
+            },
+            {
+              "from": "default_applicant_express_drive_rental_program",
+              "label": "Signing up",
+              "to": "default_applicant_express_drive_rental_program_signing_up"
+            },
+            {
+              "from": "default_applicant_express_drive_rental_program",
+              "label": "General program information",
+              "to": "default_applicant_express_drive_rental_program_general_program_information"
+            },
+            {
+              "from": "default_applicant_express_drive_rental_program",
+              "label": "Rental Deposit",
+              "to": "default_applicant_express_drive_rental_program_rental_deposit"
+            },
+            {
+              "from": "default_applicant_express_drive_rental_program",
+              "label": "Vehicle pickup",
+              "to": "default_applicant_express_drive_rental_program_vehicle_pickup"
+            },
+            {
+              "from": "default_applicant_express_drive_rental_program",
+              "label": "No vehicles available",
+              "to": "default_applicant_express_drive_rental_program_no_vehicles_available"
+            },
+            {
+              "from": "default_applicant",
+              "label": "I need help with ID Verification",
+              "to": "default_applicant_i_need_help_with_id_verification"
+            },
+            {
+              "from": "default_applicant_creating_updating_my_driver_profile",
+              "label": "updating insurance",
+              "to": "default_applicant_creating_updating_my_driver_profile_updating_insurance"
+            },
+            {
+              "from": "default_applicant",
+              "label": "problem during mentor session",
+              "to": "default_applicant_problem_during_mentor_session"
+            },
+            {
+              "from": "default_applicant_problem_during_mentor_session",
+              "label": "post mentor vehicle fix",
+              "to": "default_applicant_problem_during_mentor_session_post_mentor_vehicle_fix"
+            },
+            {
+              "from": "default_applicant_creating_updating_my_driver_profile",
+              "label": "i need to retake profile photo",
+              "to": "default_applicant_creating_updating_my_driver_profile_i_need_to_retake_profile_photo"
+            },
+            {
+              "from": "default_applicant_creating_updating_my_driver_profile",
+              "label": "other profile request",
+              "to": "default_applicant_creating_updating_my_driver_profile_other_profile_request"
+            },
+            {
+              "from": "default_applicant",
+              "label": "referral bonus",
+              "to": "default_applicant_referral_bonus"
+            },
+            {
+              "from": "default_applicant_problem_during_mentor_session",
+              "label": "requesting a new mentor",
+              "to": "default_applicant_problem_during_mentor_session_requesting_a_new_mentor"
+            },
+            {
+              "from": "default_applicant_problem_during_mentor_session",
+              "label": "rescheduling my mentor session",
+              "to": "default_applicant_problem_during_mentor_session_rescheduling_my_mentor_session"
+            },
+            {
+              "from": "default_applicant",
+              "label": "technical issue with application",
+              "to": "default_applicant_technical_issue_with_application"
+            },
+            {
+              "from": "default_applicant_i_want_to_check_or_change_my_application_status",
+              "label": "i'm waiting on my background check",
+              "to": "default_applicant_i_want_to_check_or_change_my_application_status_i'm_waiting_on_my_background_check"
+            },
+            {
+              "from": "default",
+              "label": "Driver",
+              "to": "node_driver_nlp_1"
+            },
+            {
+              "from": "node_driver_nlp_1",
+              "label": "__unknown__",
+              "to": "node_driver_unknown"
+            },
+            {
+              "from": "node_driver_unknown",
+              "label": "__default__",
+              "to": "default_driver"
+            },
+            {
+              "from": "node_driver_nlp_1",
+              "label": "cancelled_ride",
+              "to": "default_driver_issue_with_a_ride"
+            },
+            {
+              "from": "node_driver_nlp_1",
+              "label": "compliance",
+              "to": "default_driver_local_regulations_requirements"
+            },
+            {
+              "from": "node_driver_nlp_1",
+              "label": "express_drive",
+              "to": "default_driver_express_drive_rental_program"
+            },
+            {
+              "from": "node_driver_nlp_1",
+              "label": "found_item",
+              "to": "default_driver_issue_with_a_ride_i_found_an_item"
+            },
+            {
+              "from": "node_driver_nlp_1",
+              "label": "insurance_update",
+              "to": "default_driver_driver_profile_updates_updating_insurance"
+            },
+            {
+              "from": "node_driver_nlp_1",
+              "label": "new_car",
+              "to": "default_driver_driver_profile_updates"
+            },
+            {
+              "from": "node_driver_nlp_1",
+              "label": "pay",
+              "to": "default_driver_my_payments"
+            },
+            {
+              "from": "node_driver_nlp_1",
+              "label": "profile_photo",
+              "to": "default_driver_driver_profile_updates_updating_profile_photo"
+            },
+            {
+              "from": "node_driver_nlp_1",
+              "label": "switch_regions",
+              "to": "default_driver_driver_profile_updates_switching_driver_region"
+            },
+            {
+              "from": "default_driver",
+              "label": "AMP",
+              "to": "default_driver_amp"
+            },
+            {
+              "from": "default_driver_amp",
+              "label": "Battery or charging",
+              "to": "default_driver_amp_battery_or_charging"
+            },
+            {
+              "from": "default_driver_amp",
+              "label": "Connectivity, bluetooth, or pairing",
+              "to": "default_driver_amp_connectivity__bluetooth__or_pairing"
+            },
+            {
+              "from": "default_driver_amp",
+              "label": "Display issue",
+              "to": "default_driver_amp_display_issue"
+            },
+            {
+              "from": "default_driver_amp",
+              "label": "Overheating",
+              "to": "default_driver_amp_overheating"
+            },
+            {
+              "from": "default_driver_amp",
+              "label": "I want an Amp or Amp accessory",
+              "to": "default_driver_amp_i_want_an_amp_or_amp_accessory"
+            },
+            {
+              "from": "default_driver_amp_i_want_an_amp_or_amp_accessory",
+              "label": "My Amp is broken",
+              "to": "default_driver_amp_i_want_an_amp_or_amp_accessory_my_amp_is_broken"
+            },
+            {
+              "from": "default_driver_amp_i_want_an_amp_or_amp_accessory",
+              "label": "Need new base",
+              "to": "default_driver_amp_i_want_an_amp_or_amp_accessory_need_new_base"
+            },
+            {
+              "from": "default_driver_amp_i_want_an_amp_or_amp_accessory",
+              "label": "Need new cable",
+              "to": "default_driver_amp_i_want_an_amp_or_amp_accessory_need_new_cable"
+            },
+            {
+              "from": "default_driver_amp_i_want_an_amp_or_amp_accessory",
+              "label": "Lost or stolen",
+              "to": "default_driver_amp_i_want_an_amp_or_amp_accessory_lost_or_stolen"
+            },
+            {
+              "from": "default_driver_amp_i_want_an_amp_or_amp_accessory",
+              "label": "I never received one",
+              "to": "default_driver_amp_i_want_an_amp_or_amp_accessory_i_never_received_one"
+            },
+            {
+              "from": "default_driver_amp",
+              "label": "Shipping or delivery",
+              "to": "default_driver_amp_shipping_or_delivery"
+            },
+            {
+              "from": "default_driver_amp_i_want_an_amp_or_amp_accessory",
+              "label": "Ordered, but never arrived",
+              "to": "default_driver_amp_i_want_an_amp_or_amp_accessory_ordered__but_never_arrived"
+            },
+            {
+              "from": "default_driver",
+              "label": "Issue with a ride",
+              "to": "default_driver_issue_with_a_ride"
+            },
+            {
+              "from": "default_driver_issue_with_a_ride",
+              "label": "Canceled ride",
+              "to": "default_driver_issue_with_a_ride_canceled_ride"
+            },
+            {
+              "from": "default_driver_issue_with_a_ride",
+              "label": "Ended ride too early",
+              "to": "default_driver_issue_with_a_ride_ended_ride_too_early"
+            },
+            {
+              "from": "default_driver",
+              "label": "Local regulations/requirements",
+              "to": "default_driver_local_regulations_requirements"
+            },
+            {
+              "from": "default_driver_local_regulations_requirements",
+              "label": "Airport questions",
+              "to": "default_driver_local_regulations_requirements_airport_questions"
+            },
+            {
+              "from": "default_driver_local_regulations_requirements",
+              "label": "Car inspection",
+              "to": "default_driver_local_regulations_requirements_car_inspection"
+            },
+            {
+              "from": "default_driver_local_regulations_requirements",
+              "label": "Emblems or placards",
+              "to": "default_driver_local_regulations_requirements_emblems_or_placards"
+            },
+            {
+              "from": "default_driver_local_regulations_requirements",
+              "label": "For-hire license",
+              "to": "default_driver_local_regulations_requirements_for-hire_license"
+            },
+            {
+              "from": "default_driver",
+              "label": "Express drive rental program",
+              "to": "default_driver_express_drive_rental_program"
+            },
+            {
+              "from": "default_driver_express_drive_rental_program",
+              "label": "General program information",
+              "to": "default_driver_express_drive_rental_program_general_program_information"
+            },
+            {
+              "from": "default_driver_express_drive_rental_program",
+              "label": "Charges, earnings, or rental deposits",
+              "to": "default_driver_express_drive_rental_program_charges__earnings__or_rental_deposits"
+            },
+            {
+              "from": "default_driver",
+              "label": "My payments",
+              "to": "default_driver_my_payments"
+            },
+            {
+              "from": "default_driver_my_payments",
+              "label": "rental car costs",
+              "to": "default_driver_my_payments_rental_car_costs"
+            },
+            {
+              "from": "default_driver_express_drive_rental_program",
+              "label": "Reposessions",
+              "to": "default_driver_express_drive_rental_program_reposessions"
+            },
+            {
+              "from": "default_driver_express_drive_rental_program",
+              "label": "Signing up",
+              "to": "default_driver_express_drive_rental_program_signing_up"
+            },
+            {
+              "from": "default_driver_express_drive_rental_program",
+              "label": "Vehicle maintenance",
+              "to": "default_driver_express_drive_rental_program_vehicle_maintenance"
+            },
+            {
+              "from": "default_driver_express_drive_rental_program",
+              "label": "Vehicle pickup, return, or renewal",
+              "to": "default_driver_express_drive_rental_program_vehicle_pickup__return__or_renewal"
+            },
+            {
+              "from": "default_driver_express_drive_rental_program",
+              "label": "No vehicles available",
+              "to": "default_driver_express_drive_rental_program_no_vehicles_available"
+            },
+            {
+              "from": "default_driver_issue_with_a_ride",
+              "label": "I found an item",
+              "to": "default_driver_issue_with_a_ride_i_found_an_item"
+            },
+            {
+              "from": "default_driver",
+              "label": "Driver profile updates",
+              "to": "default_driver_driver_profile_updates"
+            },
+            {
+              "from": "default_driver_driver_profile_updates",
+              "label": "updating insurance",
+              "to": "default_driver_driver_profile_updates_updating_insurance"
+            },
+            {
+              "from": "default_driver_driver_profile_updates",
+              "label": "changing phone number",
+              "to": "default_driver_driver_profile_updates_changing_phone_number"
+            },
+            {
+              "from": "default_driver_driver_profile_updates",
+              "label": "switching to new car",
+              "to": "default_driver_driver_profile_updates_switching_to_new_car"
+            },
+            {
+              "from": "default_driver_my_payments",
+              "label": "average hourly guarantees",
+              "to": "default_driver_my_payments_average_hourly_guarantees"
+            },
+            {
+              "from": "default_driver_my_payments",
+              "label": "a driver referral",
+              "to": "default_driver_my_payments_a_driver_referral"
+            },
+            {
+              "from": "default_driver_issue_with_a_ride",
+              "label": "A passenger caused damage to my car",
+              "to": "default_driver_issue_with_a_ride_a_passenger_caused_damage_to_my_car"
+            },
+            {
+              "from": "default_driver_my_payments",
+              "label": "weekly deposit",
+              "to": "default_driver_my_payments_weekly_deposit"
+            },
+            {
+              "from": "default_driver_my_payments",
+              "label": "express pay",
+              "to": "default_driver_my_payments_express_pay"
+            },
+            {
+              "from": "default_driver_my_payments",
+              "label": "power driver bonus",
+              "to": "default_driver_my_payments_power_driver_bonus"
+            },
+            {
+              "from": "default_driver_my_payments",
+              "label": "taxes",
+              "to": "default_driver_my_payments_taxes"
+            },
+            {
+              "from": "default_driver_my_payments",
+              "label": "tolls",
+              "to": "default_driver_my_payments_tolls"
+            },
+            {
+              "from": "default_driver_my_payments",
+              "label": "a weekly guarantee",
+              "to": "default_driver_my_payments_a_weekly_guarantee"
+            },
+            {
+              "from": "default_driver_driver_profile_updates",
+              "label": "my lyft car photo is wrong",
+              "to": "default_driver_driver_profile_updates_my_lyft_car_photo_is_wrong"
+            },
+            {
+              "from": "default_driver_driver_profile_updates",
+              "label": "updating profile photo",
+              "to": "default_driver_driver_profile_updates_updating_profile_photo"
+            },
+            {
+              "from": "default_driver_driver_profile_updates",
+              "label": "updating car photo",
+              "to": "default_driver_driver_profile_updates_updating_car_photo"
+            },
+            {
+              "from": "default_driver_issue_with_a_ride",
+              "label": "My driver's car photo was wrong",
+              "to": "default_driver_issue_with_a_ride_my_driver's_car_photo_was_wrong"
+            },
+            {
+              "from": "default_driver_driver_profile_updates",
+              "label": "switching driver region",
+              "to": "default_driver_driver_profile_updates_switching_driver_region"
+            },
+            {
+              "from": "default_driver",
+              "label": "Mentor Program",
+              "to": "default_driver_mentor_program"
+            },
+            {
+              "from": "default_driver_mentor_program",
+              "label": "issue with a mentor/mentee",
+              "to": "default_driver_mentor_program_issue_with_a_mentor_mentee"
+            },
+            {
+              "from": "default_driver_mentor_program",
+              "label": "i have an unknown error",
+              "to": "default_driver_mentor_program_i_have_an_unknown_error"
+            },
+            {
+              "from": "default_driver_mentor_program",
+              "label": "manual mentor session",
+              "to": "default_driver_mentor_program_manual_mentor_session"
+            },
+            {
+              "from": "default_driver_mentor_program",
+              "label": "i want an update on my mentee",
+              "to": "default_driver_mentor_program_i_want_an_update_on_my_mentee"
+            },
+            {
+              "from": "default_driver_mentor_program",
+              "label": "i have an issue with the portal",
+              "to": "default_driver_mentor_program_i_have_an_issue_with_the_portal"
+            },
+            {
+              "from": "default_driver_mentor_program",
+              "label": "general program question",
+              "to": "default_driver_mentor_program_general_program_question"
+            },
+            {
+              "from": "default_driver_mentor_program",
+              "label": "i have an issue with twilio",
+              "to": "default_driver_mentor_program_i_have_an_issue_with_twilio"
+            },
+            {
+              "from": "default_driver",
+              "label": "Safety concern",
+              "to": "default_driver_safety_concern"
+            },
+            {
+              "from": "default_driver_safety_concern",
+              "label": "accident in a lyft",
+              "to": "default_driver_safety_concern_accident_in_a_lyft"
+            },
+            {
+              "from": "default_driver_safety_concern",
+              "label": "citation",
+              "to": "default_driver_safety_concern_citation"
+            },
+            {
+              "from": "default",
+              "label": "Passenger",
+              "to": "default_passenger"
+            },
+            {
+              "from": "default_passenger",
+              "label": "Issue with a ride",
+              "to": "default_passenger_issue_with_a_ride"
+            },
+            {
+              "from": "default_passenger_issue_with_a_ride",
+              "label": "Technical app issue",
+              "to": "default_passenger_issue_with_a_ride_technical_app_issue"
+            },
+            {
+              "from": "default_passenger",
+              "label": "My account is disabled",
+              "to": "default_passenger_my_account_is_disabled"
+            },
+            {
+              "from": "default_passenger_issue_with_a_ride",
+              "label": "Feedback about the dashboard Amp",
+              "to": "default_passenger_issue_with_a_ride_feedback_about_the_dashboard_amp"
+            },
+            {
+              "from": "default_passenger",
+              "label": "Charges, Credits, and Money",
+              "to": "default_passenger_charges__credits__and_money"
+            },
+            {
+              "from": "default_passenger_charges__credits__and_money",
+              "label": "I want to dispute a charge",
+              "to": "default_passenger_charges__credits__and_money_i_want_to_dispute_a_charge"
+            },
+            {
+              "from": "default_passenger_charges__credits__and_money_i_want_to_dispute_a_charge",
+              "label": "I was charged a cancel or no-show fee",
+              "to": "default_passenger_charges__credits__and_money_i_want_to_dispute_a_charge_i_was_charged_a_cancel_or_no-show_fee"
+            },
+            {
+              "from": "default_passenger",
+              "label": "Other",
+              "to": "default_passenger_other"
+            },
+            {
+              "from": "default_passenger_charges__credits__and_money",
+              "label": "Lyft Pass and Gift Cards",
+              "to": "default_passenger_charges__credits__and_money_lyft_pass_and_gift_cards"
+            },
+            {
+              "from": "default_passenger_charges__credits__and_money_lyft_pass_and_gift_cards",
+              "label": "Gift Cards",
+              "to": "default_passenger_charges__credits__and_money_lyft_pass_and_gift_cards_gift_cards"
+            },
+            {
+              "from": "default_passenger",
+              "label": "I Lost an Item",
+              "to": "default_passenger_i_lost_an_item"
+            },
+            {
+              "from": "default_passenger_charges__credits__and_money_lyft_pass_and_gift_cards",
+              "label": "Lyft Pass",
+              "to": "default_passenger_charges__credits__and_money_lyft_pass_and_gift_cards_lyft_pass"
+            },
+            {
+              "from": "default_passenger_charges__credits__and_money_i_want_to_dispute_a_charge",
+              "label": "My driver took a more expensive route",
+              "to": "default_passenger_charges__credits__and_money_i_want_to_dispute_a_charge_my_driver_took_a_more_expensive_route"
+            },
+            {
+              "from": "default_passenger_charges__credits__and_money_i_want_to_dispute_a_charge",
+              "label": "A $1 or $25 charge on my account",
+              "to": "default_passenger_charges__credits__and_money_i_want_to_dispute_a_charge_a__1_or__25_charge_on_my_account"
+            },
+            {
+              "from": "default_passenger_charges__credits__and_money",
+              "label": "Lyft credits and discounts",
+              "to": "default_passenger_charges__credits__and_money_lyft_credits_and_discounts"
+            },
+            {
+              "from": "default_passenger_charges__credits__and_money_lyft_credits_and_discounts",
+              "label": "I can't enter my code into the app",
+              "to": "default_passenger_charges__credits__and_money_lyft_credits_and_discounts_i_can't_enter_my_code_into_the_app"
+            },
+            {
+              "from": "default_passenger_charges__credits__and_money_lyft_credits_and_discounts",
+              "label": "I can't find a credit in my account",
+              "to": "default_passenger_charges__credits__and_money_lyft_credits_and_discounts_i_can't_find_a_credit_in_my_account"
+            },
+            {
+              "from": "default_passenger_charges__credits__and_money_lyft_credits_and_discounts",
+              "label": "My ride should have been discounted",
+              "to": "default_passenger_charges__credits__and_money_lyft_credits_and_discounts_my_ride_should_have_been_discounted"
+            },
+            {
+              "from": "default_passenger_issue_with_a_ride",
+              "label": "I have feedback about a driver",
+              "to": "default_passenger_issue_with_a_ride_i_have_feedback_about_a_driver"
+            },
+            {
+              "from": "default_passenger_issue_with_a_ride",
+              "label": "Safety Concern",
+              "to": "default_passenger_issue_with_a_ride_safety_concern"
+            },
+            {
+              "from": "default_passenger_charges__credits__and_money_i_want_to_dispute_a_charge",
+              "label": "My driver started or ended the ride without me in the car",
+              "to": "default_passenger_charges__credits__and_money_i_want_to_dispute_a_charge_my_driver_started_or_ended_the_ride_without_me_in_the_car"
+            },
+            {
+              "from": "default_passenger_charges__credits__and_money_i_want_to_dispute_a_charge",
+              "label": "A trip or charge I don't recognize",
+              "to": "default_passenger_charges__credits__and_money_i_want_to_dispute_a_charge_a_trip_or_charge_i_don't_recognize"
+            },
+            {
+              "from": "default_passenger",
+              "label": "Safety concern",
+              "to": "default_passenger_safety_concern"
+            },
+            {
+              "from": "start",
+              "label": "__default__",
+              "to": "default"
+            }
+          ],
+          "nodes": [
+            {
+              "custom_fields": {},
+              "id": "node_driver_unknown",
+              "label": "Info Driver unknown",
+              "node_type": "node-info",
+              "parse_original": false,
+              "prompt": "Intent unknown: I did not understand you. Lets try a different approach."
+            },
+            {
+              "custom_fields": {},
+              "entity_type": "OPTIONS",
+              "id": "default_driver",
+              "label": "Please select a topic",
+              "node_input_display_type": "dropdown",
+              "node_type": "node-qa",
+              "options_dict": {
+                "AMP": null,
+                "Driver profile updates": null,
+                "Express drive rental program": null,
+                "Issue with a ride": null,
+                "Local regulations/requirements": null,
+                "Mentor Program": null,
+                "My payments": null,
+                "Safety concern": null
+              },
+              "options_list": [
+                "Driver profile updates",
+                "My payments",
+                "Safety concern",
+                "Mentor Program",
+                "Express drive rental program",
+                "AMP",
+                "Issue with a ride",
+                "Local regulations/requirements"
+              ],
+              "parse_original": false,
+              "prompt": "Please select a topic"
+            },
+            {
+              "node_type": "node-nlp",
+              "parse_original": false,
+              "custom_fields": {},
+              "prompt": "NLP Driver node: What can I help you with?",
+              "label": "Driver NLP 1",
+              "id": "node_driver_nlp_1",
+              "intents_list": [
+                "__unknown__",
+                "cancelled_ride",
+                "compliance",
+                "express_drive",
+                "found_item",
+                "insurance_update",
+                "new_car",
+                "pay",
+                "profile_photo",
+                "switch_regions"
+              ],
+              "intent_model_id": "m-lica-721654862b51b22f29519442f"
+            },
+            {
+              "custom_fields": {
+                "issue_type": "Applicant::Express Drive::Pay",
+                "view": "Pay"
+              },
+              "entity_type": "FREETEXT",
+              "id": "default_applicant_express_drive_rental_program_rental_deposit",
+              "label": "please select the detail",
+              "node_input_display_type": "dropdown",
+              "node_type": "node-resolution",
+              "options_dict": {},
+              "options_list": [],
+              "parse_original": false,
+              "prompt": "Ok. I will create a support request for you.<msgbr>Please answer the following questions for the support request.",
+              "res_meta": {
+                "id": "question_8f93683928af4892b4d14a13f11b77e3",
+                "title": "resolution topic1"
+              }
+            },
+            {
+              "custom_fields": {},
+              "entity_type": "OPTIONS",
+              "id": "default_passenger_charges__credits__and_money_lyft_credits_and_discounts",
+              "label": "please select the detail",
+              "node_input_display_type": "dropdown",
+              "node_type": "node-qa",
+              "options_dict": {
+                "I can't enter my code into the app": null,
+                "I can't find a credit in my account": null,
+                "My ride should have been discounted": null
+              },
+              "options_list": [
+                "I can't find a credit in my account",
+                "My ride should have been discounted",
+                "I can't enter my code into the app"
+              ],
+              "parse_original": false,
+              "prompt": "please select the detail"
+            },
+            {
+              "custom_fields": {
+                "issue_type": "D::AMP::INFO::Eligibility",
+                "view": "Support - Tier 1"
+              },
+              "entity_type": "FREETEXT",
+              "id": "default_driver_amp_i_want_an_amp_or_amp_accessory_i_never_received_one",
+              "label": "PROMPT PLACEHOLDER",
+              "node_input_display_type": "dropdown",
+              "node_type": "node-resolution",
+              "options_dict": {},
+              "options_list": [],
+              "parse_original": false,
+              "prompt": "Ok. I will create a support request for you.<msgbr>Please answer the following questions for the support request.",
+              "res_meta": {
+                "id": "question_8f93683928af4892b4d14a13f11b77e3",
+                "title": "resolution topic1"
+              }
+            },
+            {
+              "custom_fields": {},
+              "entity_type": "OPTIONS",
+              "id": "default_passenger",
+              "label": "Please select a topic",
+              "node_input_display_type": "dropdown",
+              "node_type": "node-qa",
+              "options_dict": {
+                "Charges, Credits, and Money": null,
+                "I Lost an Item": null,
+                "Issue with a ride": null,
+                "My account is disabled": null,
+                "Other": null,
+                "Safety concern": null
+              },
+              "options_list": [
+                "I Lost an Item",
+                "Safety concern",
+                "Charges, Credits, and Money",
+                "My account is disabled",
+                "Other",
+                "Issue with a ride"
+              ],
+              "parse_original": false,
+              "prompt": "Please select a topic"
+            },
+            {
+              "custom_fields": {
+                "issue_type": "Mentor::Manual Session",
+                "view": "Mentor"
+              },
+              "entity_type": "FREETEXT",
+              "id": "default_driver_mentor_program_manual_mentor_session",
+              "label": "please select the detail",
+              "node_input_display_type": "dropdown",
+              "node_type": "node-resolution",
+              "options_dict": {},
+              "options_list": [],
+              "parse_original": false,
+              "prompt": "Ok. I will create a support request for you.<msgbr>Please answer the following questions for the support request.",
+              "res_meta": {
+                "id": "question_8f93683928af4892b4d14a13f11b77e3",
+                "title": "resolution topic1"
+              }
+            },
+            {
+              "custom_fields": {
+                "issue_type": "Applicant::Express Drive::Vehicle Supply",
+                "view": "Support - Tier 2"
+              },
+              "entity_type": "FREETEXT",
+              "id": "default_applicant_express_drive_rental_program_no_vehicles_available",
+              "label": "please select the detail",
+              "node_input_display_type": "dropdown",
+              "node_type": "node-resolution",
+              "options_dict": {},
+              "options_list": [],
+              "parse_original": false,
+              "prompt": "Ok. I will create a support request for you.<msgbr>Please answer the following questions for the support request.",
+              "res_meta": {
+                "id": "question_8f93683928af4892b4d14a13f11b77e3",
+                "title": "resolution topic1"
+              }
+            },
+            {
+              "custom_fields": {
+                "issue_type": "Applicant::Express Drive::General Info",
+                "view": "Support - Tier 1 (IBEX)"
+              },
+              "entity_type": "FREETEXT",
+              "id": "default_applicant_express_drive_rental_program_general_program_information",
+              "label": "please select the detail",
+              "node_input_display_type": "dropdown",
+              "node_type": "node-resolution",
+              "options_dict": {},
+              "options_list": [],
+              "parse_original": false,
+              "prompt": "Ok. I will create a support request for you.<msgbr>Please answer the following questions for the support request.",
+              "res_meta": {
+                "id": "question_8f93683928af4892b4d14a13f11b77e3",
+                "title": "resolution topic1"
+              }
+            },
+            {
+              "custom_fields": {
+                "issue_type": "Applicant::Rescheduling Mentor Ride",
+                "view": "Mentor"
+              },
+              "entity_type": "FREETEXT",
+              "id": "default_applicant_problem_during_mentor_session_rescheduling_my_mentor_session",
+              "label": "please select the detail",
+              "node_input_display_type": "dropdown",
+              "node_type": "node-resolution",
+              "options_dict": {},
+              "options_list": [],
+              "parse_original": false,
+              "prompt": "Ok. I will create a support request for you.<msgbr>Please answer the following questions for the support request.",
+              "res_meta": {
+                "id": "question_8f93683928af4892b4d14a13f11b77e3",
+                "title": "resolution topic1"
+              }
+            },
+            {
+              "custom_fields": {
+                "issue_type": "Passenger::Safety Concern",
+                "view": "Trust & Safety - Tier 1"
+              },
+              "entity_type": "FREETEXT",
+              "id": "default_passenger_issue_with_a_ride_safety_concern",
+              "label": "please select the detail",
+              "node_input_display_type": "dropdown",
+              "node_type": "node-resolution",
+              "options_dict": {},
+              "options_list": [],
+              "parse_original": false,
+              "prompt": "Ok. I will create a support request for you.<msgbr>Please answer the following questions for the support request.",
+              "res_meta": {
+                "id": "question_8f93683928af4892b4d14a13f11b77e3",
+                "title": "resolution topic1"
+              }
+            },
+            {
+              "custom_fields": {
+                "issue_type": "Mentor::Login Error",
+                "view": "Mentor"
+              },
+              "entity_type": "FREETEXT",
+              "id": "default_driver_mentor_program_i_have_an_unknown_error",
+              "label": "please select the detail",
+              "node_input_display_type": "dropdown",
+              "node_type": "node-resolution",
+              "options_dict": {},
+              "options_list": [],
+              "parse_original": false,
+              "prompt": "Ok. I will create a support request for you.<msgbr>Please answer the following questions for the support request.",
+              "res_meta": {
+                "id": "question_8f93683928af4892b4d14a13f11b77e3",
+                "title": "resolution topic1"
+              }
+            },
+            {
+              "custom_fields": {
+                "issue_type": "Applicant::Drivers License",
+                "view": "Support - Tier 1 (InTouch)"
+              },
+              "entity_type": "FREETEXT",
+              "id": "default_applicant_creating_updating_my_driver_profile_updating_drivers_license",
+              "label": "please select the detail",
+              "node_input_display_type": "dropdown",
+              "node_type": "node-resolution",
+              "options_dict": {},
+              "options_list": [],
+              "parse_original": false,
+              "prompt": "Ok. I will create a support request for you.<msgbr>Please answer the following questions for the support request.",
+              "res_meta": {
+                "id": "question_8f93683928af4892b4d14a13f11b77e3",
+                "title": "resolution topic1"
+              }
+            },
+            {
+              "custom_fields": {
+                "issue_type": "D::AMP::SHIP::Never Arrived",
+                "view": "Support - Tier 1"
+              },
+              "entity_type": "FREETEXT",
+              "id": "default_driver_amp_i_want_an_amp_or_amp_accessory_ordered__but_never_arrived",
+              "label": "PROMPT PLACEHOLDER",
+              "node_input_display_type": "dropdown",
+              "node_type": "node-resolution",
+              "options_dict": {},
+              "options_list": [],
+              "parse_original": false,
+              "prompt": "Ok. I will create a support request for you.<msgbr>Please answer the following questions for the support request.",
+              "res_meta": {
+                "id": "question_8f93683928af4892b4d14a13f11b77e3",
+                "title": "resolution topic1"
+              }
+            },
+            {
+              "custom_fields": {
+                "issue_type": "Driver::Express Drive::Vehicle Maint",
+                "view": "Support - Tier 2"
+              },
+              "entity_type": "FREETEXT",
+              "id": "default_driver_express_drive_rental_program_vehicle_maintenance",
+              "label": "please select the detail",
+              "node_input_display_type": "dropdown",
+              "node_type": "node-resolution",
+              "options_dict": {},
+              "options_list": [],
+              "parse_original": false,
+              "prompt": "Ok. I will create a support request for you.<msgbr>Please answer the following questions for the support request.",
+              "res_meta": {
+                "id": "question_8f93683928af4892b4d14a13f11b77e3",
+                "title": "resolution topic1"
+              }
+            },
+            {
+              "custom_fields": {},
+              "entity_type": "OPTIONS",
+              "id": "default_passenger_issue_with_a_ride",
+              "label": "Please select the issue",
+              "node_input_display_type": "dropdown",
+              "node_type": "node-qa",
+              "options_dict": {
+                "Feedback about the dashboard Amp": null,
+                "I have feedback about a driver": null,
+                "Safety Concern": null,
+                "Technical app issue": null
+              },
+              "options_list": [
+                "I have feedback about a driver",
+                "Technical app issue",
+                "Safety Concern",
+                "Feedback about the dashboard Amp"
+              ],
+              "parse_original": false,
+              "prompt": "Please select the issue"
+            },
+            {
+              "custom_fields": {
+                "issue_type": "Passenger::Promo Enter Issue",
+                "view": "Support - Tier 1 (IBEX)"
+              },
+              "entity_type": "FREETEXT",
+              "id": "default_passenger_charges__credits__and_money_lyft_credits_and_discounts_i_can't_enter_my_code_into_the_app",
+              "label": "PROMPT PLACEHOLDER",
+              "node_input_display_type": "dropdown",
+              "node_type": "node-resolution",
+              "options_dict": {},
+              "options_list": [],
+              "parse_original": false,
+              "prompt": "Ok. I will create a support request for you.<msgbr>Please answer the following questions for the support request.",
+              "res_meta": {
+                "id": "question_8f93683928af4892b4d14a13f11b77e3",
+                "title": "resolution topic1"
+              }
+            },
+            {
+              "custom_fields": {
+                "issue_type": "TS Issue:: CRL",
+                "view": "Trust & Safety - Tier 1"
+              },
+              "entity_type": "FREETEXT",
+              "id": "default_driver_safety_concern_accident_in_a_lyft",
+              "label": "please select the detail",
+              "node_input_display_type": "dropdown",
+              "node_type": "node-resolution",
+              "options_dict": {},
+              "options_list": [],
+              "parse_original": false,
+              "prompt": "Ok. I will create a support request for you.<msgbr>Please answer the following questions for the support request.",
+              "res_meta": {
+                "id": "question_8f93683928af4892b4d14a13f11b77e3",
+                "title": "resolution topic1"
+              }
+            },
+            {
+              "custom_fields": {
+                "issue_type": "D::AMP::CONN",
+                "view": "AMP"
+              },
+              "entity_type": "FREETEXT",
+              "id": "default_driver_amp_connectivity__bluetooth__or_pairing",
+              "label": "please select the detail",
+              "node_input_display_type": "dropdown",
+              "node_type": "node-resolution",
+              "options_dict": {},
+              "options_list": [],
+              "parse_original": false,
+              "prompt": "Ok. I will create a support request for you.<msgbr>Please answer the following questions for the support request.",
+              "res_meta": {
+                "id": "question_8f93683928af4892b4d14a13f11b77e3",
+                "title": "resolution topic1"
+              }
+            },
+            {
+              "custom_fields": {
+                "issue_type": "Driver::Switch Regions",
+                "view": "Support - Tier 1 (InTouch)"
+              },
+              "entity_type": "FREETEXT",
+              "id": "default_driver_driver_profile_updates_switching_driver_region",
+              "label": "please select the detail",
+              "node_input_display_type": "dropdown",
+              "node_type": "node-resolution",
+              "options_dict": {},
+              "options_list": [],
+              "parse_original": false,
+              "prompt": "Ok. I will create a support request for you.<msgbr>Please answer the following questions for the support request.",
+              "res_meta": {
+                "id": "question_8f93683928af4892b4d14a13f11b77e3",
+                "title": "resolution topic1"
+              }
+            },
+            {
+              "custom_fields": {
+                "issue_type": "D::AMP::HW",
+                "view": "AMP"
+              },
+              "entity_type": "FREETEXT",
+              "id": "default_driver_amp_overheating",
+              "label": "please select the detail",
+              "node_input_display_type": "dropdown",
+              "node_type": "node-resolution",
+              "options_dict": {},
+              "options_list": [],
+              "parse_original": false,
+              "prompt": "Ok. I will create a support request for you.<msgbr>Please answer the following questions for the support request.",
+              "res_meta": {
+                "id": "question_8f93683928af4892b4d14a13f11b77e3",
+                "title": "resolution topic1"
+              }
+            },
+            {
+              "custom_fields": {
+                "issue_type": "Driver::Pay::D2D Referrals",
+                "view": "Pay"
+              },
+              "entity_type": "FREETEXT",
+              "id": "default_driver_my_payments_a_driver_referral",
+              "label": "please select the detail",
+              "node_input_display_type": "dropdown",
+              "node_type": "node-resolution",
+              "options_dict": {},
+              "options_list": [],
+              "parse_original": false,
+              "prompt": "Ok. I will create a support request for you.<msgbr>Please answer the following questions for the support request.",
+              "res_meta": {
+                "id": "question_8f93683928af4892b4d14a13f11b77e3",
+                "title": "resolution topic1"
+              }
+            },
+            {
+              "custom_fields": {
+                "issue_type": "Driver::Cancelled Ride",
+                "view": "Support - Tier 1 (IBEX)"
+              },
+              "entity_type": "FREETEXT",
+              "id": "default_driver_issue_with_a_ride_canceled_ride",
+              "label": "please select the detail",
+              "node_input_display_type": "dropdown",
+              "node_type": "node-resolution",
+              "options_dict": {},
+              "options_list": [],
+              "parse_original": false,
+              "prompt": "Ok. I will create a support request for you.<msgbr>Please answer the following questions for the support request.",
+              "res_meta": {
+                "id": "question_8f93683928af4892b4d14a13f11b77e3",
+                "title": "resolution topic1"
+              }
+            },
+            {
+              "custom_fields": {
+                "issue_type": "Driver::Insurance Update",
+                "view": "Support - Tier 1 (InTouch)"
+              },
+              "entity_type": "FREETEXT",
+              "id": "default_driver_driver_profile_updates_updating_insurance",
+              "label": "please select the detail",
+              "node_input_display_type": "dropdown",
+              "node_type": "node-resolution",
+              "options_dict": {},
+              "options_list": [],
+              "parse_original": false,
+              "prompt": "Ok. I will create a support request for you.<msgbr>Please answer the following questions for the support request.",
+              "res_meta": {
+                "id": "question_8f93683928af4892b4d14a13f11b77e3",
+                "title": "resolution topic1"
+              }
+            },
+            {
+              "custom_fields": {
+                "issue_type": "Applicant::Denied",
+                "view": "Support - Tier 1 (InTouch)"
+              },
+              "entity_type": "FREETEXT",
+              "id": "default_applicant_i_want_to_check_or_change_my_application_status_i_was_denied_to_become_a_driver_-_why",
+              "label": "please select the detail",
+              "node_input_display_type": "dropdown",
+              "node_type": "node-resolution",
+              "options_dict": {},
+              "options_list": [],
+              "parse_original": false,
+              "prompt": "Ok. I will create a support request for you.<msgbr>Please answer the following questions for the support request.",
+              "res_meta": {
+                "id": "question_8f93683928af4892b4d14a13f11b77e3",
+                "title": "resolution topic1"
+              }
+            },
+            {
+              "custom_fields": {
+                "issue_type": "Passenger::Safety Concern",
+                "view": "Support - Tier 1 (IBEX)"
+              },
+              "entity_type": "FREETEXT",
+              "id": "default_passenger_issue_with_a_ride_i_have_feedback_about_a_driver",
+              "label": "please select the detail",
+              "node_input_display_type": "dropdown",
+              "node_type": "node-resolution",
+              "options_dict": {},
+              "options_list": [],
+              "parse_original": false,
+              "prompt": "Ok. I will create a support request for you.<msgbr>Please answer the following questions for the support request.",
+              "res_meta": {
+                "id": "question_8f93683928af4892b4d14a13f11b77e3",
+                "title": "resolution topic1"
+              }
+            },
+            {
+              "custom_fields": {},
+              "entity_type": "OPTIONS",
+              "id": "default_passenger_charges__credits__and_money_i_want_to_dispute_a_charge",
+              "label": "please select the detail",
+              "node_input_display_type": "dropdown",
+              "node_type": "node-qa",
+              "options_dict": {
+                "A $1 or $25 charge on my account": null,
+                "A trip or charge I don't recognize": null,
+                "I was charged a cancel or no-show fee": null,
+                "My driver started or ended the ride without me in the car": null,
+                "My driver took a more expensive route": null
+              },
+              "options_list": [
+                "A $1 or $25 charge on my account",
+                "My driver started or ended the ride without me in the car",
+                "My driver took a more expensive route",
+                "I was charged a cancel or no-show fee",
+                "A trip or charge I don't recognize"
+              ],
+              "parse_original": false,
+              "prompt": "please select the detail"
+            },
+            {
+              "custom_fields": {},
+              "entity_type": "OPTIONS",
+              "id": "default_driver_mentor_program",
+              "label": "Please select the issue",
+              "node_input_display_type": "dropdown",
+              "node_type": "node-qa",
+              "options_dict": {
+                "general program question": null,
+                "i have an issue with the portal": null,
+                "i have an issue with twilio": null,
+                "i have an unknown error": null,
+                "i want an update on my mentee": null,
+                "issue with a mentor/mentee": null,
+                "manual mentor session": null
+              },
+              "options_list": [
+                "i have an unknown error",
+                "i want an update on my mentee",
+                "general program question",
+                "i have an issue with twilio",
+                "i have an issue with the portal",
+                "manual mentor session",
+                "issue with a mentor/mentee"
+              ],
+              "parse_original": false,
+              "prompt": "Please select the issue"
+            },
+            {
+              "custom_fields": {
+                "issue_type": "TS Issue:: CRL",
+                "view": "Trust & Safety - Tier 1"
+              },
+              "entity_type": "FREETEXT",
+              "id": "default_passenger_safety_concern",
+              "label": "Please select the issue",
+              "node_input_display_type": "dropdown",
+              "node_type": "node-resolution",
+              "options_dict": {},
+              "options_list": [],
+              "parse_original": false,
+              "prompt": "Ok. I will create a support request for you.<msgbr>Please answer the following questions for the support request.",
+              "res_meta": {
+                "id": "question_8f93683928af4892b4d14a13f11b77e3",
+                "title": "resolution topic1"
+              }
+            },
+            {
+              "custom_fields": {
+                "issue_type": "Driver::New Car",
+                "view": "Support - Tier 1 (InTouch)"
+              },
+              "entity_type": "FREETEXT",
+              "id": "default_driver_driver_profile_updates_changing_phone_number",
+              "label": "please select the detail",
+              "node_input_display_type": "dropdown",
+              "node_type": "node-resolution",
+              "options_dict": {},
+              "options_list": [],
+              "parse_original": false,
+              "prompt": "Ok. I will create a support request for you.<msgbr>Please answer the following questions for the support request.",
+              "res_meta": {
+                "id": "question_8f93683928af4892b4d14a13f11b77e3",
+                "title": "resolution topic1"
+              }
+            },
+            {
+              "custom_fields": {
+                "issue_type": "D::AMP::HW::Broken",
+                "view": "Support - Tier 1"
+              },
+              "entity_type": "FREETEXT",
+              "id": "default_driver_amp_i_want_an_amp_or_amp_accessory_my_amp_is_broken",
+              "label": "PROMPT PLACEHOLDER",
+              "node_input_display_type": "dropdown",
+              "node_type": "node-resolution",
+              "options_dict": {},
+              "options_list": [],
+              "parse_original": false,
+              "prompt": "Ok. I will create a support request for you.<msgbr>Please answer the following questions for the support request.",
+              "res_meta": {
+                "id": "question_8f93683928af4892b4d14a13f11b77e3",
+                "title": "resolution topic1"
+              }
+            },
+            {
+              "custom_fields": {
+                "issue_type": "Passenger::Promo Not On Ride",
+                "view": "Support - Tier 1 (IBEX)"
+              },
+              "entity_type": "FREETEXT",
+              "id": "default_passenger_charges__credits__and_money_lyft_credits_and_discounts_my_ride_should_have_been_discounted",
+              "label": "PROMPT PLACEHOLDER",
+              "node_input_display_type": "dropdown",
+              "node_type": "node-resolution",
+              "options_dict": {},
+              "options_list": [],
+              "parse_original": false,
+              "prompt": "Ok. I will create a support request for you.<msgbr>Please answer the following questions for the support request.",
+              "res_meta": {
+                "id": "question_8f93683928af4892b4d14a13f11b77e3",
+                "title": "resolution topic1"
+              }
+            },
+            {
+              "custom_fields": {
+                "issue_type": "Applicant::Express Drive",
+                "view": "Support - Tier 2"
+              },
+              "entity_type": "FREETEXT",
+              "id": "default_applicant_express_drive_rental_program_signing_up",
+              "label": "please select the detail",
+              "node_input_display_type": "dropdown",
+              "node_type": "node-resolution",
+              "options_dict": {},
+              "options_list": [],
+              "parse_original": false,
+              "prompt": "Ok. I will create a support request for you.<msgbr>Please answer the following questions for the support request.",
+              "res_meta": {
+                "id": "question_8f93683928af4892b4d14a13f11b77e3",
+                "title": "resolution topic1"
+              }
+            },
+            {
+              "custom_fields": {
+                "issue_type": "Applicant::Unknown Error Message",
+                "view": "Support - Tier 1 (InTouch)"
+              },
+              "entity_type": "FREETEXT",
+              "id": "default_applicant_technical_issue_with_application",
+              "label": "Please select the issue",
+              "node_input_display_type": "dropdown",
+              "node_type": "node-resolution",
+              "options_dict": {},
+              "options_list": [],
+              "parse_original": false,
+              "prompt": "Ok. I will create a support request for you.<msgbr>Please answer the following questions for the support request.",
+              "res_meta": {
+                "id": "question_8f93683928af4892b4d14a13f11b77e3",
+                "title": "resolution topic1"
+              }
+            },
+            {
+              "custom_fields": {
+                "issue_type": "Mentor::Twilio",
+                "view": "Mentor"
+              },
+              "entity_type": "FREETEXT",
+              "id": "default_driver_mentor_program_i_have_an_issue_with_twilio",
+              "label": "please select the detail",
+              "node_input_display_type": "dropdown",
+              "node_type": "node-resolution",
+              "options_dict": {},
+              "options_list": [],
+              "parse_original": false,
+              "prompt": "Ok. I will create a support request for you.<msgbr>Please answer the following questions for the support request.",
+              "res_meta": {
+                "id": "question_8f93683928af4892b4d14a13f11b77e3",
+                "title": "resolution topic1"
+              }
+            },
+            {
+              "custom_fields": {
+                "issue_type": "Passenger::Preauthorized Hold",
+                "view": "Support - Tier 1 (IBEX)"
+              },
+              "entity_type": "FREETEXT",
+              "id": "default_passenger_charges__credits__and_money_i_want_to_dispute_a_charge_a__1_or__25_charge_on_my_account",
+              "label": "PROMPT PLACEHOLDER",
+              "node_input_display_type": "dropdown",
+              "node_type": "node-resolution",
+              "options_dict": {},
+              "options_list": [],
+              "parse_original": false,
+              "prompt": "Ok. I will create a support request for you.<msgbr>Please answer the following questions for the support request.",
+              "res_meta": {
+                "id": "question_8f93683928af4892b4d14a13f11b77e3",
+                "title": "resolution topic1"
+              }
+            },
+            {
+              "custom_fields": {
+                "issue_type": "Driver::Pay::Taxes",
+                "view": "Pay"
+              },
+              "entity_type": "FREETEXT",
+              "id": "default_driver_my_payments_taxes",
+              "label": "please select the detail",
+              "node_input_display_type": "dropdown",
+              "node_type": "node-resolution",
+              "options_dict": {},
+              "options_list": [],
+              "parse_original": false,
+              "prompt": "Ok. I will create a support request for you.<msgbr>Please answer the following questions for the support request.",
+              "res_meta": {
+                "id": "question_8f93683928af4892b4d14a13f11b77e3",
+                "title": "resolution topic1"
+              }
+            },
+            {
+              "custom_fields": {
+                "issue_type": "Mentor::Portal",
+                "view": "Mentor"
+              },
+              "entity_type": "FREETEXT",
+              "id": "default_driver_mentor_program_i_have_an_issue_with_the_portal",
+              "label": "please select the detail",
+              "node_input_display_type": "dropdown",
+              "node_type": "node-resolution",
+              "options_dict": {},
+              "options_list": [],
+              "parse_original": false,
+              "prompt": "Ok. I will create a support request for you.<msgbr>Please answer the following questions for the support request.",
+              "res_meta": {
+                "id": "question_8f93683928af4892b4d14a13f11b77e3",
+                "title": "resolution topic1"
+              }
+            },
+            {
+              "custom_fields": {
+                "issue_type": "Mentor::Program Question",
+                "view": "Mentor"
+              },
+              "entity_type": "FREETEXT",
+              "id": "default_driver_mentor_program_general_program_question",
+              "label": "please select the detail",
+              "node_input_display_type": "dropdown",
+              "node_type": "node-resolution",
+              "options_dict": {},
+              "options_list": [],
+              "parse_original": false,
+              "prompt": "Ok. I will create a support request for you.<msgbr>Please answer the following questions for the support request.",
+              "res_meta": {
+                "id": "question_8f93683928af4892b4d14a13f11b77e3",
+                "title": "resolution topic1"
+              }
+            },
+            {
+              "custom_fields": {
+                "issue_type": "D::AMP::SHIP",
+                "view": "Support - Tier 1"
+              },
+              "entity_type": "FREETEXT",
+              "id": "default_driver_amp_shipping_or_delivery",
+              "label": "please select the detail",
+              "node_input_display_type": "dropdown",
+              "node_type": "node-resolution",
+              "options_dict": {},
+              "options_list": [],
+              "parse_original": false,
+              "prompt": "Ok. I will create a support request for you.<msgbr>Please answer the following questions for the support request.",
+              "res_meta": {
+                "id": "question_8f93683928af4892b4d14a13f11b77e3",
+                "title": "resolution topic1"
+              }
+            },
+            {
+              "custom_fields": {
+                "issue_type": "Applicant::Insurance",
+                "view": "Support - Tier 1 (InTouch)"
+              },
+              "entity_type": "FREETEXT",
+              "id": "default_applicant_creating_updating_my_driver_profile_updating_insurance",
+              "label": "please select the detail",
+              "node_input_display_type": "dropdown",
+              "node_type": "node-resolution",
+              "options_dict": {},
+              "options_list": [],
+              "parse_original": false,
+              "prompt": "Ok. I will create a support request for you.<msgbr>Please answer the following questions for the support request.",
+              "res_meta": {
+                "id": "question_8f93683928af4892b4d14a13f11b77e3",
+                "title": "resolution topic1"
+              }
+            },
+            {
+              "custom_fields": {
+                "issue_type": "Driver::Pay::Express Pay",
+                "view": "Pay"
+              },
+              "entity_type": "FREETEXT",
+              "id": "default_driver_my_payments_express_pay",
+              "label": "please select the detail",
+              "node_input_display_type": "dropdown",
+              "node_type": "node-resolution",
+              "options_dict": {},
+              "options_list": [],
+              "parse_original": false,
+              "prompt": "Ok. I will create a support request for you.<msgbr>Please answer the following questions for the support request.",
+              "res_meta": {
+                "id": "question_8f93683928af4892b4d14a13f11b77e3",
+                "title": "resolution topic1"
+              }
+            },
+            {
+              "custom_fields": {
+                "issue_type": "Passenger::Promo Not On Account",
+                "view": "Support - Tier 1 (IBEX)"
+              },
+              "entity_type": "FREETEXT",
+              "id": "default_passenger_charges__credits__and_money_lyft_credits_and_discounts_i_can't_find_a_credit_in_my_account",
+              "label": "PROMPT PLACEHOLDER",
+              "node_input_display_type": "dropdown",
+              "node_type": "node-resolution",
+              "options_dict": {},
+              "options_list": [],
+              "parse_original": false,
+              "prompt": "Ok. I will create a support request for you.<msgbr>Please answer the following questions for the support request.",
+              "res_meta": {
+                "id": "question_8f93683928af4892b4d14a13f11b77e3",
+                "title": "resolution topic1"
+              }
+            },
+            {
+              "custom_fields": {
+                "issue_type": "Mentor::Issue with Mentee or Mentor",
+                "view": "Mentor"
+              },
+              "entity_type": "FREETEXT",
+              "id": "default_driver_mentor_program_issue_with_a_mentor_mentee",
+              "label": "please select the detail",
+              "node_input_display_type": "dropdown",
+              "node_type": "node-resolution",
+              "options_dict": {},
+              "options_list": [],
+              "parse_original": false,
+              "prompt": "Ok. I will create a support request for you.<msgbr>Please answer the following questions for the support request.",
+              "res_meta": {
+                "id": "question_8f93683928af4892b4d14a13f11b77e3",
+                "title": "resolution topic1"
+              }
+            },
+            {
+              "custom_fields": {
+                "issue_type": "Applicant::Cancelled Application",
+                "view": "Support - Tier 1 (InTouch)"
+              },
+              "entity_type": "FREETEXT",
+              "id": "default_applicant_i_want_to_check_or_change_my_application_status_i'd_like_to_cancel_my_application",
+              "label": "please select the detail",
+              "node_input_display_type": "dropdown",
+              "node_type": "node-resolution",
+              "options_dict": {},
+              "options_list": [],
+              "parse_original": false,
+              "prompt": "Ok. I will create a support request for you.<msgbr>Please answer the following questions for the support request.",
+              "res_meta": {
+                "id": "question_8f93683928af4892b4d14a13f11b77e3",
+                "title": "resolution topic1"
+              }
+            },
+            {
+              "custom_fields": {
+                "issue_type": "Applicant::Referral",
+                "view": "Support - Tier 1 (InTouch)"
+              },
+              "entity_type": "FREETEXT",
+              "id": "default_applicant_referral_bonus",
+              "label": "Please select the issue",
+              "node_input_display_type": "dropdown",
+              "node_type": "node-resolution",
+              "options_dict": {},
+              "options_list": [],
+              "parse_original": false,
+              "prompt": "Ok. I will create a support request for you.<msgbr>Please answer the following questions for the support request.",
+              "res_meta": {
+                "id": "question_8f93683928af4892b4d14a13f11b77e3",
+                "title": "resolution topic1"
+              }
+            },
+            {
+              "custom_fields": {
+                "issue_type": "Driver::Compliance",
+                "view": "Compliance"
+              },
+              "entity_type": "FREETEXT",
+              "id": "default_driver_local_regulations_requirements_for-hire_license",
+              "label": "please select the detail",
+              "node_input_display_type": "dropdown",
+              "node_type": "node-resolution",
+              "options_dict": {},
+              "options_list": [],
+              "parse_original": false,
+              "prompt": "Ok. I will create a support request for you.<msgbr>Please answer the following questions for the support request.",
+              "res_meta": {
+                "id": "question_8f93683928af4892b4d14a13f11b77e3",
+                "title": "resolution topic1"
+              }
+            },
+            {
+              "custom_fields": {
+                "issue_type": "Driver::Express Drive::Vehicle pickup",
+                "view": "Support - Tier 1 (IBEX)"
+              },
+              "entity_type": "FREETEXT",
+              "id": "default_driver_express_drive_rental_program_vehicle_pickup__return__or_renewal",
+              "label": "please select the detail",
+              "node_input_display_type": "dropdown",
+              "node_type": "node-resolution",
+              "options_dict": {},
+              "options_list": [],
+              "parse_original": false,
+              "prompt": "Ok. I will create a support request for you.<msgbr>Please answer the following questions for the support request.",
+              "res_meta": {
+                "id": "question_8f93683928af4892b4d14a13f11b77e3",
+                "title": "resolution topic1"
+              }
+            },
+            {
+              "custom_fields": {
+                "issue_type": "Applicant::Waiting on BGC",
+                "view": "Support - Tier 1 (InTouch)"
+              },
+              "entity_type": "FREETEXT",
+              "id": "default_applicant_i_want_to_check_or_change_my_application_status_i'm_waiting_on_my_background_check",
+              "label": "please select the detail",
+              "node_input_display_type": "dropdown",
+              "node_type": "node-resolution",
+              "options_dict": {},
+              "options_list": [],
+              "parse_original": false,
+              "prompt": "Ok. I will create a support request for you.<msgbr>Please answer the following questions for the support request.",
+              "res_meta": {
+                "id": "question_8f93683928af4892b4d14a13f11b77e3",
+                "title": "resolution topic1"
+              }
+            },
+            {
+              "custom_fields": {
+                "issue_type": "Driver::Pay::Tolls",
+                "view": "Pay"
+              },
+              "entity_type": "FREETEXT",
+              "id": "default_driver_my_payments_tolls",
+              "label": "please select the detail",
+              "node_input_display_type": "dropdown",
+              "node_type": "node-resolution",
+              "options_dict": {},
+              "options_list": [],
+              "parse_original": false,
+              "prompt": "Ok. I will create a support request for you.<msgbr>Please answer the following questions for the support request.",
+              "res_meta": {
+                "id": "question_8f93683928af4892b4d14a13f11b77e3",
+                "title": "resolution topic1"
+              }
+            },
+            {
+              "custom_fields": {
+                "issue_type": "Driver::Pay::Damage",
+                "view": "Support - Tier 1"
+              },
+              "entity_type": "FREETEXT",
+              "id": "default_driver_issue_with_a_ride_a_passenger_caused_damage_to_my_car",
+              "label": "please select the detail",
+              "node_input_display_type": "dropdown",
+              "node_type": "node-resolution",
+              "options_dict": {},
+              "options_list": [],
+              "parse_original": false,
+              "prompt": "Ok. I will create a support request for you.<msgbr>Please answer the following questions for the support request.",
+              "res_meta": {
+                "id": "question_8f93683928af4892b4d14a13f11b77e3",
+                "title": "resolution topic1"
+              }
+            },
+            {
+              "custom_fields": {},
+              "entity_type": "OPTIONS",
+              "id": "default_passenger_charges__credits__and_money",
+              "label": "Please select the issue",
+              "node_input_display_type": "dropdown",
+              "node_type": "node-qa",
+              "options_dict": {
+                "I want to dispute a charge": null,
+                "Lyft Pass and Gift Cards": null,
+                "Lyft credits and discounts": null
+              },
+              "options_list": [
+                "Lyft credits and discounts",
+                "Lyft Pass and Gift Cards",
+                "I want to dispute a charge"
+              ],
+              "parse_original": false,
+              "prompt": "Please select the issue"
+            },
+            {
+              "custom_fields": {
+                "issue_type": "Driver::Express Drive::Pay",
+                "view": "Pay"
+              },
+              "entity_type": "FREETEXT",
+              "id": "default_driver_express_drive_rental_program_charges__earnings__or_rental_deposits",
+              "label": "please select the detail",
+              "node_input_display_type": "dropdown",
+              "node_type": "node-resolution",
+              "options_dict": {},
+              "options_list": [],
+              "parse_original": false,
+              "prompt": "Ok. I will create a support request for you.<msgbr>Please answer the following questions for the support request.",
+              "res_meta": {
+                "id": "question_8f93683928af4892b4d14a13f11b77e3",
+                "title": "resolution topic1"
+              }
+            },
+            {
+              "custom_fields": {
+                "issue_type": "Driver::Unable to Login",
+                "view": "Support - Tier 1 (IBEX)"
+              },
+              "entity_type": "FREETEXT",
+              "id": "default_passenger_issue_with_a_ride_technical_app_issue",
+              "label": "please select the detail",
+              "node_input_display_type": "dropdown",
+              "node_type": "node-resolution",
+              "options_dict": {},
+              "options_list": [],
+              "parse_original": false,
+              "prompt": "Ok. I will create a support request for you.<msgbr>Please answer the following questions for the support request.",
+              "res_meta": {
+                "id": "question_8f93683928af4892b4d14a13f11b77e3",
+                "title": "resolution topic1"
+              }
+            },
+            {
+              "custom_fields": {
+                "issue_type": "Passenger::Lost Item",
+                "view": "Support - Tier 1"
+              },
+              "entity_type": "FREETEXT",
+              "id": "default_passenger_i_lost_an_item",
+              "label": "Please select the issue",
+              "node_input_display_type": "dropdown",
+              "node_type": "node-resolution",
+              "options_dict": {},
+              "options_list": [],
+              "parse_original": false,
+              "prompt": "Ok. I will create a support request for you.<msgbr>Please answer the following questions for the support request.",
+              "res_meta": {
+                "id": "question_8f93683928af4892b4d14a13f11b77e3",
+                "title": "resolution topic1"
+              }
+            },
+            {
+              "custom_fields": {
+                "issue_type": "Driver::Pay::Power Driver Bonus",
+                "view": "Pay"
+              },
+              "entity_type": "FREETEXT",
+              "id": "default_driver_my_payments_power_driver_bonus",
+              "label": "please select the detail",
+              "node_input_display_type": "dropdown",
+              "node_type": "node-resolution",
+              "options_dict": {},
+              "options_list": [],
+              "parse_original": false,
+              "prompt": "Ok. I will create a support request for you.<msgbr>Please answer the following questions for the support request.",
+              "res_meta": {
+                "id": "question_8f93683928af4892b4d14a13f11b77e3",
+                "title": "resolution topic1"
+              }
+            },
+            {
+              "custom_fields": {
+                "issue_type": "Passenger::Unauthorized Charges",
+                "view": "Support - Tier 1 (IBEX)"
+              },
+              "entity_type": "FREETEXT",
+              "id": "default_passenger_charges__credits__and_money_i_want_to_dispute_a_charge_a_trip_or_charge_i_don't_recognize",
+              "label": "PROMPT PLACEHOLDER",
+              "node_input_display_type": "dropdown",
+              "node_type": "node-resolution",
+              "options_dict": {},
+              "options_list": [],
+              "parse_original": false,
+              "prompt": "Ok. I will create a support request for you.<msgbr>Please answer the following questions for the support request.",
+              "res_meta": {
+                "id": "question_8f93683928af4892b4d14a13f11b77e3",
+                "title": "resolution topic1"
+              }
+            },
+            {
+              "custom_fields": {
+                "issue_type": "Driver::Profile Photo",
+                "view": "Support - Tier 1 (InTouch)"
+              },
+              "entity_type": "FREETEXT",
+              "id": "default_driver_driver_profile_updates_updating_profile_photo",
+              "label": "please select the detail",
+              "node_input_display_type": "dropdown",
+              "node_type": "node-resolution",
+              "options_dict": {},
+              "options_list": [],
+              "parse_original": false,
+              "prompt": "Ok. I will create a support request for you.<msgbr>Please answer the following questions for the support request.",
+              "res_meta": {
+                "id": "question_8f93683928af4892b4d14a13f11b77e3",
+                "title": "resolution topic1"
+              }
+            },
+            {
+              "custom_fields": {
+                "issue_type": "Passenger::Start Stop",
+                "view": "Support - Tier 1 (IBEX)"
+              },
+              "entity_type": "FREETEXT",
+              "id": "default_passenger_charges__credits__and_money_i_want_to_dispute_a_charge_my_driver_started_or_ended_the_ride_without_me_in_the_car",
+              "label": "PROMPT PLACEHOLDER",
+              "node_input_display_type": "dropdown",
+              "node_type": "node-resolution",
+              "options_dict": {},
+              "options_list": [],
+              "parse_original": false,
+              "prompt": "Ok. I will create a support request for you.<msgbr>Please answer the following questions for the support request.",
+              "res_meta": {
+                "id": "question_8f93683928af4892b4d14a13f11b77e3",
+                "title": "resolution topic1"
+              }
+            },
+            {
+              "custom_fields": {
+                "issue_type": "Driver::Pay::Deposit Concern",
+                "view": "Pay"
+              },
+              "entity_type": "FREETEXT",
+              "id": "default_driver_my_payments_weekly_deposit",
+              "label": "please select the detail",
+              "node_input_display_type": "dropdown",
+              "node_type": "node-resolution",
+              "options_dict": {},
+              "options_list": [],
+              "parse_original": false,
+              "prompt": "Ok. I will create a support request for you.<msgbr>Please answer the following questions for the support request.",
+              "res_meta": {
+                "id": "question_8f93683928af4892b4d14a13f11b77e3",
+                "title": "resolution topic1"
+              }
+            },
+            {
+              "custom_fields": {
+                "issue_type": "Driver::Pay::Weekly Guarantee",
+                "view": "Pay"
+              },
+              "entity_type": "FREETEXT",
+              "id": "default_driver_my_payments_a_weekly_guarantee",
+              "label": "please select the detail",
+              "node_input_display_type": "dropdown",
+              "node_type": "node-resolution",
+              "options_dict": {},
+              "options_list": [],
+              "parse_original": false,
+              "prompt": "Ok. I will create a support request for you.<msgbr>Please answer the following questions for the support request.",
+              "res_meta": {
+                "id": "question_8f93683928af4892b4d14a13f11b77e3",
+                "title": "resolution topic1"
+              }
+            },
+            {
+              "custom_fields": {
+                "issue_type": "Driver::Compliance",
+                "view": "Compliance"
+              },
+              "entity_type": "FREETEXT",
+              "id": "default_driver_local_regulations_requirements_airport_questions",
+              "label": "please select the detail",
+              "node_input_display_type": "dropdown",
+              "node_type": "node-resolution",
+              "options_dict": {},
+              "options_list": [],
+              "parse_original": false,
+              "prompt": "Ok. I will create a support request for you.<msgbr>Please answer the following questions for the support request.",
+              "res_meta": {
+                "id": "question_8f93683928af4892b4d14a13f11b77e3",
+                "title": "resolution topic1"
+              }
+            },
+            {
+              "custom_fields": {},
+              "entity_type": "OPTIONS",
+              "id": "default_applicant",
+              "label": "Please select a topic",
+              "node_input_display_type": "dropdown",
+              "node_type": "node-qa",
+              "options_dict": {
+                "I need help with ID Verification": null,
+                "creating/updating my driver profile": null,
+                "driving requirements in my city": null,
+                "express drive rental program": null,
+                "i want to check or change my application status": null,
+                "problem during mentor session": null,
+                "referral bonus": null,
+                "technical issue with application": null
+              },
+              "options_list": [
+                "problem during mentor session",
+                "i want to check or change my application status",
+                "driving requirements in my city",
+                "technical issue with application",
+                "I need help with ID Verification",
+                "referral bonus",
+                "express drive rental program",
+                "creating/updating my driver profile"
+              ],
+              "parse_original": false,
+              "prompt": "Please select a topic"
+            },
+            {
+              "custom_fields": {
+                "issue_type": "Passenger::Cancellation Fee",
+                "view": "Support - Tier 1 (IBEX)"
+              },
+              "entity_type": "FREETEXT",
+              "id": "default_passenger_charges__credits__and_money_i_want_to_dispute_a_charge_i_was_charged_a_cancel_or_no-show_fee",
+              "label": "PROMPT PLACEHOLDER",
+              "node_input_display_type": "dropdown",
+              "node_type": "node-resolution",
+              "options_dict": {},
+              "options_list": [],
+              "parse_original": false,
+              "prompt": "Ok. I will create a support request for you.<msgbr>Please answer the following questions for the support request.",
+              "res_meta": {
+                "id": "question_8f93683928af4892b4d14a13f11b77e3",
+                "title": "resolution topic1"
+              }
+            },
+            {
+              "custom_fields": {
+                "issue_type": "D::AMP::HW::Lost",
+                "view": "Support - Tier 1"
+              },
+              "entity_type": "FREETEXT",
+              "id": "default_driver_amp_i_want_an_amp_or_amp_accessory_lost_or_stolen",
+              "label": "PROMPT PLACEHOLDER",
+              "node_input_display_type": "dropdown",
+              "node_type": "node-resolution",
+              "options_dict": {},
+              "options_list": [],
+              "parse_original": false,
+              "prompt": "Ok. I will create a support request for you.<msgbr>Please answer the following questions for the support request.",
+              "res_meta": {
+                "id": "question_8f93683928af4892b4d14a13f11b77e3",
+                "title": "resolution topic1"
+              }
+            },
+            {
+              "custom_fields": {
+                "issue_type": "Driver::Express Drive::Repo",
+                "view": "Support - Tier 2"
+              },
+              "entity_type": "FREETEXT",
+              "id": "default_driver_express_drive_rental_program_reposessions",
+              "label": "please select the detail",
+              "node_input_display_type": "dropdown",
+              "node_type": "node-resolution",
+              "options_dict": {},
+              "options_list": [],
+              "parse_original": false,
+              "prompt": "Ok. I will create a support request for you.<msgbr>Please answer the following questions for the support request.",
+              "res_meta": {
+                "id": "question_8f93683928af4892b4d14a13f11b77e3",
+                "title": "resolution topic1"
+              }
+            },
+            {
+              "custom_fields": {},
+              "entity_type": "FREETEXT",
+              "id": "start",
+              "label": "Start",
+              "node_input_display_type": "dropdown",
+              "node_type": "node-start",
+              "options_dict": {},
+              "options_list": [],
+              "parse_original": false,
+              "prompt": "Start"
+            },
+            {
+              "custom_fields": {
+                "issue_type": "Applicant::Requesting a new Mentor",
+                "view": "Mentor"
+              },
+              "entity_type": "FREETEXT",
+              "id": "default_applicant_problem_during_mentor_session_requesting_a_new_mentor",
+              "label": "please select the detail",
+              "node_input_display_type": "dropdown",
+              "node_type": "node-resolution",
+              "options_dict": {},
+              "options_list": [],
+              "parse_original": false,
+              "prompt": "Ok. I will create a support request for you.<msgbr>Please answer the following questions for the support request.",
+              "res_meta": {
+                "id": "question_8f93683928af4892b4d14a13f11b77e3",
+                "title": "resolution topic1"
+              }
+            },
+            {
+              "custom_fields": {
+                "issue_type": "Passenger::Lyft Pass",
+                "view": "Support - Tier 1 (IBEX)"
+              },
+              "entity_type": "FREETEXT",
+              "id": "default_passenger_charges__credits__and_money_lyft_pass_and_gift_cards_lyft_pass",
+              "label": "PROMPT PLACEHOLDER",
+              "node_input_display_type": "dropdown",
+              "node_type": "node-resolution",
+              "options_dict": {},
+              "options_list": [],
+              "parse_original": false,
+              "prompt": "Ok. I will create a support request for you.<msgbr>Please answer the following questions for the support request.",
+              "res_meta": {
+                "id": "question_8f93683928af4892b4d14a13f11b77e3",
+                "title": "resolution topic1"
+              }
+            },
+            {
+              "custom_fields": {
+                "issue_type": "Applicant::City-Specific Regulations",
+                "view": "Support - Tier 1 (InTouch)"
+              },
+              "entity_type": "FREETEXT",
+              "id": "default_applicant_driving_requirements_in_my_city",
+              "label": "Please select the issue",
+              "node_input_display_type": "dropdown",
+              "node_type": "node-resolution",
+              "options_dict": {},
+              "options_list": [],
+              "parse_original": false,
+              "prompt": "Ok. I will create a support request for you.<msgbr>Please answer the following questions for the support request.",
+              "res_meta": {
+                "id": "question_8f93683928af4892b4d14a13f11b77e3",
+                "title": "resolution topic1"
+              }
+            },
+            {
+              "custom_fields": {
+                "issue_type": "Applicant::Profile photo",
+                "view": "Support - Tier 1 (InTouch)"
+              },
+              "entity_type": "FREETEXT",
+              "id": "default_applicant_creating_updating_my_driver_profile_i_need_to_retake_profile_photo",
+              "label": "please select the detail",
+              "node_input_display_type": "dropdown",
+              "node_type": "node-resolution",
+              "options_dict": {},
+              "options_list": [],
+              "parse_original": false,
+              "prompt": "Ok. I will create a support request for you.<msgbr>Please answer the following questions for the support request.",
+              "res_meta": {
+                "id": "question_8f93683928af4892b4d14a13f11b77e3",
+                "title": "resolution topic1"
+              }
+            },
+            {
+              "custom_fields": {
+                "issue_type": "Driver::New Car",
+                "view": "Support - Tier 1 (InTouch)"
+              },
+              "entity_type": "FREETEXT",
+              "id": "default_driver_driver_profile_updates_switching_to_new_car",
+              "label": "please select the detail",
+              "node_input_display_type": "dropdown",
+              "node_type": "node-resolution",
+              "options_dict": {},
+              "options_list": [],
+              "parse_original": false,
+              "prompt": "Ok. I will create a support request for you.<msgbr>Please answer the following questions for the support request.",
+              "res_meta": {
+                "id": "question_8f93683928af4892b4d14a13f11b77e3",
+                "title": "resolution topic1"
+              }
+            },
+            {
+              "custom_fields": {
+                "issue_type": "TS Issue:: CRL",
+                "view": "Trust & Safety - Tier 1"
+              },
+              "entity_type": "FREETEXT",
+              "id": "default_driver_safety_concern_citation",
+              "label": "please select the detail",
+              "node_input_display_type": "dropdown",
+              "node_type": "node-resolution",
+              "options_dict": {},
+              "options_list": [],
+              "parse_original": false,
+              "prompt": "Ok. I will create a support request for you.<msgbr>Please answer the following questions for the support request.",
+              "res_meta": {
+                "id": "question_8f93683928af4892b4d14a13f11b77e3",
+                "title": "resolution topic1"
+              }
+            },
+            {
+              "custom_fields": {},
+              "entity_type": "OPTIONS",
+              "id": "default_driver_local_regulations_requirements",
+              "label": "Please select the issue",
+              "node_input_display_type": "dropdown",
+              "node_type": "node-qa",
+              "options_dict": {
+                "Airport questions": null,
+                "Car inspection": null,
+                "Emblems or placards": null,
+                "For-hire license": null
+              },
+              "options_list": [
+                "For-hire license",
+                "Emblems or placards",
+                "Car inspection",
+                "Airport questions"
+              ],
+              "parse_original": false,
+              "prompt": "Please select the issue"
+            },
+            {
+              "custom_fields": {
+                "issue_type": "D::AMP::BATT",
+                "view": "AMP"
+              },
+              "entity_type": "FREETEXT",
+              "id": "default_driver_amp_battery_or_charging",
+              "label": "please select the detail",
+              "node_input_display_type": "dropdown",
+              "node_type": "node-resolution",
+              "options_dict": {},
+              "options_list": [],
+              "parse_original": false,
+              "prompt": "Ok. I will create a support request for you.<msgbr>Please answer the following questions for the support request.",
+              "res_meta": {
+                "id": "question_8f93683928af4892b4d14a13f11b77e3",
+                "title": "resolution topic1"
+              }
+            },
+            {
+              "custom_fields": {
+                "issue_type": "D::AMP::HW::Broken Cable",
+                "view": "Support - Tier 1"
+              },
+              "entity_type": "FREETEXT",
+              "id": "default_driver_amp_i_want_an_amp_or_amp_accessory_need_new_cable",
+              "label": "PROMPT PLACEHOLDER",
+              "node_input_display_type": "dropdown",
+              "node_type": "node-resolution",
+              "options_dict": {},
+              "options_list": [],
+              "parse_original": false,
+              "prompt": "Ok. I will create a support request for you.<msgbr>Please answer the following questions for the support request.",
+              "res_meta": {
+                "id": "question_8f93683928af4892b4d14a13f11b77e3",
+                "title": "resolution topic1"
+              }
+            },
+            {
+              "custom_fields": {
+                "issue_type": "Driver::Express Drive::Sign Up",
+                "view": "Support - Tier 2"
+              },
+              "entity_type": "FREETEXT",
+              "id": "default_driver_express_drive_rental_program_signing_up",
+              "label": "please select the detail",
+              "node_input_display_type": "dropdown",
+              "node_type": "node-resolution",
+              "options_dict": {},
+              "options_list": [],
+              "parse_original": false,
+              "prompt": "Ok. I will create a support request for you.<msgbr>Please answer the following questions for the support request.",
+              "res_meta": {
+                "id": "question_8f93683928af4892b4d14a13f11b77e3",
+                "title": "resolution topic1"
+              }
+            },
+            {
+              "custom_fields": {},
+              "entity_type": "OPTIONS",
+              "id": "default",
+              "label": "What is your user type?",
+              "node_input_display_type": "dropdown",
+              "node_type": "node-qa",
+              "options_dict": {
+                "Ambassador": null,
+                "Applicant": null,
+                "Driver": null,
+                "Passenger": null
+              },
+              "options_list": [
+                "Ambassador",
+                "Applicant",
+                "Driver",
+                "Passenger"
+              ],
+              "parse_original": false,
+              "prompt": "What is your user type?"
+            },
+            {
+              "custom_fields": {
+                "issue_type": "Driver::Found Item",
+                "view": "Support - Tier 1"
+              },
+              "entity_type": "FREETEXT",
+              "id": "default_driver_issue_with_a_ride_i_found_an_item",
+              "label": "please select the detail",
+              "node_input_display_type": "dropdown",
+              "node_type": "node-resolution",
+              "options_dict": {},
+              "options_list": [],
+              "parse_original": false,
+              "prompt": "Ok. I will create a support request for you.<msgbr>Please answer the following questions for the support request.",
+              "res_meta": {
+                "id": "question_8f93683928af4892b4d14a13f11b77e3",
+                "title": "resolution topic1"
+              }
+            },
+            {
+              "custom_fields": {
+                "issue_type": "Driver::Profile Photo",
+                "view": "Support - Tier 1 (InTouch)"
+              },
+              "entity_type": "FREETEXT",
+              "id": "default_driver_driver_profile_updates_updating_car_photo",
+              "label": "please select the detail",
+              "node_input_display_type": "dropdown",
+              "node_type": "node-resolution",
+              "options_dict": {},
+              "options_list": [],
+              "parse_original": false,
+              "prompt": "Ok. I will create a support request for you.<msgbr>Please answer the following questions for the support request.",
+              "res_meta": {
+                "id": "question_8f93683928af4892b4d14a13f11b77e3",
+                "title": "resolution topic1"
+              }
+            },
+            {
+              "custom_fields": {
+                "issue_type": "D::AMP::HW::Broken Base",
+                "view": "Support - Tier 1"
+              },
+              "entity_type": "FREETEXT",
+              "id": "default_driver_amp_i_want_an_amp_or_amp_accessory_need_new_base",
+              "label": "PROMPT PLACEHOLDER",
+              "node_input_display_type": "dropdown",
+              "node_type": "node-resolution",
+              "options_dict": {},
+              "options_list": [],
+              "parse_original": false,
+              "prompt": "Ok. I will create a support request for you.<msgbr>Please answer the following questions for the support request.",
+              "res_meta": {
+                "id": "question_8f93683928af4892b4d14a13f11b77e3",
+                "title": "resolution topic1"
+              }
+            },
+            {
+              "custom_fields": {
+                "issue_type": "Driver::Compliance",
+                "view": "Compliance"
+              },
+              "entity_type": "FREETEXT",
+              "id": "default_driver_local_regulations_requirements_car_inspection",
+              "label": "please select the detail",
+              "node_input_display_type": "dropdown",
+              "node_type": "node-resolution",
+              "options_dict": {},
+              "options_list": [],
+              "parse_original": false,
+              "prompt": "Ok. I will create a support request for you.<msgbr>Please answer the following questions for the support request.",
+              "res_meta": {
+                "id": "question_8f93683928af4892b4d14a13f11b77e3",
+                "title": "resolution topic1"
+              }
+            },
+            {
+              "custom_fields": {},
+              "entity_type": "OPTIONS",
+              "id": "default_driver_amp",
+              "label": "Please select the issue",
+              "node_input_display_type": "dropdown",
+              "node_type": "node-qa",
+              "options_dict": {
+                "Battery or charging": null,
+                "Connectivity, bluetooth, or pairing": null,
+                "Display issue": null,
+                "I want an Amp or Amp accessory": null,
+                "Overheating": null,
+                "Shipping or delivery": null
+              },
+              "options_list": [
+                "Overheating",
+                "Battery or charging",
+                "Display issue",
+                "Connectivity, bluetooth, or pairing",
+                "I want an Amp or Amp accessory",
+                "Shipping or delivery"
+              ],
+              "parse_original": false,
+              "prompt": "Please select the issue"
+            },
+            {
+              "custom_fields": {},
+              "entity_type": "OPTIONS",
+              "id": "default_applicant_i_want_to_check_or_change_my_application_status",
+              "label": "Please select the issue",
+              "node_input_display_type": "dropdown",
+              "node_type": "node-qa",
+              "options_dict": {
+                "i was denied to become a driver - why": null,
+                "i'd like to cancel my application": null,
+                "i'm waiting on my background check": null
+              },
+              "options_list": [
+                "i'm waiting on my background check",
+                "i'd like to cancel my application",
+                "i was denied to become a driver - why"
+              ],
+              "parse_original": false,
+              "prompt": "Please select the issue"
+            },
+            {
+              "custom_fields": {
+                "issue_type": "Applicant::Post Mentor Vehicle Fix",
+                "view": "Mentor"
+              },
+              "entity_type": "FREETEXT",
+              "id": "default_applicant_problem_during_mentor_session_post_mentor_vehicle_fix",
+              "label": "please select the detail",
+              "node_input_display_type": "dropdown",
+              "node_type": "node-resolution",
+              "options_dict": {},
+              "options_list": [],
+              "parse_original": false,
+              "prompt": "Ok. I will create a support request for you.<msgbr>Please answer the following questions for the support request.",
+              "res_meta": {
+                "id": "question_8f93683928af4892b4d14a13f11b77e3",
+                "title": "resolution topic1"
+              }
+            },
+            {
+              "custom_fields": {
+                "issue_type": "P::AMP::EXP::General Feedback",
+                "view": "AMP"
+              },
+              "entity_type": "FREETEXT",
+              "id": "default_passenger_issue_with_a_ride_feedback_about_the_dashboard_amp",
+              "label": "please select the detail",
+              "node_input_display_type": "dropdown",
+              "node_type": "node-resolution",
+              "options_dict": {},
+              "options_list": [],
+              "parse_original": false,
+              "prompt": "Ok. I will create a support request for you.<msgbr>Please answer the following questions for the support request.",
+              "res_meta": {
+                "id": "question_8f93683928af4892b4d14a13f11b77e3",
+                "title": "resolution topic1"
+              }
+            },
+            {
+              "custom_fields": {
+                "issue_type": "Applicant::Profile Update",
+                "view": "Support - Tier 1 (InTouch)"
+              },
+              "entity_type": "FREETEXT",
+              "id": "default_applicant_creating_updating_my_driver_profile_other_profile_request",
+              "label": "please select the detail",
+              "node_input_display_type": "dropdown",
+              "node_type": "node-resolution",
+              "options_dict": {},
+              "options_list": [],
+              "parse_original": false,
+              "prompt": "Ok. I will create a support request for you.<msgbr>Please answer the following questions for the support request.",
+              "res_meta": {
+                "id": "question_8f93683928af4892b4d14a13f11b77e3",
+                "title": "resolution topic1"
+              }
+            },
+            {
+              "custom_fields": {
+                "issue_type": "Driver::Express Drive::Pay",
+                "view": "Pay"
+              },
+              "entity_type": "FREETEXT",
+              "id": "default_driver_my_payments_rental_car_costs",
+              "label": "please select the detail",
+              "node_input_display_type": "dropdown",
+              "node_type": "node-resolution",
+              "options_dict": {},
+              "options_list": [],
+              "parse_original": false,
+              "prompt": "Ok. I will create a support request for you.<msgbr>Please answer the following questions for the support request.",
+              "res_meta": {
+                "id": "question_8f93683928af4892b4d14a13f11b77e3",
+                "title": "resolution topic1"
+              }
+            },
+            {
+              "custom_fields": {
+                "issue_type": "Applicant::ID Verification",
+                "view": "Compliance"
+              },
+              "entity_type": "FREETEXT",
+              "id": "default_applicant_i_need_help_with_id_verification",
+              "label": "Please select the issue",
+              "node_input_display_type": "dropdown",
+              "node_type": "node-resolution",
+              "options_dict": {},
+              "options_list": [],
+              "parse_original": false,
+              "prompt": "Ok. I will create a support request for you.<msgbr>Please answer the following questions for the support request.",
+              "res_meta": {
+                "id": "question_8f93683928af4892b4d14a13f11b77e3",
+                "title": "resolution topic1"
+              }
+            },
+            {
+              "custom_fields": {
+                "issue_type": "Driver::Pay::Average Hourly Guarantee",
+                "view": "Pay"
+              },
+              "entity_type": "FREETEXT",
+              "id": "default_driver_my_payments_average_hourly_guarantees",
+              "label": "please select the detail",
+              "node_input_display_type": "dropdown",
+              "node_type": "node-resolution",
+              "options_dict": {},
+              "options_list": [],
+              "parse_original": false,
+              "prompt": "Ok. I will create a support request for you.<msgbr>Please answer the following questions for the support request.",
+              "res_meta": {
+                "id": "question_8f93683928af4892b4d14a13f11b77e3",
+                "title": "resolution topic1"
+              }
+            },
+            {
+              "custom_fields": {
+                "issue_type": "Applicant::Express Drive::Vehicle pickup",
+                "view": "Support - Tier 1 (InTouch)"
+              },
+              "entity_type": "FREETEXT",
+              "id": "default_applicant_express_drive_rental_program_vehicle_pickup",
+              "label": "please select the detail",
+              "node_input_display_type": "dropdown",
+              "node_type": "node-resolution",
+              "options_dict": {},
+              "options_list": [],
+              "parse_original": false,
+              "prompt": "Ok. I will create a support request for you.<msgbr>Please answer the following questions for the support request.",
+              "res_meta": {
+                "id": "question_8f93683928af4892b4d14a13f11b77e3",
+                "title": "resolution topic1"
+              }
+            },
+            {
+              "custom_fields": {
+                "issue_type": "Mentor::Mentee Status",
+                "view": "Mentor"
+              },
+              "entity_type": "FREETEXT",
+              "id": "default_driver_mentor_program_i_want_an_update_on_my_mentee",
+              "label": "please select the detail",
+              "node_input_display_type": "dropdown",
+              "node_type": "node-resolution",
+              "options_dict": {},
+              "options_list": [],
+              "parse_original": false,
+              "prompt": "Ok. I will create a support request for you.<msgbr>Please answer the following questions for the support request.",
+              "res_meta": {
+                "id": "question_8f93683928af4892b4d14a13f11b77e3",
+                "title": "resolution topic1"
+              }
+            },
+            {
+              "custom_fields": {
+                "issue_type": "Passenger::Poor Navigation",
+                "view": "Support - Tier 1 (IBEX)"
+              },
+              "entity_type": "FREETEXT",
+              "id": "default_passenger_charges__credits__and_money_i_want_to_dispute_a_charge_my_driver_took_a_more_expensive_route",
+              "label": "PROMPT PLACEHOLDER",
+              "node_input_display_type": "dropdown",
+              "node_type": "node-resolution",
+              "options_dict": {},
+              "options_list": [],
+              "parse_original": false,
+              "prompt": "Ok. I will create a support request for you.<msgbr>Please answer the following questions for the support request.",
+              "res_meta": {
+                "id": "question_8f93683928af4892b4d14a13f11b77e3",
+                "title": "resolution topic1"
+              }
+            },
+            {
+              "custom_fields": {
+                "issue_type": "Driver::Express Drive::General Info",
+                "view": "Support - Tier 1 (IBEX)"
+              },
+              "entity_type": "FREETEXT",
+              "id": "default_driver_express_drive_rental_program_general_program_information",
+              "label": "please select the detail",
+              "node_input_display_type": "dropdown",
+              "node_type": "node-resolution",
+              "options_dict": {},
+              "options_list": [],
+              "parse_original": false,
+              "prompt": "Ok. I will create a support request for you.<msgbr>Please answer the following questions for the support request.",
+              "res_meta": {
+                "id": "question_8f93683928af4892b4d14a13f11b77e3",
+                "title": "resolution topic1"
+              }
+            },
+            {
+              "custom_fields": {
+                "issue_type": "Fraud::Passenger Fraud Inspection",
+                "view": "Fraud"
+              },
+              "entity_type": "FREETEXT",
+              "id": "default_passenger_my_account_is_disabled",
+              "label": "Please select the issue",
+              "node_input_display_type": "dropdown",
+              "node_type": "node-resolution",
+              "options_dict": {},
+              "options_list": [],
+              "parse_original": false,
+              "prompt": "Ok. I will create a support request for you.<msgbr>Please answer the following questions for the support request.",
+              "res_meta": {
+                "id": "question_8f93683928af4892b4d14a13f11b77e3",
+                "title": "resolution topic1"
+              }
+            },
+            {
+              "custom_fields": {
+                "issue_type": "Ambassador ID check",
+                "view": "Fraud"
+              },
+              "entity_type": "FREETEXT",
+              "id": "default_ambassador",
+              "label": "Please select a topic",
+              "node_input_display_type": "dropdown",
+              "node_type": "node-resolution",
+              "options_dict": {},
+              "options_list": [],
+              "parse_original": false,
+              "prompt": "Ok. I will create a support request for you.<msgbr>Please answer the following questions for the support request.",
+              "res_meta": {
+                "id": "question_8f93683928af4892b4d14a13f11b77e3",
+                "title": "resolution topic1"
+              }
+            },
+            {
+              "custom_fields": {},
+              "entity_type": "OPTIONS",
+              "id": "default_applicant_creating_updating_my_driver_profile",
+              "label": "Please select the issue",
+              "node_input_display_type": "dropdown",
+              "node_type": "node-qa",
+              "options_dict": {
+                "i need to retake profile photo": null,
+                "my lyft car photo is wrong": null,
+                "other profile request": null,
+                "updating drivers license": null,
+                "updating insurance": null
+              },
+              "options_list": [
+                "updating insurance",
+                "other profile request",
+                "my lyft car photo is wrong",
+                "updating drivers license",
+                "i need to retake profile photo"
+              ],
+              "parse_original": false,
+              "prompt": "Please select the issue"
+            },
+            {
+              "custom_fields": {},
+              "entity_type": "OPTIONS",
+              "id": "default_driver_safety_concern",
+              "label": "Please select the issue",
+              "node_input_display_type": "dropdown",
+              "node_type": "node-qa",
+              "options_dict": {
+                "accident in a lyft": null,
+                "citation": null
+              },
+              "options_list": [
+                "accident in a lyft",
+                "citation"
+              ],
+              "parse_original": false,
+              "prompt": "Please select the issue"
+            },
+            {
+              "custom_fields": {
+                "issue_type": "Driver::Compliance",
+                "view": "Compliance"
+              },
+              "entity_type": "FREETEXT",
+              "id": "default_driver_local_regulations_requirements_emblems_or_placards",
+              "label": "please select the detail",
+              "node_input_display_type": "dropdown",
+              "node_type": "node-resolution",
+              "options_dict": {},
+              "options_list": [],
+              "parse_original": false,
+              "prompt": "Ok. I will create a support request for you.<msgbr>Please answer the following questions for the support request.",
+              "res_meta": {
+                "id": "question_8f93683928af4892b4d14a13f11b77e3",
+                "title": "resolution topic1"
+              }
+            },
+            {
+              "custom_fields": {},
+              "entity_type": "OPTIONS",
+              "id": "default_applicant_problem_during_mentor_session",
+              "label": "Please select the issue",
+              "node_input_display_type": "dropdown",
+              "node_type": "node-qa",
+              "options_dict": {
+                "post mentor vehicle fix": null,
+                "requesting a new mentor": null,
+                "rescheduling my mentor session": null
+              },
+              "options_list": [
+                "post mentor vehicle fix",
+                "rescheduling my mentor session",
+                "requesting a new mentor"
+              ],
+              "parse_original": false,
+              "prompt": "Please select the issue"
+            },
+            {
+              "custom_fields": {
+                "issue_type": "Passenger::Gift Cards",
+                "view": "Support - Tier 1 (IBEX)"
+              },
+              "entity_type": "FREETEXT",
+              "id": "default_passenger_charges__credits__and_money_lyft_pass_and_gift_cards_gift_cards",
+              "label": "PROMPT PLACEHOLDER",
+              "node_input_display_type": "dropdown",
+              "node_type": "node-resolution",
+              "options_dict": {},
+              "options_list": [],
+              "parse_original": false,
+              "prompt": "Ok. I will create a support request for you.<msgbr>Please answer the following questions for the support request.",
+              "res_meta": {
+                "id": "question_8f93683928af4892b4d14a13f11b77e3",
+                "title": "resolution topic1"
+              }
+            },
+            {
+              "custom_fields": {},
+              "entity_type": "OPTIONS",
+              "id": "default_passenger_charges__credits__and_money_lyft_pass_and_gift_cards",
+              "label": "please select the detail",
+              "node_input_display_type": "dropdown",
+              "node_type": "node-qa",
+              "options_dict": {
+                "Gift Cards": null,
+                "Lyft Pass": null
+              },
+              "options_list": [
+                "Gift Cards",
+                "Lyft Pass"
+              ],
+              "parse_original": false,
+              "prompt": "please select the detail"
+            },
+            {
+              "custom_fields": {},
+              "entity_type": "OPTIONS",
+              "id": "default_applicant_express_drive_rental_program",
+              "label": "Please select the issue",
+              "node_input_display_type": "dropdown",
+              "node_type": "node-qa",
+              "options_dict": {
+                "General program information": null,
+                "No vehicles available": null,
+                "Rental Deposit": null,
+                "Signing up": null,
+                "Vehicle pickup": null
+              },
+              "options_list": [
+                "No vehicles available",
+                "Signing up",
+                "Rental Deposit",
+                "General program information",
+                "Vehicle pickup"
+              ],
+              "parse_original": false,
+              "prompt": "Please select the issue"
+            },
+            {
+              "custom_fields": {},
+              "entity_type": "OPTIONS",
+              "id": "default_driver_amp_i_want_an_amp_or_amp_accessory",
+              "label": "please select the detail",
+              "node_input_display_type": "dropdown",
+              "node_type": "node-qa",
+              "options_dict": {
+                "I never received one": null,
+                "Lost or stolen": null,
+                "My Amp is broken": null,
+                "Need new base": null,
+                "Need new cable": null,
+                "Ordered, but never arrived": null
+              },
+              "options_list": [
+                "Ordered, but never arrived",
+                "Lost or stolen",
+                "Need new base",
+                "Need new cable",
+                "I never received one",
+                "My Amp is broken"
+              ],
+              "parse_original": false,
+              "prompt": "please select the detail"
+            },
+            {
+              "custom_fields": {},
+              "entity_type": "OPTIONS",
+              "id": "default_driver_issue_with_a_ride",
+              "label": "Please select the issue",
+              "node_input_display_type": "dropdown",
+              "node_type": "node-qa",
+              "options_dict": {
+                "A passenger caused damage to my car": null,
+                "Canceled ride": null,
+                "Ended ride too early": null,
+                "I found an item": null,
+                "My driver's car photo was wrong": null
+              },
+              "options_list": [
+                "I found an item",
+                "Ended ride too early",
+                "My driver's car photo was wrong",
+                "Canceled ride",
+                "A passenger caused damage to my car"
+              ],
+              "parse_original": false,
+              "prompt": "Please select the issue"
+            },
+            {
+              "custom_fields": {
+                "issue_type": "D::AMP::EXP",
+                "view": "AMP"
+              },
+              "entity_type": "FREETEXT",
+              "id": "default_driver_amp_display_issue",
+              "label": "please select the detail",
+              "node_input_display_type": "dropdown",
+              "node_type": "node-resolution",
+              "options_dict": {},
+              "options_list": [],
+              "parse_original": false,
+              "prompt": "Ok. I will create a support request for you.<msgbr>Please answer the following questions for the support request.",
+              "res_meta": {
+                "id": "question_8f93683928af4892b4d14a13f11b77e3",
+                "title": "resolution topic1"
+              }
+            },
+            {
+              "custom_fields": {},
+              "entity_type": "OPTIONS",
+              "id": "default_driver_express_drive_rental_program",
+              "label": "Please select the issue",
+              "node_input_display_type": "dropdown",
+              "node_type": "node-qa",
+              "options_dict": {
+                "Charges, earnings, or rental deposits": null,
+                "General program information": null,
+                "No vehicles available": null,
+                "Reposessions": null,
+                "Signing up": null,
+                "Vehicle maintenance": null,
+                "Vehicle pickup, return, or renewal": null
+              },
+              "options_list": [
+                "General program information",
+                "Charges, earnings, or rental deposits",
+                "Signing up",
+                "Vehicle pickup, return, or renewal",
+                "Reposessions",
+                "No vehicles available",
+                "Vehicle maintenance"
+              ],
+              "parse_original": false,
+              "prompt": "Please select the issue"
+            },
+            {
+              "custom_fields": {
+                "issue_type": "Passenger::General",
+                "view": "Support - Tier 1 (IBEX)"
+              },
+              "entity_type": "FREETEXT",
+              "id": "default_passenger_other",
+              "label": "Please select the issue",
+              "node_input_display_type": "dropdown",
+              "node_type": "node-resolution",
+              "options_dict": {},
+              "options_list": [],
+              "parse_original": false,
+              "prompt": "Ok. I will create a support request for you.<msgbr>Please answer the following questions for the support request.",
+              "res_meta": {
+                "id": "question_8f93683928af4892b4d14a13f11b77e3",
+                "title": "resolution topic1"
+              }
+            },
+            {
+              "custom_fields": {},
+              "entity_type": "OPTIONS",
+              "id": "default_driver_driver_profile_updates",
+              "label": "Please select the issue",
+              "node_input_display_type": "dropdown",
+              "node_type": "node-qa",
+              "options_dict": {
+                "changing phone number": null,
+                "my lyft car photo is wrong": null,
+                "switching driver region": null,
+                "switching to new car": null,
+                "updating car photo": null,
+                "updating insurance": null,
+                "updating profile photo": null
+              },
+              "options_list": [
+                "updating profile photo",
+                "updating car photo",
+                "my lyft car photo is wrong",
+                "switching to new car",
+                "updating insurance",
+                "switching driver region",
+                "changing phone number"
+              ],
+              "parse_original": false,
+              "prompt": "Please select the issue"
+            },
+            {
+              "custom_fields": {},
+              "entity_type": "OPTIONS",
+              "id": "default_driver_my_payments",
+              "label": "Please select the issue",
+              "node_input_display_type": "dropdown",
+              "node_type": "node-qa",
+              "options_dict": {
+                "a driver referral": null,
+                "a weekly guarantee": null,
+                "average hourly guarantees": null,
+                "express pay": null,
+                "power driver bonus": null,
+                "rental car costs": null,
+                "taxes": null,
+                "tolls": null,
+                "weekly deposit": null
+              },
+              "options_list": [
+                "power driver bonus",
+                "express pay",
+                "taxes",
+                "weekly deposit",
+                "rental car costs",
+                "a driver referral",
+                "average hourly guarantees",
+                "a weekly guarantee",
+                "tolls"
+              ],
+              "parse_original": false,
+              "prompt": "Please select the issue"
+            },
+            {
+              "custom_fields": {
+                "issue_type": "Driver::Profile Photo",
+                "view": "Support - Tier 1 (InTouch)"
+              },
+              "entity_type": "FREETEXT",
+              "id": "default_driver_driver_profile_updates_my_lyft_car_photo_is_wrong",
+              "label": "please select the detail",
+              "node_input_display_type": "dropdown",
+              "node_type": "node-resolution",
+              "options_dict": {},
+              "options_list": [],
+              "parse_original": false,
+              "prompt": "Ok. I will create a support request for you.<msgbr>Please answer the following questions for the support request.",
+              "res_meta": {
+                "id": "question_8f93683928af4892b4d14a13f11b77e3",
+                "title": "resolution topic1"
+              }
+            },
+            {
+              "custom_fields": {
+                "issue_type": "Applicant::Car photo",
+                "view": "Support - Tier 1 (InTouch)"
+              },
+              "entity_type": "FREETEXT",
+              "id": "default_applicant_creating_updating_my_driver_profile_my_lyft_car_photo_is_wrong",
+              "label": "please select the detail",
+              "node_input_display_type": "dropdown",
+              "node_type": "node-resolution",
+              "options_dict": {},
+              "options_list": [],
+              "parse_original": false,
+              "prompt": "Ok. I will create a support request for you.<msgbr>Please answer the following questions for the support request.",
+              "res_meta": {
+                "id": "question_8f93683928af4892b4d14a13f11b77e3",
+                "title": "resolution topic1"
+              }
+            },
+            {
+              "custom_fields": {
+                "issue_type": "Driver::Cancelled Ride",
+                "view": "Pay"
+              },
+              "entity_type": "FREETEXT",
+              "id": "default_driver_issue_with_a_ride_ended_ride_too_early",
+              "label": "please select the detail",
+              "node_input_display_type": "dropdown",
+              "node_type": "node-resolution",
+              "options_dict": {},
+              "options_list": [],
+              "parse_original": false,
+              "prompt": "Ok. I will create a support request for you.<msgbr>Please answer the following questions for the support request.",
+              "res_meta": {
+                "id": "question_8f93683928af4892b4d14a13f11b77e3",
+                "title": "resolution topic1"
+              }
+            },
+            {
+              "custom_fields": {
+                "issue_type": "Driver::Profile Photo",
+                "view": "Support - Tier 1 (IBEX)"
+              },
+              "entity_type": "FREETEXT",
+              "id": "default_driver_issue_with_a_ride_my_driver's_car_photo_was_wrong",
+              "label": "please select the detail",
+              "node_input_display_type": "dropdown",
+              "node_type": "node-resolution",
+              "options_dict": {},
+              "options_list": [],
+              "parse_original": false,
+              "prompt": "Ok. I will create a support request for you.<msgbr>Please answer the following questions for the support request.",
+              "res_meta": {
+                "id": "question_8f93683928af4892b4d14a13f11b77e3",
+                "title": "resolution topic1"
+              }
+            },
+            {
+              "custom_fields": {
+                "issue_type": "Driver::Express Drive::Vehicle Supply",
+                "view": "Support - Tier 2"
+              },
+              "entity_type": "FREETEXT",
+              "id": "default_driver_express_drive_rental_program_no_vehicles_available",
+              "label": "please select the detail",
+              "node_input_display_type": "dropdown",
+              "node_type": "node-resolution",
+              "options_dict": {},
+              "options_list": [],
+              "parse_original": false,
+              "prompt": "Ok. I will create a support request for you.<msgbr>Please answer the following questions for the support request.",
+              "res_meta": {
+                "id": "question_8f93683928af4892b4d14a13f11b77e3",
+                "title": "resolution topic1"
+              }
+            }
+          ]
+        },
+        "topic_type": ""
+      }
+    },
+    "models": {},
+    "res_topics": {
+      "question_8f93683928af4892b4d14a13f11b77e3": {
+        "examples": [],
+        "id": "question_8f93683928af4892b4d14a13f11b77e3",
+        "intent_name": "driver_topic1",
+        "intent_type": "default",
+        "question_type": "normal",
+        "response": {
+          "api_id": "",
+          "text": "entities: {{entities}}\nentities.code: {{entities.code}}\nentities.name: {{entities.name}}\nentities.email: {{entities.email}}",
+          "transition_text": "If you want help with anything else, please click on the \"restart\" button at the top."
+        },
+        "response_type": "response-type-zendesk",
+        "slots": [
+          {
+            "entity_type": "FREETEXT",
+            "name": "name",
+            "options_list": [],
+            "prompt": "What is your name?",
+            "slot_type": "slot-type-input"
+          },
+          {
+            "entity_type": "EMAIL",
+            "name": "email",
+            "options_list": [],
+            "prompt": "What is your email?",
+            "slot_type": "slot-type-input"
+          },
+          {
+            "entity_type": "FREETEXT",
+            "name": "Summary",
+            "options_list": [],
+            "prompt": "Please summarize your problem briefly so we can resolve it faster.",
+            "slot_type": "slot-type-input"
+          },
+          {
+            "entity_type": "ATTACHMENTS",
+            "name": "uploads",
+            "options_list": [],
+            "prompt": "Please upload any files",
+            "slot_type": "slot-type-input"
+          }
+        ],
+        "slots_type": "slots-type-sequential",
+        "title": "driver topic1",
+        "webhook": {},
+        "zendesk": {
+          "request": {
+            "api_host": "https://lyft1450739301.zendesk.com",
+            "attachments": "all",
+            "auth": "admin.lyft@myralabs.com:rnA6JY4sr9TTonk1PxaLs0twQs3e6KAxe3svkr65",
+            "body": "The code is: {{entities.code}}\nAll entries: {{entities}}",
+            "requester_email": "{{entities.email}}",
+            "requester_name": "{{entities.name}}",
+            "subject": "MyraLabs: {{entities.code}}"
+          },
+          "response_text": "Thank for your input. A ticket ({{ticket.url}}) has been created for you and we will get back to you asap."
+        }
+      }
+    }
+  },
+  "meta": {
+    "question_8f93683928af4892b4d14a13f11b77e3": {
+      "examples": [],
+      "id": "question_8f93683928af4892b4d14a13f11b77e3",
+      "intent_name": "driver_topic1",
+      "intent_type": "default",
+      "question_type": "normal",
+      "response": {
+        "api_id": "",
+        "text": "entities: {{entities}}\nentities.code: {{entities.code}}\nentities.name: {{entities.name}}\nentities.email: {{entities.email}}",
+        "transition_text": "If you want help with anything else, please click on the \"restart\" button at the top."
+      },
+      "response_type": "response-type-zendesk",
+      "slots": [
+        {
+          "entity_type": "FREETEXT",
+          "name": "name",
+          "options_list": [],
+          "prompt": "What is your name?",
+          "slot_type": "slot-type-input"
+        },
+        {
+          "entity_type": "EMAIL",
+          "name": "email",
+          "options_list": [],
+          "prompt": "What is your email?",
+          "slot_type": "slot-type-input"
+        },
+        {
+          "entity_type": "FREETEXT",
+          "name": "Summary",
+          "options_list": [],
+          "prompt": "Please summarize your problem briefly so we can resolve it faster.",
+          "slot_type": "slot-type-input"
+        },
+        {
+          "entity_type": "ATTACHMENTS",
+          "name": "uploads",
+          "options_list": [],
+          "prompt": "Please upload any files",
+          "slot_type": "slot-type-input"
+        }
+      ],
+      "slots_type": "slots-type-sequential",
+      "title": "driver topic1",
+      "webhook": {},
+      "zendesk": {
+        "request": {
+          "api_host": "https://lyft1450739301.zendesk.com",
+          "attachments": "all",
+          "auth": "admin.lyft@myralabs.com:rnA6JY4sr9TTonk1PxaLs0twQs3e6KAxe3svkr65",
+          "body": "The code is: {{entities.code}}\nAll entries: {{entities}}",
+          "requester_email": "{{entities.email}}",
+          "requester_name": "{{entities.name}}",
+          "subject": "MyraLabs: {{entities.code}}"
+        },
+        "response_text": "Thank for your input. A ticket ({{ticket.url}}) has been created for you and we will get back to you asap."
+      }
+    }
+  }
+}
