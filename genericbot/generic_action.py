@@ -136,7 +136,7 @@ class GenericActionObject(keyframe.actions.ActionObject):
                 eventWriter.write(responseEvent.toJSONStr(), responseEvent.userId)
                 return constants.BOT_REQUEST_STATE_PROCESSED
             self.nextSlotToFillName = slotObject.slotTransitions.get(
-                slotObject.value)
+                slotObject.value.lower())
             log.info("self.nextSlotToFillName: %s", self.nextSlotToFillName)
             if not self.nextSlotToFillName:
                 self.nextSlotToFillName = slotObject.slotTransitions.get("__default__")
@@ -279,6 +279,10 @@ class GenericActionObject(keyframe.actions.ActionObject):
                 # If a slot does not have slot_transitions, this is the last
                 # slot in this path - after it is filled the actionobject is done.
                 gc.slotTransitions = slotSpec.get("slot_transitions")
+                if gc.slotTransitions:
+                    # make all keys lowercase.
+                    gc.slotTransitions = dict(
+                        (k.lower(),v) for (k,v) in gc.slotTransitions.iteritems())
                 log.debug("got slot transitions for slot (%s): %s",
                           gc.name, gc.slotTransitions)
             log.debug("created slot: %s", gc)
