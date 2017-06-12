@@ -135,8 +135,11 @@ class GenericActionObject(keyframe.actions.ActionObject):
                     responseEvent.resolutionStatus = True
                 eventWriter.write(responseEvent.toJSONStr(), responseEvent.userId)
                 return constants.BOT_REQUEST_STATE_PROCESSED
-            self.nextSlotToFillName = slotObject.slotTransitions.get(
-                slotObject.value.lower())
+            if slotObject.value:
+                self.nextSlotToFillName = slotObject.slotTransitions.get(
+                    slotObject.value.lower())
+            else:
+                self.nextSlotToFillName = None
             log.info("self.nextSlotToFillName: %s", self.nextSlotToFillName)
             if not self.nextSlotToFillName:
                 self.nextSlotToFillName = slotObject.slotTransitions.get("__default__")
