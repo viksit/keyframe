@@ -269,6 +269,8 @@ class GenericActionSlot(GenericSlot):
             response = requests.post(
                 templatedURL, json=requestBodyJsonObject, auth=requestAuthTuple)
         else:
+            log.info("making GET request: url: %s, auth: %s",
+                     templatedURL, requestAuthTuple)
             response = requests.get(templatedURL, auth=requestAuthTuple)
         if response.status_code not in (200, 201, 202):
             log.exception("webhook call failed. status_code: %s", response.status_code)
