@@ -149,7 +149,7 @@ class GenericBotHTTPAPI(generic_bot_api.GenericBotAPI):
             log.info("creating api with cfg: %s", apicfg)
             api = client.connect(apicfg)
             #api.set_intent_model(intentModelId)
-            api.set_params(modelParams)
+            #api.set_params(modelParams)
 
         self.bot = generic_bot.GenericBot(
             kvStore=kvStore,

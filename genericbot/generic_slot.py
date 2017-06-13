@@ -114,14 +114,14 @@ class GenericTransferSlot(GenericSlot):
 class GenericIntentModelSlot(GenericSlot):
     def __init__(self, apiResult=None, newTopic=None,
                  promptMsg=None, topicId=None,
-                 channelClient=None, api=None):
+                 channelClient=None, api=None,
+                 intentModelParams=None):
         super(GenericIntentModelSlot, self).__init__(
             apiResult=apiResult, newTopic=newTopic,
             topicId=topicId, channelClient=channelClient)
         self.intentModelId = None
-        self.outlierCutoff = None
-        self.outlierFrac = None
         self.api = api
+        self.intentModelParams = intentModelParams
 
     intent_str_re = re.compile("\[intent=([^\]]+)\]")
     def _extractDirect(self, canonicalMsg):
@@ -139,12 +139,18 @@ class GenericIntentModelSlot(GenericSlot):
         urlParams = {}
         if canonicalMsg.rid:
             urlParams = {"rid":canonicalMsg.rid}
+        modelInvocationParams = {}
+        if self.intentModelParams:
+            _d = self.intentModelParams.get(
+                "model_invocation_params", {})
+            modelInvocationParams = _d.get("default", {})
+            modelInvocationParams.update(
+                _d.get(self.intentModelId, {}))
+        urlParams.update(modelInvocationParams)
         apiResult = self.api.get(
             canonicalMsg.text,
             intent_model_id=self.intentModelId,
-            url_params=urlParams,
-            outlier_cutoff=self.outlierCutoff,
-            outlier_frac=self.outlierFrac)
+            url_params=urlParams)
         log.debug("GenericIntentModelSlot.fill apiResult: %s", apiResult)
         return apiResult.intent.label
 

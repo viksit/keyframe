@@ -168,7 +168,8 @@ class GenericActionObject(keyframe.actions.ActionObject):
                            specJson, topicId, canonicalMsg, botState,
                            userProfile, requestState, api, channelClient,
                            actionObjectParams={},
-                           apiResult=None, newTopic=None):
+                           apiResult=None, newTopic=None,
+                           intentModelParams=None):
         log.debug("GenericActionObject.createActionObject(%s)", locals())
 
         # Create a GenericActionObject using specJson
@@ -196,10 +197,11 @@ class GenericActionObject(keyframe.actions.ActionObject):
             elif slotType == slot_fill.Slot.SLOT_TYPE_INTENT_MODEL:
                 gc = generic_slot.GenericIntentModelSlot(
                     apiResult=apiResult, newTopic=newTopic,
-                    topicId=topicId, channelClient=channelClient, api=api)
+                    topicId=topicId, channelClient=channelClient, api=api,
+                    intentModelParams=intentModelParams)
                 gc.intentModelId = slotSpec.get("intent_model_id")
-                gc.outlierCutoff = slotSpec.get("outlier_cutoff")
-                gc.outlierFrac = slotSpec.get("outlier_frac")
+                #gc.outlierCutoff = slotSpec.get("outlier_cutoff")
+                #gc.outlierFrac = slotSpec.get("outlier_frac")
             elif slotType == slot_fill.Slot.SLOT_TYPE_HIDDEN:
                 gc = generic_slot.GenericHiddenSlot(
                     apiResult=apiResult, newTopic=newTopic,

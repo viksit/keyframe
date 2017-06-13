@@ -70,4 +70,5 @@ class GenericBot(keyframe.base.BaseBot):
             actionObjectSpecJson, topicId,
             canonicalMsg, botState,
             userProfile, requestState, self.api, self.channelClient,
-            apiResult=apiResult, newTopic=newTopic)
+            apiResult=apiResult, newTopic=newTopic,
+            intentModelParams=self.specJson.get("intent_model_params"))
