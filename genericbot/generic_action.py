@@ -116,7 +116,8 @@ class GenericActionObject(keyframe.actions.ActionObject):
                 ticketFiled=False,  # updated if required below
                 resolutionStatus=False
             )
-            eventWriter = event_writer.getWriter()
+            eventWriter = event_writer.getWriter(
+                streamSuffix=self.accountId)
             if filled:
                 responseEvent.responseType = "fill"
                 if slotObject.getActionType() == "zendesk":
