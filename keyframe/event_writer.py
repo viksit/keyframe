@@ -1,4 +1,4 @@
-import os
+import os, sys
 import datetime
 import logging
 import json
@@ -98,6 +98,10 @@ class KinesisStreamWriter(Writer):
         self.kinesisStreamName = kinesisStreamName
         log.info("created KinesisStreamWriter with kstreamname: %s", self.kinesisStreamName)
 
+    def __repr__(self):
+        return "KinesisStreamWriter(kinesisStreamName=%s, config=%s)" % (
+            self.kinesisStreamName, self.config)
+
     def write(self, data, partitionKey):
         log.debug("KinesisStreamWriter.write(%s)", locals())
         self.kstream.put_record(
@@ -120,3 +124,19 @@ def testKinesisWriter(config=None, kinesisStreamName=None, numEvents=1):
         w.write(json.dumps({"event_id":"1234", "user_id":"u1"}), "u1")
 
 
+def main():
+    assert len(sys.argv) > 1
+    streamName = sys.argv[1]
+    w = getWriter(streamName=streamName)
+    print "got writer: %s" % (w,)
+    numEvents = 1
+    if len(sys.argv) > 2:
+        numEvents = int(sys.argv[2])
+    for i in range(numEvents):
+        e = json.dumps({
+            "event_id":"testing123",
+            "time":datetime.datetime.now().strftime("%Y%m%d_%H%M%S")})
+        w.write(e, "partitionKey-test")
+        print "wrote event: %s" % (e,)
+if __name__ == "__main__":
+    main()

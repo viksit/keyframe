@@ -422,7 +422,7 @@ class BaseBot(object):
                     topicId=topicId,
                     topicType=actionObject.getTopicType(),
                     payload=canonicalMsg.toJSON())
-                eventWriter = event_writer.getWriter(streamSuffix=accountId)
+                eventWriter = event_writer.getWriter(streamSuffix=self.accountId)
                 eventWriter.write(requestEvent.toJSONStr(), requestEvent.userId)
                 wroteEvent = True
 
