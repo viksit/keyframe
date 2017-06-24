@@ -35,6 +35,9 @@ class GenericActionObject(keyframe.actions.ActionObject):
         self.slotsType = None
         self.nextSlotToFill = None
 
+    def getTopicType(self):
+        return self.specJson.get("topic_type")
+
     def getPreemptWaitingActionThreshold(self):
         if self.specJson:
             return self.specJson.get("preempt_waiting_action_threshold")

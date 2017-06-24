@@ -67,12 +67,7 @@ class ActionObject(object):
         return slotClasses
 
     def getTopicType(self):
-        if self.originalTopicId.startswith("question_"):
-            return "resolution"
-        elif self.originalTopicId.startswith("topic"):
-            return "diagnostic"
-        else:
-            raise Exception("cannot get topicType (topicId: %s)" % (self.originalTopicId,))
+        raise Exception("ActionObject base class does not have a topic type")
 
     @classmethod
     def createActionObject(
