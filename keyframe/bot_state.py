@@ -26,7 +26,7 @@ class BotState(object):
         self.debug = False
         self.uid = None
         self.previousUid = None
-        self.transferTopicId = None
+        self.transferTopicInfo = None
         self._sessionData = {}
         self._sessionDataType = {}
         self._sessionUtterances = {}
@@ -105,14 +105,14 @@ class BotState(object):
         self._sessionUtterances = {}
         self._sessionDataType = {}
         self._sessionUtterancesType = {}
-        self.transferTopicId = None
+        self.transferTopicInfo = None
         self.clearWaiting()
 
-    def getTransferTopicId(self):
-        return self.transferTopicId
+    def getTransferTopicInfo(self):
+        return self.transferTopicInfo
 
-    def setTransferTopicId(self, ttId):
-        self.transferTopicId = ttId
+    def setTransferTopicInfo(self, ttInfo):
+        self.transferTopicInfo = ttInfo
 
     def setUid(self, uid):
         self.uid = uid

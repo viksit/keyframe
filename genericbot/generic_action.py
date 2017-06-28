@@ -95,9 +95,9 @@ class GenericActionObject(keyframe.actions.ActionObject):
                 slotObject.sendMessageIfAny(
                     self.canonicalMsg, self.apiResult, self.channelClient,
                     botState)
-                transferTopicId = slotObject.getTransferTopicId()
-                assert transferTopicId, "Trying to transfer without transferTopicId"
-                botState.setTransferTopicId(transferTopicId)
+                transferTopicInfo = slotObject.getTransferTopicInfo()
+                assert transferTopicInfo, "Trying to transfer without transferTopicInfo"
+                botState.setTransferTopicInfo(transferTopicInfo)
                 return constants.BOT_REQUEST_STATE_TRANSFER
             filled = slotObject.fillWrapper(
                 self.canonicalMsg, self.apiResult, self.channelClient,
@@ -173,7 +173,8 @@ class GenericActionObject(keyframe.actions.ActionObject):
                            userProfile, requestState, api, channelClient,
                            actionObjectParams={},
                            apiResult=None, newTopic=None,
-                           intentModelParams=None):
+                           intentModelParams=None,
+                           topicNodeId=None):
         log.debug("GenericActionObject.createActionObject(%s)", locals())
 
         # Create a GenericActionObject using specJson
@@ -225,6 +226,7 @@ class GenericActionObject(keyframe.actions.ActionObject):
                 gc = generic_slot.GenericTransferSlot(
                     apiResult=apiResult, newTopic=newTopic, topicId=topicId)
                 gc.transferTopicId = slotSpec.get("transfer_topic_id")
+                gc.transferTopicNodeId = slotSpec.get("transfer_topic_node_id")
                 assert gc.transferTopicId, "Transfer slots must have transfer_topic_id defined"
             else:
                 raise Exception("Unknown slot type (%s)" % (slotType,))
@@ -306,8 +308,13 @@ class GenericActionObject(keyframe.actions.ActionObject):
         if slotObjects:
             if actionObject.slotsType == cls.SLOTS_TYPE_CONDITIONAL:
                 # All keys must exist in dict
-                actionObject.nextSlotToFillName = slotObjectsByName[
-                    specJson["slots_start"]].name
+                if topicNodeId:
+                    log.info("setting next slot using topicNodeId: %s", topicNodeId)
+                    actionObject.nextSlotToFillName = slotObjectsByName[
+                        topicNodeId].name
+                else:
+                    actionObject.nextSlotToFillName = slotObjectsByName[
+                        specJson["slots_start"]].name
             else:
                 raise Exception("bad actionObject.slotsType: %s" % (
                     actionObject.slotsType,))

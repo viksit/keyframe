@@ -83,9 +83,10 @@ class GenericTransferSlot(GenericSlot):
         super(GenericSlot, self).__init__(
             apiResult=apiResult, newTopic=newTopic, topicId=topicId)
         self.transferTopicId = None
+        self.transferTopicNodeId = None
 
-    def getTransferTopicId(self):
-        return self.transferTopicId
+    def getTransferTopicInfo(self):
+        return (self.transferTopicId, self.transferTopicNodeId)
 
     def sendMessageIfAny(
             self, canonicalMsg, apiResult, channelClient, botState):

@@ -265,7 +265,7 @@ class BaseBot(object):
     def createActionObject(self, accountId, agentId, topicId,
                            canonicalMsg, botState,
                            userProfile, requestState,
-                           apiResult=None, newTopic=None):
+                           apiResult=None, newTopic=None, topicNodeId=None):
         log.debug("BaseBot.createActionObject(%s)", locals())
         return actions.ActionObject.createActionObject(
             accountId, agentId,
@@ -333,13 +333,14 @@ class BaseBot(object):
         else:
             log.debug("not a botcmd")
 
-        transferTopicId = None
+        transferTopicInfo = None
         newSession = False
 
         wroteEvent = False
 
         while True:
             topicId = None
+            topicNodeId = None
             actionStateJson = None
             newTopic = None
 
@@ -359,9 +360,9 @@ class BaseBot(object):
                 canonicalMsg.text = canonicalMsg.text.replace(x.group(), "")
 
             if not topicId:
-                if transferTopicId:
-                    topicId = transferTopicId
-                    transferTopicId = None
+                if transferTopicInfo:
+                    (topicId, topicNodeId) = transferTopicInfo
+                    transferTopicInfo = None
                     newTopic = True
                     # TODO(now): For a non (diagnostic -> resolution) transfer,
                     # botState.clear() should probably be called!
@@ -402,7 +403,7 @@ class BaseBot(object):
                 self.accountId, self.agentId,
                 topicId,
                 canonicalMsg, botState, userProfile,
-                requestState, newTopic=newTopic)
+                requestState, newTopic=newTopic, topicNodeId=topicNodeId)
             if actionStateJson:
                 actionObject.fromJSONObject(actionStateJson)
 
@@ -431,7 +432,7 @@ class BaseBot(object):
             if requestState == constants.BOT_REQUEST_STATE_PROCESSED:
                 break
             if requestState == constants.BOT_REQUEST_STATE_TRANSFER:
-                transferTopicId = botState.getTransferTopicId()
+                transferTopicInfo = botState.getTransferTopicInfo()
 
         if botState.changed:
             self.putBotState(
