@@ -16,6 +16,7 @@ class Slot(object):
 
     SLOT_STATE_NEW = "new"
     SLOT_STATE_WAITING_FILL = "waiting_for_fill"
+    SLOT_STATE_FILLED = "filled"
 
     SLOT_TYPE_INPUT = "slot-type-input"
     SLOT_TYPE_INFO = "slot-type-info"
@@ -164,6 +165,7 @@ class Slot(object):
                     botState.addToSessionUtterances(
                         self.name, canonicalMsg.text, self.entityType)
                     self.filled = True
+                    self.state = Slot.SLOT_STATE_FILLED
                 else:
                     # We notify the user that this value is invalid.
                     # ask to re-fill.
@@ -185,6 +187,13 @@ class Slot(object):
                 botState.addToSessionUtterances(
                     self.name, canonicalMsg.text, self.entityType)
                 self.filled = True
+                self.state = Slot.SLOT_STATE_FILLED
+        elif self.state == Slot.SLOT_STATE_FILLED:
+            log.warn("This slot is already filled with value: %s", self.value)
+            raise Exception(
+                ("Came across a slot that is already filled!"
+                " This probably means an endless loop."))
+
         return self.filled
 
     def _createAndSendResponse(
