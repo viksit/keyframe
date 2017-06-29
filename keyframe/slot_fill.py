@@ -139,7 +139,8 @@ class Slot(object):
                     botState.addToSessionData(
                         self.name, self.value, self.entityType)
                     botState.addToSessionUtterances(
-                        self.name, canonicalMsg.text, self.entityType)
+                        "%s:%s" % (self.name, self.prompt()),
+                        canonicalMsg.text, self.entityType)
                     self.filled = True
                     return self.filled
 
@@ -163,7 +164,8 @@ class Slot(object):
                     botState.addToSessionData(
                         self.name, self.value, self.entityType)
                     botState.addToSessionUtterances(
-                        self.name, canonicalMsg.text, self.entityType)
+                        "%s:%s" % (self.name, self.prompt()),
+                        canonicalMsg.text, self.entityType)
                     self.filled = True
                     self.state = Slot.SLOT_STATE_FILLED
                 else:
@@ -185,7 +187,8 @@ class Slot(object):
                 self.value = fillResult
                 botState.addToSessionData(self.name, self.value, self.entityType)
                 botState.addToSessionUtterances(
-                    self.name, canonicalMsg.text, self.entityType)
+                    "%s:%s" % (self.name, self.prompt()),
+                    canonicalMsg.text, self.entityType)
                 self.filled = True
                 self.state = Slot.SLOT_STATE_FILLED
         elif self.state == Slot.SLOT_STATE_FILLED:

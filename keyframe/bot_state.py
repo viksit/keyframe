@@ -1,5 +1,6 @@
 import time
 import random
+import logging
 
 import messages
 import channel_client
@@ -9,6 +10,8 @@ import slot_fill
 import copy
 import bot_api
 import store_api
+
+log = logging.getLogger(__name__)
 
 class BotState(object):
 
@@ -30,6 +33,7 @@ class BotState(object):
         self._sessionData = {}
         self._sessionDataType = {}
         self._sessionUtterances = {}
+        self._sessionUtterancesOrdered = []
         self._sessionUtterancesType = {}
         self.sessionIntent = None
         self.sessionStartTime = None
@@ -79,6 +83,10 @@ class BotState(object):
     def getSessionUtterances(self):
         return self._sessionUtterances
 
+    def getSessionUtterancesOrdered(self):
+        #log.debug("getSessionUtterancesOrdered: %s", self._sessionUtterancesOrdered)
+        return self._sessionUtterancesOrdered
+
     def getSessionUtterancesType(self):
         return self._sessionUtterancesType
 
@@ -90,8 +98,11 @@ class BotState(object):
         self._sessionDataType[k] = type
 
     def addToSessionUtterances(self, k, v, type=None):
+        #log.debug("existing SessionUtterancesOrdered: %s", self._sessionUtterancesOrdered)
+        #log.debug("addToSessionUtterances(%s)", locals())
         self._sessionUtterances[k] = v
         self._sessionUtterancesType[k] = type
+        self._sessionUtterancesOrdered.append((k, v))
 
     def getSessionDataType(self):
         return self._sessionDataType
@@ -185,6 +196,7 @@ class BotState(object):
             "session_data_type": self._sessionDataType,
             "session_utterances": self._sessionUtterances,
             "session_utterances_type": self._sessionUtterancesType,
+            "session_utterances_ordered":self._sessionUtterancesOrdered,
             "write_time":self.writeTime,
             "session_intent":self.sessionIntent,
             "session_id":self.sessionId,
@@ -208,6 +220,8 @@ class BotState(object):
         botState._sessionDataType = jsonObject.get("session_data_type")
         botState._sessionUtterances = jsonObject.get("session_utterances")
         botState._sessionUtterancesType = jsonObject.get("session_utterances_type")
+        botState._sessionUtterancesOrdered = jsonObject.get(
+            "session_utterances_ordered")
         botState.writeTime = jsonObject.get("write_time")
         botState.sessionIntent = jsonObject.get("session_intent")
         botState.sessionId = jsonObject.get("session_id")

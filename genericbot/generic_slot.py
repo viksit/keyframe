@@ -38,6 +38,14 @@ class GenericSlot(keyframe.slot_fill.Slot):
     #parseResponse = False
     #optionsList = None
 
+    def _entitiesDict(self, botState):
+        transcript = "\n".join(
+            "%s => %s" % (k,v) for (k,v) in botState.getSessionUtterancesOrdered())
+        #log.debug("transcript: %s", transcript)
+        return {"entities":botState.getSessionData(),
+                "utterances":botState.getSessionUtterances(),
+                "transcript":transcript}
+
     def prompt(self):
         #assert self.promptMsg
         if self.entityType == "OPTIONS":
@@ -172,9 +180,10 @@ class GenericInfoSlot(GenericSlot):
         self.canonicalMsg = canonicalMsg
         # We need to send inputExpected = False for this info slot,
         # so don't use self._createAndSendResponse.
+        transcript = "\n".join(
+            "%s:%s" % (k,v) for (k,v) in botState.getSessionUtterancesOrdered())
         responseMsg = Template(self.prompt()).render(
-            {"entities":botState.getSessionData(),
-             "utterances":botState.getSessionUtterances()})
+            self._entitiesDict(botState))
         cr = keyframe.messages.createTextResponse(
             self.canonicalMsg,
             responseMsg,
@@ -246,11 +255,11 @@ class GenericActionSlot(GenericSlot):
         log.debug("URL to fetch: %s" % (templatedURL,))
         requestBodyJsonObject = None
         if requestBody:
-            log.info("requestBody: %s", requestBody)
-            templatedRequestBody = Template(requestBody).render(
-                {"custom": custom, "entities": entities,
-                 "utterances":botState.getSessionUtterances()})
-            log.info("templatedRequestBody (%s): %s", type(templatedRequestBody), templatedRequestBody)
+            #log.debug("requestBody: %s", requestBody)
+            _ed = self._entitiesDict(botState)
+            _ed["custom"] = custom
+            templatedRequestBody = Template(requestBody).render(_ed)
+            #log.debug("templatedRequestBody (%s): %s", type(templatedRequestBody), templatedRequestBody)
             requestBodyJsonObject = json.loads(templatedRequestBody)
 
         urlPieces = urlparse.urlparse(templatedURL)
@@ -288,17 +297,14 @@ class GenericActionSlot(GenericSlot):
 
         r = webhook.get("response_text", {})
         textResponseTemplate = Template(r)
-        renderedResponse = textResponseTemplate.render({
-            "entities": entities,
-            "response": responseJsonObj,
-            "utterances": botState.getSessionUtterances()})
+        _ed = self._entitiesDict(botState)
+        _ed["response"] = responseJsonObj
+        renderedResponse = textResponseTemplate.render(_ed)
         return renderedResponse
 
 
     def doEmail(self, emailSpec, botState):
-        entities = botState.getSessionData()
-        d = {"entities":entities,
-             "utterances":botState.getSessionUtterances()}
+        d = self._entitiesDict(botState)
         toAddr = Template(emailSpec.get("to")).render(d)
         subject = Template(emailSpec.get("subject")).render(d)
         emailContent = Template(emailSpec.get("body")).render(d)
@@ -325,12 +331,10 @@ class GenericActionSlot(GenericSlot):
     def processZendesk(self, botState):
         zendeskConfig = self.actionSpec.get("zendesk")
         zc = copy.deepcopy(zendeskConfig.get("request"))
-        entities = botState.getSessionData()
+        _ed = self._entitiesDict(botState)
         for (k,v) in zendeskConfig.get("request").iteritems():
             log.debug("k: %s, v: %s", k, v)
-            zc[k] = Template(v).render(
-                {"entities":entities,
-                 "utterances":botState.getSessionUtterances()})
+            zc[k] = Template(v).render(_ed)
         if zc.get("attachments"):
             if zc.get("attachments").lower() in (
                     "none", "no", "no attachments"):
@@ -340,9 +344,7 @@ class GenericActionSlot(GenericSlot):
                 log.debug("attachmentUrls: %s", attachmentUrls)
                 zc["attachments"] = attachmentUrls
             else:
-                attachmentUrl = Template(zc.get("attachments")).render(
-                    {"entities":entities,
-                     "utterances":botState.getSessionUtterances()})
+                attachmentUrl = Template(zc.get("attachments")).render(_ed)
                 zc["attachments"] = [attachmentUrl]
         zr = zendesk.createTicket(zc)
         log.debug("zr (%s): %s", type(zr), zr)
