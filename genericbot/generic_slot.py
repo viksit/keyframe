@@ -195,6 +195,8 @@ class GenericInfoSlot(GenericSlot):
             botStateUid=botState.getUid(),
             inputExpected=False)
         channelClient.sendResponse(cr)
+        botState.addToSessionUtterances(
+            self.name, responseMsg, self.entityType)
         self.filled = True
         return self.filled
 
