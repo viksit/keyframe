@@ -124,13 +124,15 @@ class GenericIntentModelSlot(GenericSlot):
     def __init__(self, apiResult=None, newTopic=None,
                  promptMsg=None, topicId=None,
                  channelClient=None, api=None,
-                 intentModelParams=None):
+                 intentModelParams=None,
+                 regexMatcherJson=None):
         super(GenericIntentModelSlot, self).__init__(
             apiResult=apiResult, newTopic=newTopic,
             topicId=topicId, channelClient=channelClient)
         self.intentModelId = None
         self.api = api
         self.intentModelParams = intentModelParams
+        self.regexMatcherJson = regexMatcherJson
 
     intent_str_re = re.compile("\[intent=([^\]]+)\]")
     def _extractDirect(self, canonicalMsg):
@@ -139,11 +141,34 @@ class GenericIntentModelSlot(GenericSlot):
             return x.groups()[0]
         return None
 
+    @classmethod
+    def checkRegexMatch(cls, text, regexMatcherJson):
+        """regexMatcher is a list [(intent_str:regex_str)]
+        """
+        for d in regexMatcherJson:
+            log.info("d: %s (%s)", d, type(d))
+            assert len(d) == 1
+            intentStr = d.keys()[0]
+            regexStrList = d.values()[0]
+            for regexStr in regexStrList:
+                log.debug("comparing text (%s) with regexStr (%s)",
+                          text, regexStr)
+                tmp = re.search(regexStr, text)
+                if tmp:
+                    return intentStr
+        return None
+
     def _extractSlotFromSentence(self, canonicalMsg):
         label = self._extractDirect(canonicalMsg)
         if label:
             log.debug("GOT label from direct: %s", label)
             return label
+        if self.regexMatcherJson:
+            intent = self.checkRegexMatch(
+                canonicalMsg.text, self.regexMatcherJson)
+            if intent:
+                log.info("GOT label from regexMatch: %s", intent)
+                return intent
         log.debug("Calling intent model")
         urlParams = {}
         if canonicalMsg.rid:

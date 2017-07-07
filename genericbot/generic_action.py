@@ -203,7 +203,8 @@ class GenericActionObject(keyframe.actions.ActionObject):
                 gc = generic_slot.GenericIntentModelSlot(
                     apiResult=apiResult, newTopic=newTopic,
                     topicId=topicId, channelClient=channelClient, api=api,
-                    intentModelParams=intentModelParams)
+                    intentModelParams=intentModelParams,
+                    regexMatcherJson=slotSpec.get("intent_regexes"))
                 gc.intentModelId = slotSpec.get("intent_model_id")
                 #gc.outlierCutoff = slotSpec.get("outlier_cutoff")
                 #gc.outlierFrac = slotSpec.get("outlier_frac")
