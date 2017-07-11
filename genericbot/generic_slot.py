@@ -180,6 +180,7 @@ class GenericIntentModelSlot(GenericSlot):
             modelInvocationParams = _d.get("default", {})
             modelInvocationParams.update(
                 _d.get(self.intentModelId, {}))
+        log.info("modelInvocationParams: %s", modelInvocationParams)
         urlParams.update(modelInvocationParams)
         apiResult = self.api.get(
             canonicalMsg.text,
