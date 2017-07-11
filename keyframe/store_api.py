@@ -1,5 +1,6 @@
 import os, sys
 import json
+import time
 import logging
 
 import boto3
@@ -88,6 +89,56 @@ class KVStore(object):
         value: a python object that can be dumped as json.
         """
         self.put(key, json.dumps(value), expiry_time)
+
+
+class MemoryCacheKVStore(KVStore):
+    """A very simple in-memory cache.
+    For a get, look in the cache first. If the key exists and is not
+    expired, use it.
+    Every time a key is obtained from the underlying kvStore, add it to
+    the cache with an expiry.
+    Every time a key is put to the underlying kvStore, add it to the cache
+    with an expiry.
+    """
+    MCCT = "mcct"  # memorycache-created-time
+    V = "value"
+    #VET = "value-expiry-time"
+
+    def __init__(self, kvStore, cacheExpirySeconds):
+        self.kvStore = kvStore
+        self.cacheExpirySeconds = cacheExpirySeconds
+        self.d = {}
+
+    def putCache(self, key, value):
+        self.d[key] = {
+            self.MCCT:time.time(),
+            self.V:value}
+
+    def removeCache(self, key):
+        if key in self.d:
+            self.d.pop(key)
+        
+    def clearCache(self):
+        self.d.clear()
+
+    def put(self, key, value, expiry_time=None):
+        self.putCache(key, value)
+        self.kvStore.put(key, value, expiry_time)
+
+    def get(self, key):
+        e = self.d.get(key)
+        if e:
+            log.info("Key exists in cache")
+            if e[self.MCCT] + self.cacheExpirySeconds > time.time():
+                log.info("Returning value from cache")
+                return e[self.V]
+        log.info("Get from underlying store")
+        v = self.kvStore.get(key)
+        if v:
+            self.putCache(key, v)
+        else:
+            self.removeCache(key)
+        return v
 
 
 # Useful in unit tests and potentially local testing.
@@ -199,3 +250,29 @@ class S3KVStore(KVStore):
         k.key = "nishant/r29/dbkvstore/%s" % (key,)
         if k.exists():
             k.delete()
+
+
+
+def test1():
+    kv = get_kv_store()
+    cacheKv = MemoryCacheKVStore(kv, 3)
+    k = "key1"
+    v = {"created_at":time.time()}
+    cacheKv.put_json(k, v, 10)
+    v1 = cacheKv.get(k)
+    print v1
+    time.sleep(4)
+    v2 = cacheKv.get(k)
+    print v2
+    assert v1 == v2
+
+def test2():
+    kv = get_kv_store()
+    cacheKv = MemoryCacheKVStore(kv, 3)
+    k = "key1"
+    v3 = cacheKv.get(k)
+    print v3
+    v4 = cacheKv.get(k)
+    print v4
+    assert v3 == v4
+
