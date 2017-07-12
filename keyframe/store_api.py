@@ -14,7 +14,7 @@ import keyframe.config
 
 log = logging.getLogger(__name__)
 # To debug, just set the level for this module.
-#log.setLevel(20)
+#log.setLevel(10)
 
 TYPE_S3 = "type-s3"
 TYPE_DYNAMODB = "type-dynamodb"
@@ -76,11 +76,12 @@ class KVStore(object):
         If value is not a json string, will throw back
         the exception thrown by json.loads.
         """
+        log.debug("GET_JSON called")
         s = self.get(key)
         if not s:
-            log.info("key:%s not found, returning default", key)
+            log.debug("key:%s not found, returning default", key)
             return default
-        log.info("found key:%s, returning json", key)
+        log.debug("found key:%s, returning json", key)
         return json.loads(s)
 
     def put_json(self, key, value, expiry_time=None):
@@ -88,6 +89,7 @@ class KVStore(object):
         key: (string)
         value: a python object that can be dumped as json.
         """
+        log.debug("PUT_JSON called")
         self.put(key, json.dumps(value), expiry_time)
 
 
@@ -128,11 +130,11 @@ class MemoryCacheKVStore(KVStore):
     def get(self, key):
         e = self.d.get(key)
         if e:
-            log.info("Key exists in cache")
+            log.debug("Key exists in cache")
             if e[self.MCCT] + self.cacheExpirySeconds > time.time():
-                log.info("Returning value from cache")
+                log.debug("Returning value from cache")
                 return e[self.V]
-        log.info("Get from underlying store")
+        log.debug("Get from underlying store")
         v = self.kvStore.get(key)
         if v:
             self.putCache(key, v)
@@ -146,7 +148,7 @@ class MemoryCacheKVStore(KVStore):
 # just create a new store to start with a clean store.
 class InMemoryKVStore(KVStore):
     def __init__(self):
-        log.info("InMemoryKVStore.__init__")
+        log.debug("InMemoryKVStore.__init__")
         self.d = {}
 
     def put(self, key, value, expiry_time=None):
@@ -154,7 +156,7 @@ class InMemoryKVStore(KVStore):
         key: (string)
         value: (string)
         """
-        log.info("InMemoryKVStore.put(%s)", locals())
+        log.debug("InMemoryKVStore.put(%s)", locals())
         self.d[key] = value
 
     def get(self, key):
@@ -162,7 +164,7 @@ class InMemoryKVStore(KVStore):
         key: (string)
         Returns: (string)
         """
-        log.info("InMemoryKVStore.get(%s)", locals())
+        log.debug("InMemoryKVStore.get(%s)", locals())
         return self.d.get(key)
 
     def delete(self, key):
@@ -184,7 +186,7 @@ class LocalFileKVStore(KVStore):
     def get(self, key):
         p = self.local_dir + "/" + key
         if not os.path.exists(p):
-            log.info("path:%s does not exist", p)
+            log.debug("path:%s does not exist", p)
             return None
         with open(self.local_dir + "/" + key, "r") as f:
             return f.read()
@@ -218,7 +220,7 @@ class DynamoKVStore(KVStore):
             return None
 
     def delete(self, key):
-        log.info("DynamoKVStore.delete(%s)", locals())
+        log.debug("DynamoKVStore.delete(%s)", locals())
         try:
             i = self.kvstore.get_item(
                 hash_key=key)

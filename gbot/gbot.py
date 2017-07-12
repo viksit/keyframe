@@ -51,6 +51,11 @@ kvStore = store_api.get_kv_store(
     # store_api.TYPE_INMEMORY,
     config.getConfig())
 
+cachedKvStore = kvStore
+KVSTORE_CACHE_SECONDS = int(os.getenv("KVSTORE_CACHE_SECONDS", 0))
+if KVSTORE_CACHE_SECONDS:
+    cachedKvStore = store_api.MemoryCacheKVStore(
+        kvStore=kvStore, cacheExpirySeconds=KVSTORE_CACHE_SECONDS)
 # Deployment for lambda
 
 def wrap_exceptions(func):
@@ -89,7 +94,10 @@ class GenericBotHTTPAPI(generic_bot_api.GenericBotAPI):
         agentId = kwargs.get("agentId")
         accountId = kwargs.get("accountId")
         accountSecret = kwargs.get("accountSecret")
-        bms = bot_stores.BotMetaStore(kvStore)
+        # We can have a cachedKvStore to get the bot spec
+        # since it doesn't change much.
+        #if os.getenv
+        bms = bot_stores.BotMetaStore(cachedKvStore)
         with app.app_context():
 
             if "run_mode" in current_app.config and \

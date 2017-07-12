@@ -3,14 +3,16 @@
     "s3_bucket": "ml-lambda-dev-1",
     "app_function": "gbot.app",
     "environment_variables": {
-      "REALM":"dev"
+      "REALM":"dev",
+      "KVSTORE_CACHE_SECONDS":0
     },
   }
   "prod": {
     "s3_bucket": "ml-lambda-prod-1",
     "app_function": "gbot.app"
     "environment_variables": {
-      "REALM":"prod"
+      "REALM":"prod",
+      "KVSTORE_CACHE_SECONDS":600
     },
   }
   "test": {
