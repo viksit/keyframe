@@ -122,8 +122,8 @@ class BaseBot(object):
         botState.setWriteTime(time.time())
         botStateJson = botState.toJSONObject()
         self.kvStore.put_json(k, botState.toJSONObject())
-        # Always also add to history.
-        if botStateUid:
+        # For now, disable history until we need it.
+        if botStateUid and False:
             self.putBotStateHistory(userId, channel, botState, botStateUid)
 
     def putBotStateHistory(self, userId, channel, botState, botStateUid):
