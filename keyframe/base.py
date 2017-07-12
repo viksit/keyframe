@@ -69,8 +69,11 @@ class BaseBot(object):
         # Override to initialize stuff in derived bots
         pass
 
-    # Bot state related functions
     def getUserProfile(self, userId, channel):
+        return None
+
+    # Bot state related functions
+    def getUserProfileNotNeededYet(self, userId, channel):
 
         userProfileKey = "%s.%s.userprofile.%s.%s" % (
             self.__class__.__name__, self.name, userId, channel)
