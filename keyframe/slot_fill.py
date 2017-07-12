@@ -204,7 +204,7 @@ class Slot(object):
             responseType=messages.ResponseElement.RESPONSE_TYPE_RESPONSE,
             botStateUid=None):
         cr = None
-        if self.entityType == "OPTIONS":
+        if self.entityType in ("OPTIONS", "ENUM"):
             cr = messages.createOptionsResponse(
                 self.canonicalMsg,
                 msg,

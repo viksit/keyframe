@@ -62,7 +62,8 @@ class GenericActionObject(keyframe.actions.ActionObject):
         "PHONE": dsl.PhoneRegexEntity,
         "EMAIL": dsl.EmailRegexEntity,
         "OPTIONS": dsl.OptionsEntity,
-        "ATTACHMENTS":dsl.AttachmentsEntity
+        "ATTACHMENTS":dsl.AttachmentsEntity,
+        "ENUM":dsl.OptionsEntity
     }
     def getEntityClassFromType(self, entityType):
         if entityType in self.ENTITY_TYPE_CLASS_MAP:
@@ -275,7 +276,7 @@ class GenericActionObject(keyframe.actions.ActionObject):
             if entityType not in ("FREETEXT", "ATTACHMENTS"):
                 gc.parseResponse = True
             gc.entity = actionObject.getEntityClassFromType(entityType)(label=gc.name)
-            if entityType == "OPTIONS":
+            if entityType in ("OPTIONS", "ENUM"):
                 optionsList = slotSpec.get("options_list")
                 if not optionsList:
                     raise Exception("must have options_list for slot %s in action object for topic %s" % (gc.name, topicId))
