@@ -173,15 +173,18 @@ class GenericIntentModelSlot(GenericSlot):
         urlParams = {}
         if canonicalMsg.rid:
             urlParams = {"rid":canonicalMsg.rid}
-        modelInvocationParams = {}
-        if self.intentModelParams:
-            _d = self.intentModelParams.get(
-                "model_invocation_params", {})
-            modelInvocationParams = _d.get("default", {})
-            modelInvocationParams.update(
-                _d.get(self.intentModelId, {}))
-        log.info("modelInvocationParams: %s", modelInvocationParams)
-        urlParams.update(modelInvocationParams)
+        # We're not going to pass model params from keyframe - they will
+        # be looked up by the inference_proxy.
+        if False:
+            modelInvocationParams = {}
+            if self.intentModelParams:
+                _d = self.intentModelParams.get(
+                    "model_invocation_params", {})
+                modelInvocationParams = _d.get("default", {})
+                modelInvocationParams.update(
+                    _d.get(self.intentModelId, {}))
+            log.info("modelInvocationParams: %s", modelInvocationParams)
+            #urlParams.update(modelInvocationParams)
         apiResult = self.api.get(
             canonicalMsg.text,
             intent_model_id=self.intentModelId,
