@@ -9,7 +9,11 @@ import json
 import traceback
 import logging
 
-from pymyra.api import client
+logging.basicConfig()
+
+#from pymyra.api import client
+import pymyra.api.inference_proxy_client as inference_proxy_client
+import pymyra.api.inference_proxy_api as inference_proxy_api
 
 
 from keyframe.cmdline import BotCmdLineHandler
@@ -28,12 +32,10 @@ from genericbot import generic_bot
 from genericbot import generic_bot_api
 from genericbot import generic_cmdline
 
-
 #log = logging.getLogger(__name__)
 # Make the logger used by keyframe and genericbot, but not the root logger.
 # If you want to set keyframe / pymyra to a different log level, comment out
 # the setLevel below or set explicity or use the env var for that library.
-logging.basicConfig()
 logLevel = int(keyframe.utils.getLogLevel("GBOT_LOG_LEVEL", logging.INFO))
 log = logging.getLogger("genericbot")
 log.setLevel(logLevel)
@@ -42,6 +44,7 @@ log_keyframe.setLevel(logLevel)
 log_pymyra = logging.getLogger("pymyra")
 pymyra_loglevel = int(keyframe.utils.getLogLevel("PYMYRA_LOG_LEVEL", logLevel))
 log_pymyra.setLevel(pymyra_loglevel)
+
 
 # TODO:
 # Initialize via a configuration file
@@ -84,7 +87,7 @@ class GenericBotHTTPAPI(generic_bot_api.GenericBotAPI):
     """
     agentId = None
     accountId = None
-    accountSecret = None
+    #accountSecret = None
 
     @classmethod
     def fetchBotJsonSpec(cls, **kwargs):
@@ -93,7 +96,7 @@ class GenericBotHTTPAPI(generic_bot_api.GenericBotAPI):
         """
         agentId = kwargs.get("agentId")
         accountId = kwargs.get("accountId")
-        accountSecret = kwargs.get("accountSecret")
+        #accountSecret = kwargs.get("accountSecret")
         # We can have a cachedKvStore to get the bot spec
         # since it doesn't change much.
         #if os.getenv
@@ -112,18 +115,18 @@ class GenericBotHTTPAPI(generic_bot_api.GenericBotAPI):
                     
                     GenericBotHTTPAPI.agentId = agentId
                     GenericBotHTTPAPI.accountId = accountId
-                    GenericBotHTTPAPI.accountSecret = accountSecret
+                    #GenericBotHTTPAPI.accountSecret = accountSecret
 
             # We're in Flask deployment mode (run_mode is "DB")
             else:
                 log.info("Running in flask deployment mode")
                 agentId = kwargs.get("agentId")
                 accountId = kwargs.get("accountId")
-                accountSecret = kwargs.get("accountSecret")
+                #accountSecret = kwargs.get("accountSecret")
 
                 GenericBotHTTPAPI.agentId = agentId
                 GenericBotHTTPAPI.accountId = accountId
-                GenericBotHTTPAPI.accountSecret = accountSecret
+                #GenericBotHTTPAPI.accountSecret = accountSecret
                 js = bms.getJsonSpec(accountId, agentId)
                 GenericBotHTTPAPI.configJson = js
                 #log.debug("(::) json config spec: %s", GenericBotHTTPAPI.configJson)
@@ -132,30 +135,30 @@ class GenericBotHTTPAPI(generic_bot_api.GenericBotAPI):
 
     def getBot(self):
         accountId = GenericBotHTTPAPI.accountId
-        accountSecret = GenericBotHTTPAPI.accountSecret
+        #accountSecret = GenericBotHTTPAPI.accountSecret
         agentId = GenericBotHTTPAPI.agentId
         configJson = GenericBotHTTPAPI.configJson
-        log.info("(::) agentId: %s, accountId: %s, accountSecret: %s",
-                 agentId, accountId, accountSecret)
+        log.info("(::) agentId: %s, accountId: %s",
+                 agentId, accountId)
         log.debug("configJson: %s", configJson)
 
         #intentModelId = configJson.get("config_json").get("intent_model_id")
-        modelParams = configJson.get("config_json").get("intent_model_params")
+        #modelParams = configJson.get("config_json").get("intent_model_params")
 
         api = None
         log.debug("modelParams: %s",
                   modelParams)
-        if modelParams:
-            assert accountId and accountSecret and cfg.MYRA_API_HOSTNAME, \
-                "gbot has modelParams but cannot create api because no api params"
-        if accountId and accountSecret and cfg.MYRA_API_HOSTNAME:
-            apicfg = {
-                "account_id": accountId,
-                "account_secret": accountSecret,
-                "hostname": cfg.MYRA_API_HOSTNAME
-            }
-            log.info("creating api with cfg: %s", apicfg)
-            api = client.connect(apicfg)
+        #if modelParams:
+        #    assert accountId and cfg.MYRA_INFERENCE_PROXY_LB, \
+        #        "gbot has modelParams but cannot create api because no api params"
+        if accountId and cfg.MYRA_INFERENCE_PROXY_LB:
+            log.info("creating api")
+            ipc = inference_proxy_client.InferenceProxyClient(
+                host=cfg.MYRA_INFERENCE_PROXY_LB,
+                port=cfg.MYRA_INFERENCE_PROXY_LB_PORT)
+            api = inference_proxy_api.InferenceProxyAPI(
+                inference_proxy_client=ipc)
+            #api = client.connect(apicfg)
             #api.set_intent_model(intentModelId)
             #api.set_params(modelParams)
 
@@ -171,12 +174,12 @@ class GenericBotHTTPAPI(generic_bot_api.GenericBotAPI):
 @wrap_exceptions
 def run_agent():
     accountId = request.args.get("account_id", None)
-    accountSecret = request.args.get("account_secret", None)
+    #accountSecret = request.args.get("account_secret", None)
     agentId = request.args.get("agent_id", None)
     GenericBotHTTPAPI.fetchBotJsonSpec(
         accountId=accountId,
-        agentId=agentId,
-        accountSecret=accountSecret
+        agentId=agentId
+        #accountSecret=accountSecret
     )
     rid = request.args.get("rid", None)
     # The bot should be created in the getBot() function
@@ -338,13 +341,13 @@ def _run_agent_slack():
     # Myra concierge information
     conciergeMeta = agentDeploymentMeta.get("concierge_meta")
     accountId = conciergeMeta.get("account_id")
-    accountSecret = conciergeMeta.get("account_secret")
+    #accountSecret = conciergeMeta.get("account_secret")
     agentId = conciergeMeta.get("agent_id")
 
     GenericBotHTTPAPI.fetchBotJsonSpec(
         accountId=accountId,
-        agentId=agentId,
-        accountSecret=accountSecret
+        agentId=agentId
+        #accountSecret=accountSecret
     )
 
     # The bot should be created in the getBot() function
@@ -391,7 +394,7 @@ def ping():
 
 
 if __name__ == "__main__":
-    usage = "gbot.py [cmd/http] [file/db] <accountId> <accountSecret> <agentId> [file: <path to json spec>]"
+    usage = "gbot.py [cmd/http] [file/db] <accountId> <agentId> [file: <path to json spec>]"
     assert len(sys.argv) > 2, usage
 
     #logging.basicConfig()
@@ -407,17 +410,15 @@ if __name__ == "__main__":
     jsonFile = None
     agentId = None
     accountId = None
-    accountSecret = None
+    #accountSecret = None
 
     if len(sys.argv) > 3:
         accountId = sys.argv[3]
     if len(sys.argv) > 4:
-        accountSecret = sys.argv[4]
-    if len(sys.argv) > 5:
-        agentId = sys.argv[5]
+        agentId = sys.argv[4]
 
     if runtype == "file":
-        jsonFile = sys.argv[6]
+        jsonFile = sys.argv[5]
         if os.path.isfile(jsonFile):
             configJson = json.loads(open(jsonFile).read())
             #d['config_json'] = configJson
@@ -429,12 +430,12 @@ if __name__ == "__main__":
         log.debug("config_json: %s", d['config_json'])
 
     if cmd == "cmd":
-        c = generic_cmdline.GenericCmdlineHandler(config_json=d, accountId=accountId, accountSecret = accountSecret, agentId=agentId, kvStore=kvStore, cfg=cfg)
+        c = generic_cmdline.GenericCmdlineHandler(config_json=d, accountId=accountId, agentId=agentId, kvStore=kvStore, cfg=cfg)
         c.begin()
 
     elif cmd == "script":
-        scriptFile = sys.argv[7]
-        c = generic_cmdline.ScriptHandler(config_json=d, accountId=accountId, accountSecret = accountSecret, agentId=agentId, kvStore=kvStore, cfg=cfg)
+        scriptFile = sys.argv[6]
+        c = generic_cmdline.ScriptHandler(config_json=d, accountId=accountId, agentId=agentId, kvStore=kvStore, cfg=cfg)
         c.scriptFile(scriptFile=scriptFile)
         num_errors = c.executeScript()
         if num_errors > 0:

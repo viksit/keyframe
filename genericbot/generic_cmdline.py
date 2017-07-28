@@ -8,7 +8,7 @@ import json
 import traceback
 import logging
 
-from pymyra.api import client
+#from pymyra.api import client
 
 from keyframe.cmdline import BotCmdLineHandler
 from keyframe import channel_client
@@ -16,6 +16,9 @@ from keyframe import messages
 from keyframe import config
 import generic_bot
 from keyframe import bot_stores
+
+import pymyra.api.inference_proxy_client as inference_proxy_client
+import pymyra.api.inference_proxy_api as inference_proxy_api
 
 log = logging.getLogger(__name__)
 
@@ -39,7 +42,7 @@ class GenericCmdlineHandler(BotCmdLineHandler):
         assert self.cfg, "config is required"
 
         accountId = self.kwargs.get("accountId")
-        accountSecret = self.kwargs.get("accountSecret")
+        #accountSecret = self.kwargs.get("accountSecret")
         configJson = self.kwargs.get("config_json")
         agentId = self.kwargs.get("agentId")
 
@@ -57,15 +60,13 @@ class GenericCmdlineHandler(BotCmdLineHandler):
         api = None
         log.debug("GOT intentModelParams: %s",
                   intentModelParams)
-        if intentModelParams:
-            apicfg = {
-                "account_id": accountId,
-                "account_secret": accountSecret,
-                "hostname": self.cfg.MYRA_API_HOSTNAME
-            }
-            api = client.connect(apicfg)
-            #api.set_intent_model(intentModelId)
-            api.set_params(intentModelParams)
+        #if intentModelParams:
+        ipc = inference_proxy_client.InferenceProxyClient(
+            host=self.cfg.MYRA_INFERENCE_PROXY_LB,
+            port=self.cfg.MYRA_INFERENCE_PROXY_LB_PORT)
+        api = inference_proxy_api.InferenceProxyAPI(
+            inference_proxy_client=ipc)
+
         self.bot = generic_bot.GenericBot(
             kvStore=self.kvStore, configJson=configJson.get("config_json"), api=api, accountId=accountId, agentId=agentId)
         self.bot.setChannelClient(self.channelClient)

@@ -56,6 +56,11 @@ class Config(object):
 
     #MYRA_API_HOSTNAME = "api.dev.myralabs.com"
     MYRA_API_HOSTNAME = os.getenv("MYRA_API_HOSTNAME", "api.dev.myralabs.com")
+    MYRA_INFERENCE_PROXY_LB = os.getenv(
+        "MYRA_INFERENCE_PROXY_LB",
+        "inference.dev.myralabs.com")
+    MYRA_INFERENCE_PROXY_LB_PORT = os.getenv(
+        "MYRA_INFERENCE_PROXY_LB_PORT", 81)
 
     SEND_EMAIL = distutils.util.strtobool(os.getenv("MYRA_SEND_EMAIL", "true"))
     SEND_EMAIL_AUTH_KEY = "key-82392a82671aef14bc88bdf73977182d"
@@ -75,8 +80,13 @@ class ProdConfig(Config):
     SLACK_BOT_ID = "A3Y82KUCE"
     SLACK_VERIFICATION_TOKEN = "BweHbKtg9sBuOXXi92dU3e4Z"
 
-    MYRA_API_HOSTNAME = os.getenv("MYRA_API_HOSTNAME", "api.myralabs.com")
-    #MYRA_API_HOSTNAME = "api.prod.myralabs.com"
+    #MYRA_API_HOSTNAME = os.getenv("MYRA_API_HOSTNAME", "api.myralabs.com")
+    MYRA_API_HOSTNAME = "api.prod.myralabs.com"
+    MYRA_INFERENCE_PROXY_LB = os.getenv(
+        "MYRA_INFERENCE_PROXY_LB",
+        "inference.prod.myralabs.com")
+    MYRA_INFERENCE_PROXY_LB_PORT = os.getenv(
+        "MYRA_INFERENCE_PROXY_LB_PORT", 81)
 
     # This is IAM user dyndb-prod
     AWS_ACCESS_KEY_ID = "AKIAJACRM3ORXT3E6HVA"
