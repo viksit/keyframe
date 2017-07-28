@@ -146,8 +146,8 @@ class GenericBotHTTPAPI(generic_bot_api.GenericBotAPI):
         #modelParams = configJson.get("config_json").get("intent_model_params")
 
         api = None
-        log.debug("modelParams: %s",
-                  modelParams)
+        #log.debug("modelParams: %s",
+        #          modelParams)
         #if modelParams:
         #    assert accountId and cfg.MYRA_INFERENCE_PROXY_LB, \
         #        "gbot has modelParams but cannot create api because no api params"
