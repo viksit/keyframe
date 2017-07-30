@@ -170,9 +170,38 @@ class GenericBotHTTPAPI(generic_bot_api.GenericBotAPI):
             agentId=agentId)
         return self.bot
 
-@app.route("/run_agent", methods=["GET", "POST"])
+@app.route("/run_agent1", methods=["GET", "POST"])
 @wrap_exceptions
-def run_agent():
+def run_agent1():
+    r, text = _run_agent()
+    return jsonify(r)
+
+@app.route("/run_agent2", methods=["GET", "POST"])
+@wrap_exceptions
+def run_agent2():
+    r, text = _run_agent()
+    r2 = {
+        "text": text,
+        "message": "Agent responsded successfully",
+        "result": r
+    }
+    resp = jsonify(r2)
+    h = resp.headers
+
+    # Seems like can't have multiple domains. Here is the browser error message:
+    # The 'Access-Control-Allow-Origin' header contains multiple values 'http://localhost:8080, http://demos.myralabs.com', but only one is allowed. Origin 'http://localhost:8080' is therefore not allowed access.
+    
+    #allowOrigins = ["http://localhost:8080",
+    #                "http://demos.myralabs.com"]
+    #h.extend([("Access-Control-Allow-Origin", orig) for orig in allowOrigins])
+    # In any case, seems like the data goes back, just the browser respects CORS.
+    # But this is not a security solution.
+
+    h['Access-Control-Allow-Origin'] = "*"
+    log.info("resp.headers: %s", h)
+    return resp
+
+def _run_agent():
     accountId = request.args.get("account_id", None)
     #accountSecret = request.args.get("account_secret", None)
     agentId = request.args.get("agent_id", None)
@@ -181,19 +210,30 @@ def run_agent():
         agentId=agentId
         #accountSecret=accountSecret
     )
-    rid = request.args.get("rid", None)
+    requestData = None
+    text = None
+    if request.method == 'POST':
+        requestData = request.json
+        text = request.json.get("text")
+    else:
+        requestData = {
+            "user_id": request.args.get("user_id"),
+            "text": request.args.get("text"),
+            "rid": request.args.get("rid"),
+            "bot_state_uid": request.args.get("bot_state_uid")
+            }
+        text = request.args.get("text")
     # The bot should be created in the getBot() function
     # Thus we need the db call to happen before this
     event = {
         "channel": messages.CHANNEL_HTTP_REQUEST_RESPONSE,
         "request-type": request.method,
-        "body": request.json,
-        "rid": rid
+        "body": requestData
     }
     r = GenericBotHTTPAPI.requestHandler(
         event=event,
         context={})
-    return jsonify(r)
+    return r, text
 
 
 
