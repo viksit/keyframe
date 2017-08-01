@@ -59,6 +59,8 @@ class ChannelClientCmdline(ChannelClient):
 
 class ChannelClientFacebook(ChannelClient):
     def __init__(self, config=None):
+        # CanonicalResponse has changed. This has not.
+        raise Exception("This will not work now - see comments in code.")
         log.info("ChannelClientFacebook.__init__(%s)", locals())
         self.config = config
         self.responses = collections.deque()
