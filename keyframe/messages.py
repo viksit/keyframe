@@ -138,7 +138,92 @@ class ResponseMeta(object):
                 "topicId":self.topicId,
                 "actionObjectInstanceId":self.actionObjectInstanceId}
 
+class DisplaySearchPayload(object):
+    def __init__(self, title, snippet, url):
+        self.title = title
+        self.snippet = snippet
+        self.url = url
+
+    def toJSON(self):
+        return {"title": self.title,
+                "snippet": self.snippet,
+                "url": self.url}
+
+    def __repr__(self):
+        return json.dumps(self.toJSON())
+
+class DisplayElement(object):
+    TYPE_TEXT = "text"
+    TYPE_TEXT_LIST = "text_list"
+    TYPE_SEARCH_RESULT = "search_result"
+
+    def __init__(self, type, payload=None):
+        self.type = type
+        self.payload = payload
+
+    def toJSON(self):
+        return {"type": self.type,
+                "payload": self.payload}
+
+    def __repr__(self):
+        return json.dumps(self.toJSON())
+
+class InputElement(object):
+    TYPE_TEXT = "text"
+    TYPE_DROPDOWN = "dropdown"
+    TYPE_BUTTONLIST = "buttonlist"
+    TYPE_ATTACHMENTS = "attachments"
+    TYPE_DISABLE = "disable"
+
+    def __init__(self, type, options=None):
+        self.type = type
+        self.options = options
+
+    def toJSON(self):
+        return {"type": self.type,
+                "options": self.options}
+
+    def __repr__(self):
+        return json.dumps(self.toJSON())
+
+
 class ResponseElement(object):
+    RESPONSE_TYPE_RESPONSE = "response"
+    RESPONSE_TYPE_CTA = "cta"
+    RESPONSE_TYPE_QUESTION = "question"
+    RESPONSE_TYPE_DEBUG = "debug"
+    RESPONSE_TYPE_PRERESPONSE = "preresponse"
+    RESPONSE_TYPE_TRANSITIONMSG = "transitionmsg"
+    RESPONSE_TYPE_SLOTFILL = "slotfill"
+    RESPONSE_TYPE_SLOTFILL_RETRY = "slotfillretry"
+
+    MSG_BREAK_TAG = "<msgbr>"
+
+    def __init__(
+            self,
+            displayElement, inputElement, responseMeta,
+            responseType, uuid=None):
+        self.displayElement = displayElement
+        self.inputElement = inputElement
+        self.responseMeta = responseMeta
+        self.responseType = responseType
+        self.uuid = uuid
+        if not self.uuid:
+            self.uuid = utils.getUUID()
+
+    def toJSON(self):
+        return {"displayElement": _toJSON(self.displayElement),
+                "inputElement": _toJSON(self.inputElement),
+                "responseMeta": _toJSON(self.responseMeta),
+                "responseType": self.responseType,
+                "uuid": self.uuid}
+
+def _toJSON(o):
+    if not o:
+        return None
+    return o.toJSON()
+
+class ResponseElementOld(object):
     # These are to tell the client the type of response
     # that is expected. It is related to the EntityType
     # (see generic_action.GenericActionObject.ENTITY_TYPE_CLASS_MAP),
@@ -220,6 +305,22 @@ class ResponseElement(object):
 
 def createOptionsResponse(canonicalMsg, text, optionsList, responseType=None,
                           responseMeta=None, displayType=None, botStateUid=None):
+    displayElement = _createTextDisplayElement(text)
+    inputElement = InputElement(
+        type=displayType, options=optionsList)
+    responseElement = ResponseElement(
+        displayElement=displayElement,
+        inputElement=inputElement,
+        responseMeta=responseMeta,
+        responseType=responseType)
+    return CanonicalResponse(
+        channel=canonicalMsg.channel,
+        userId=canonicalMsg.userId,
+        responseElements=[responseElement],
+        botStateUid=botStateUid)
+
+def createOptionsResponseOld(canonicalMsg, text, optionsList, responseType=None,
+                          responseMeta=None, displayType=None, botStateUid=None):
     responseElement = ResponseElement(
         type=ResponseElement.TYPE_OPTIONS,
         optionsList=optionsList,
@@ -237,6 +338,22 @@ def createOptionsResponse(canonicalMsg, text, optionsList, responseType=None,
         
 def createAttachmentsResponse(canonicalMsg, text, responseType=None,
                               responseMeta=None, botStateUid=None):
+    displayElement = _createTextDisplayElement(text)
+    inputElement = InputElement(
+        type=InputElement.TYPE_ATTACHMENTS)
+    responseElement = ResponseElement(
+        displayElement=displayElement,
+        inputElement=inputElement,
+        responseMeta=responseMeta,
+        responseType=responseType)
+    return CanonicalResponse(
+        channel=canonicalMsg.channel,
+        userId=canonicalMsg.userId,
+        responseElements=[responseElement],
+        botStateUid=botStateUid)
+
+def createAttachmentsResponseOld(canonicalMsg, text, responseType=None,
+                              responseMeta=None, botStateUid=None):
     responseElement = ResponseElement(
         type=ResponseElement.TYPE_ATTACHMENTS,
         text=text,
@@ -250,7 +367,40 @@ def createAttachmentsResponse(canonicalMsg, text, responseType=None,
         botStateUid=botStateUid)
 
 
+def _createTextDisplayElement(text):
+    textList = None
+    type = DisplayElement.TYPE_TEXT
+    x = text.split(ResponseElement.MSG_BREAK_TAG)
+    if len(x) > 1:
+        type = DisplayElement.TYPE_TEXT_LIST
+        textList = [e.strip() for e in x]
+    payload = {"text":text, "textList":textList}
+    displayElement = DisplayElement(
+        type=type, payload=payload)
+    return displayElement
+
 def createTextResponse(canonicalMsg, text, responseType=None,
+                       responseMeta=None, botStateUid=None,
+                       inputExpected=False):
+    displayElement = _createTextDisplayElement(text)
+    inputType = InputElement.TYPE_TEXT
+    if not inputExpected:
+        inputType = InputElement.TYPE_DISABLE
+    inputElement = InputElement(
+        type=inputType)
+    responseElement = ResponseElement(
+        displayElement=displayElement,
+        inputElement=inputElement,
+        responseMeta=responseMeta,
+        responseType=responseType)
+    return CanonicalResponse(
+        channel=canonicalMsg.channel,
+        userId=canonicalMsg.userId,
+        responseElements=[responseElement],
+        botStateUid=botStateUid)
+
+
+def createTextResponseOld(canonicalMsg, text, responseType=None,
                        responseMeta=None, botStateUid=None,
                        inputExpected=False):
     textList = None
@@ -274,7 +424,7 @@ def createTextResponse(canonicalMsg, text, responseType=None,
         responseElements=[responseElement],
         botStateUid=botStateUid)
 
-def createYesNoButtonResponse(
+def createYesNoButtonResponseOld(
         canonicalMsg, text, responseType=None, botStateUid=None):
     responseElement = ResponseElement(
         type=ResponseElement.TYPE_YESNOBUTTON,

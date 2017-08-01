@@ -269,7 +269,7 @@ class GenericActionObject(keyframe.actions.ActionObject):
             log.debug("for slot %s, parseResponse: %s", gc.name, gc.parseResponse)
 
             gc.displayType = slotSpec.get("slot_input_display_type",
-                                          messages.ResponseElement.DISPLAY_TYPE_TEXT)
+                                          messages.InputElement.TYPE_TEXT)
             log.debug("set slot %s displayType: %s", gc.name, gc.displayType)
 
             entityType = slotSpec.get("entity_type")
