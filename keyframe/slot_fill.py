@@ -24,6 +24,7 @@ class Slot(object):
     SLOT_TYPE_ACTION = "slot-type-action"
     SLOT_TYPE_TRANSFER = "slot-type-transfer"
     SLOT_TYPE_INTENT_MODEL = "slot-type-intent-model"
+    SLOT_TYPE_SEARCH = "slot-type-search"
 
     # TODO(viksit): overwrite the instance variables from the class variable
 
@@ -127,12 +128,13 @@ class Slot(object):
 
         fillResult = None
         if self.state == Slot.SLOT_STATE_NEW:
-            log.debug("(1) state: %s", self.state)
-            log.debug("parseoriginal: %s", self.parseOriginal)
+            log.info("(1) state: %s", self.state)
+            log.info("parseoriginal: %s", self.parseOriginal)
             if self.parseOriginal is True:
                 fillResult = None
                 if canonicalMsg.text:
-                    fillResult = self._extractSlotFromSentence(canonicalMsg)
+                    fillResult = self._extractSlotFromSentence(
+                        canonicalMsg, botState, channelClient)
                 log.debug("fillresult: %s", fillResult)
                 if fillResult:
                     self.value = fillResult
@@ -154,11 +156,12 @@ class Slot(object):
 
         # Waiting for user response
         elif self.state == Slot.SLOT_STATE_WAITING_FILL:
-            log.debug("(2) state: %s", self.state)
+            log.info("(2) state: %s", self.state)
             # If we want the incoming response to be put through an entity extractor
             if self.parseResponse is True:
                 log.debug("parse response is true")
-                fillResult = self._extractSlotFromSentence(canonicalMsg)
+                fillResult = self._extractSlotFromSentence(
+                    canonicalMsg, botState, channelClient)
                 if fillResult:
                     self.value = fillResult
                     botState.addToSessionData(
@@ -239,7 +242,7 @@ class Slot(object):
                 inputExpected=True)
         channelClient.sendResponse(cr)
 
-    def _extractSlotFromSentence(self, canonicalMsg):
+    def _extractSlotFromSentence(self, canonicalMsg, botState, channelClient):
         """
         Take a given sentence.
         For the current slot, run the entity_extract_fn() on it

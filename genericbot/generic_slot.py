@@ -120,6 +120,36 @@ class GenericTransferSlot(GenericSlot):
     def fill(self, canonicalMsg, apiResult, channelClient, botState):
         raise Exception("Should not be called for GenericTransferSlot")
 
+class GenericSearchSlot(GenericSlot):
+    def __init__(self, apiResult=None, newTopic=None,
+                 promptMsg=None, topicId=None,
+                 channelClient=None, api=None):
+        super(GenericSearchSlot, self).__init__(
+            apiResult=apiResult, newTopic=newTopic,
+            topicId=topicId, channelClient=channelClient)
+        self.api = api
+
+    def _getSearchResults(self, canonicalMsg):
+        # TODO
+        searchResults = [
+            {"title":"Looking for me?",
+             "body":"If you were, then you found me. Congratulations!",
+             "url":"http://www.google.com",
+             "id":"search_result_1"}
+            ]
+        return searchResults
+
+    def _extractSlotFromSentence(self, canonicalMsg, botState, channelClient):
+        log.info("_extractSlotFromSentence(%s)", locals())
+        searchResults = self._getSearchResults(canonicalMsg)
+        response = keyframe.messages.createSearchResponse(
+            canonicalMsg=canonicalMsg, searchResults=searchResults,
+            responseMeta=None, botStateUid=botState.getUid())
+        log.info("Sending search response: %s", response)
+        channelClient.sendResponse(response)
+        return canonicalMsg.text
+
+
 class GenericIntentModelSlot(GenericSlot):
     def __init__(self, apiResult=None, newTopic=None,
                  promptMsg=None, topicId=None,
@@ -158,7 +188,7 @@ class GenericIntentModelSlot(GenericSlot):
                     return intentStr
         return None
 
-    def _extractSlotFromSentence(self, canonicalMsg):
+    def _extractSlotFromSentence(self, canonicalMsg, botState, canonicalClient):
         label = self._extractDirect(canonicalMsg)
         if label:
             log.debug("GOT label from direct: %s", label)

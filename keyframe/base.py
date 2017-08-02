@@ -342,6 +342,7 @@ class BaseBot(object):
         wroteEvent = False
 
         while True:
+            log.info("HANDLE MAIN LOOP")
             topicId = None
             topicNodeId = None
             actionStateJson = None
@@ -374,6 +375,7 @@ class BaseBot(object):
                     newTopic = False
                     log.debug("actionJson: %s", actionStateJson)
                     if actionStateJson:
+                        log.info("Got waiting actionStateJson")
                         lastWriteTime = botState.getWriteTime()
                         currentTime = time.time()
                         log.debug("lastWriteTime: %s, currentTime: %s",
