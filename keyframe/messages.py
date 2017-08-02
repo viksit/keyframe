@@ -154,8 +154,8 @@ class DisplaySearchPayload(object):
 
 class DisplayElement(object):
     TYPE_TEXT = "text"
-    TYPE_TEXT_LIST = "text_list"
-    TYPE_SEARCH_RESULT = "search_result"
+    TYPE_TEXT_LIST = "textlist"
+    TYPE_SEARCH_RESULT = "searchresult"
 
     def __init__(self, type, payload=None):
         self.type = type
@@ -196,6 +196,7 @@ class ResponseElement(object):
     RESPONSE_TYPE_TRANSITIONMSG = "transitionmsg"
     RESPONSE_TYPE_SLOTFILL = "slotfill"
     RESPONSE_TYPE_SLOTFILL_RETRY = "slotfillretry"
+    RESPONSE_TYPE_SEARCH_RESULTS = "searchresults"
 
     MSG_BREAK_TAG = "<msgbr>"
 
@@ -381,7 +382,7 @@ def _createTextDisplayElement(text):
 
 def createTextResponse(canonicalMsg, text, responseType=None,
                        responseMeta=None, botStateUid=None,
-                       inputExpected=False):
+                       inputExpected=True):
     displayElement = _createTextDisplayElement(text)
     inputType = InputElement.TYPE_TEXT
     if not inputExpected:
@@ -393,6 +394,24 @@ def createTextResponse(canonicalMsg, text, responseType=None,
         inputElement=inputElement,
         responseMeta=responseMeta,
         responseType=responseType)
+    return CanonicalResponse(
+        channel=canonicalMsg.channel,
+        userId=canonicalMsg.userId,
+        responseElements=[responseElement],
+        botStateUid=botStateUid)
+
+def createSearchResponse(canonicalMsg, searchResults,
+                         responseMeta=None, botStateUid=None):
+    displayElement = DisplayElement(
+        type=DisplayElement.TYPE_SEARCH_RESULT,
+        payload=searchResults)
+    inputElement = InputElement(
+        type=InputElement.TYPE_DISABLE)
+    responseElement = ResponseElement(
+        displayElement=displayElement,
+        inputElement=inputElement,
+        responseMeta=responseMeta,
+        responseType=ResponseElement.RESPONSE_TYPE_SEARCH_RESULTS)
     return CanonicalResponse(
         channel=canonicalMsg.channel,
         userId=canonicalMsg.userId,

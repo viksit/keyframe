@@ -230,6 +230,10 @@ class GenericActionObject(keyframe.actions.ActionObject):
                 gc.transferTopicId = slotSpec.get("transfer_topic_id")
                 gc.transferTopicNodeId = slotSpec.get("transfer_topic_node_id")
                 assert gc.transferTopicId, "Transfer slots must have transfer_topic_id defined"
+            elif slotType == slot_fill.Slot.SLOT_TYPE_SEARCH:
+                gc = generic_slot.GenericSearchSlot(
+                    apiResult=apiResult, newTopic=newTopic, topicId=topicId,
+                    channelClient=channelClient)
             else:
                 raise Exception("Unknown slot type (%s)" % (slotType,))
 
@@ -263,6 +267,9 @@ class GenericActionObject(keyframe.actions.ActionObject):
                 parseResponse = getattr(gc, "parseResponse")
                 log.debug("slotSpec does not specify parseResponse - getting default: %s", parseResponse)
             gc.parseResponse = parseResponse
+            if slotType == slot_fill.Slot.SLOT_TYPE_SEARCH:
+                gc.parseResponse = True
+
             log.debug("for slot %s, parseResponse: %s", gc.name, gc.parseResponse)
 
             gc.displayType = slotSpec.get("slot_input_display_type",
