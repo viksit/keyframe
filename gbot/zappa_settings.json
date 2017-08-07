@@ -12,7 +12,7 @@
     "app_function": "gbot.app"
     "environment_variables": {
       "REALM":"prod",
-      "KVSTORE_CACHE_SECONDS":"600"
+      "KVSTORE_CACHE_SECONDS":"0"
     },
   }
   "test": {
