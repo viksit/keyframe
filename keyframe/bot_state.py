@@ -35,6 +35,7 @@ class BotState(object):
         self._sessionUtterances = {}
         self._sessionUtterancesOrdered = []
         self._sessionUtterancesType = {}
+        self._sessionutterancesPrompt = {}
         self.sessionIntent = None
         self.sessionStartTime = None
         self.sessionId = None
@@ -83,6 +84,9 @@ class BotState(object):
     def getSessionUtterances(self):
         return self._sessionUtterances
 
+    def getSessionUtterancesPrompt(self):
+        return self._sessionUtterancesPrompt
+
     def getSessionUtterancesOrdered(self):
         #log.debug("getSessionUtterancesOrdered: %s", self._sessionUtterancesOrdered)
         return self._sessionUtterancesOrdered
@@ -97,10 +101,11 @@ class BotState(object):
         self._sessionData[k] = v
         self._sessionDataType[k] = type
 
-    def addToSessionUtterances(self, k, v, type=None):
+    def addToSessionUtterances(self, k, v, p, type=None):
         #log.debug("existing SessionUtterancesOrdered: %s", self._sessionUtterancesOrdered)
         #log.debug("addToSessionUtterances(%s)", locals())
         self._sessionUtterances[k] = v
+        self._sessionUtterancesPrompt[k] = p
         self._sessionUtterancesType[k] = type
         self._sessionUtterancesOrdered.append((k, v))
 
@@ -114,6 +119,7 @@ class BotState(object):
     def clearSessionXXX(self):
         self._sessionData = {}
         self._sessionUtterances = {}
+        self._sessionUtterancesPrompt = {}
         self._sessionDataType = {}
         self._sessionUtterancesType = {}
         self.transferTopicInfo = None
@@ -197,6 +203,7 @@ class BotState(object):
             "session_utterances": self._sessionUtterances,
             "session_utterances_type": self._sessionUtterancesType,
             "session_utterances_ordered":self._sessionUtterancesOrdered,
+            "session_utterances_prompt": self._sessionUtterancesPrompt,
             "write_time":self.writeTime,
             "session_intent":self.sessionIntent,
             "session_id":self.sessionId,
@@ -222,6 +229,11 @@ class BotState(object):
         botState._sessionUtterancesType = jsonObject.get("session_utterances_type")
         botState._sessionUtterancesOrdered = jsonObject.get(
             "session_utterances_ordered")
+        botState._sessionUtterancesPrompt = jsonObject.get(
+            "session_utterances_prompt")
+        if botState._sessionUtterancesPrompt is None:
+            log.debug("botState._sessionUtterancesPrompt = {}")
+            botState._sessionUtterancesPrompt = {}
         botState.writeTime = jsonObject.get("write_time")
         botState.sessionIntent = jsonObject.get("session_intent")
         botState.sessionId = jsonObject.get("session_id")
