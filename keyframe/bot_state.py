@@ -35,7 +35,7 @@ class BotState(object):
         self._sessionUtterances = {}
         self._sessionUtterancesOrdered = []
         self._sessionUtterancesType = {}
-        self._sessionutterancesPrompt = {}
+        self._sessionUtterancesPrompt = {}
         self.sessionIntent = None
         self.sessionStartTime = None
         self.sessionId = None
