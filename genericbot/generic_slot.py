@@ -169,6 +169,8 @@ class GenericIntentModelSlot(GenericSlot):
             if intent:
                 log.info("GOT label from regexMatch: %s", intent)
                 return intent
+        if not self.intentModelId:
+            return "__unknown__"
         log.debug("Calling intent model")
         urlParams = {}
         if canonicalMsg.rid:
