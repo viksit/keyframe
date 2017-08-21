@@ -1,0 +1,23 @@
+{
+  "dev": {
+    "s3_bucket": "ml-lambda-dev-1",
+    "app_function": "keyframe_event_handler.app",
+    "environment_variables": {
+      "REALM":"dev"
+    },
+  }
+  "prod": {
+    "s3_bucket": "ml-lambda-prod-1",
+    "app_function": "keyframe_event_handler.app"
+    "environment_variables": {
+      "REALM":"prod"
+    },
+  }
+  "test": {
+    "s3_bucket": "ml-lamdba-test-1",
+    "app_function": "keyframe_event_handler.app"
+    "environment_variables": {
+      "REALM":"dev"
+    },
+  }
+}

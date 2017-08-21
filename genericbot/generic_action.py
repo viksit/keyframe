@@ -121,7 +121,7 @@ class GenericActionObject(keyframe.actions.ActionObject):
                 resolutionStatus=False
             )
             eventWriter = event_writer.getWriter(
-                streamSuffix=self.accountId)
+                streamName=self.config.KINESIS_STREAM_NAME)
             if filled:
                 responseEvent.responseType = "fill"
                 if slotObject.getActionType() == "zendesk":
@@ -175,13 +175,16 @@ class GenericActionObject(keyframe.actions.ActionObject):
                            actionObjectParams={},
                            apiResult=None, newTopic=None,
                            intentModelParams=None,
-                           topicNodeId=None):
+                           topicNodeId=None,
+                           config=None):
         log.debug("GenericActionObject.createActionObject(%s)", locals())
 
         # Create a GenericActionObject using specJson
         actionObject = cls()
         actionObject.accountId = accountId
         actionObject.agentId = agentId
+        if config:
+            actionObject.config = config
         actionObject.specJson = specJson
         actionObject.slotsType = specJson.get(
             "slots_type", cls.SLOTS_TYPE_CONDITIONAL)

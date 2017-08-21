@@ -58,7 +58,8 @@ class GenericBot(keyframe.base.BaseBot):
                            topicId,
                            canonicalMsg, botState,
                            userProfile, requestState,
-                           apiResult=None, newTopic=None, topicNodeId=None):
+                           apiResult=None, newTopic=None, topicNodeId=None,
+                           config=None):
         log.debug("GenericBot.createActionObject(%s) called", locals())
         actionObjectSpecJson = self.specJson.get(
             "topics", {}).get(topicId)
@@ -72,4 +73,4 @@ class GenericBot(keyframe.base.BaseBot):
             userProfile, requestState, self.api, self.channelClient,
             apiResult=apiResult, newTopic=newTopic,
             intentModelParams=self.specJson.get("intent_model_params"),
-            topicNodeId=topicNodeId)
+            topicNodeId=topicNodeId, config=config)
