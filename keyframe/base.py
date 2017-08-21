@@ -268,14 +268,15 @@ class BaseBot(object):
     def createActionObject(self, accountId, agentId, topicId,
                            canonicalMsg, botState,
                            userProfile, requestState,
-                           apiResult=None, newTopic=None, topicNodeId=None):
+                           apiResult=None, newTopic=None, topicNodeId=None,
+                           config=None):
         log.debug("BaseBot.createActionObject(%s)", locals())
         return actions.ActionObject.createActionObject(
             accountId, agentId,
             topicId,
             canonicalMsg, botState,
             userProfile, requestState, self.api, self.channelClient,
-            apiResult=apiResult, newIntent=newIntent)
+            apiResult=apiResult, newIntent=newIntent, config=config)
 
     def _handleBotCmd(self, canonicalMsg, botState, userProfile, requestState):
         log.debug("_handleBotCmd called")
@@ -406,7 +407,8 @@ class BaseBot(object):
                 self.accountId, self.agentId,
                 topicId,
                 canonicalMsg, botState, userProfile,
-                requestState, newTopic=newTopic, topicNodeId=topicNodeId)
+                requestState, newTopic=newTopic, topicNodeId=topicNodeId,
+                config=self.config)
             if actionStateJson:
                 actionObject.fromJSONObject(actionStateJson)
 
@@ -426,7 +428,8 @@ class BaseBot(object):
                     topicId=topicId,
                     topicType=actionObject.getTopicType(),
                     payload=canonicalMsg.toJSON())
-                eventWriter = event_writer.getWriter(streamSuffix=self.accountId)
+                eventWriter = event_writer.getWriter(
+                    streamName=self.config.KINESIS_STREAM_NAME)
                 eventWriter.write(requestEvent.toJSONStr(), requestEvent.userId)
                 wroteEvent = True
 

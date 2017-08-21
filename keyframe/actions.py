@@ -3,6 +3,7 @@ import logging
 
 import messages
 import slot_fill
+import config
 import copy
 import misc
 from collections import defaultdict
@@ -49,6 +50,9 @@ class ActionObject(object):
         self.filledSlots = {}
         self.newTopic = kwargs.get("newTopic")
         self.botState = None
+        self.config = kwargs.get("config")
+        if not self.config:
+            self.config = config.getConfig()
         self.init()
 
     def init(self):
@@ -74,7 +78,7 @@ class ActionObject(object):
             cls, accountId, agentId,
             topicId, canonicalMsg, botState,
             userProfile, requestState, api, channelClient, actionObjectParams={},
-            apiResult=None, newTopic=None):
+            apiResult=None, newTopic=None, config=None):
         log.debug("ActionObject.createActionObject(%s)", locals())
         """
         Create a new action object from the given data
@@ -87,6 +91,8 @@ class ActionObject(object):
         actionObject = cls()
         actionObject.accountId = accountId
         actionObject.agentId = agentId
+        if config:
+            actionObject.config = config
         # Get the intent string and create an object from it.
         #slotClasses = slot_fill.getSlots(cls)
         slotClasses = actionObject.getSlots()

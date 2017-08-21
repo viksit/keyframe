@@ -35,6 +35,7 @@ class Config(object):
     KINESIS_AWS_REGION = "us-west-2"
 
     KINESIS_STREAM_PREFIX = os.getenv("KINESIS_STREAM_PREFIX","kf-events-dev")
+    KINESIS_STREAM_NAME = os.getenv("KINESIS_STREAM_NAME", "kf-events-dev")
 
     DYNAMODB_AWS_REGION = "us-west-2"
     KV_STORE_S3_BUCKET = "ml-dev"
@@ -96,5 +97,6 @@ class ProdConfig(Config):
     KV_STORE_DYNAMODB_TABLE = "client_bots_kvstore_prod"
 
     KINESIS_STREAM_PREFIX = os.getenv("KINESIS_STREAM_PREFIX","kf-events-prod")
+    KINESIS_STREAM_NAME = "kf-events-prod"
 
     KF_EVENTS_S3_BUCKET = "ml-logs-prod"
