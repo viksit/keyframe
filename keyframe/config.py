@@ -13,9 +13,10 @@ REALM = os.getenv("STAGE", TMP_REALM)
 log.info("REALM: %s", REALM)
 
 def getConfig(realm=None):
+    log.info("getConfig(%s) called", realm)
     if not realm:
         realm = REALM
-    log.debug("getConfig realm: %s", realm)
+    log.info("getConfig realm: %s", realm)
     if realm == "prod":
         return ProdConfig()
     elif realm == "dev":

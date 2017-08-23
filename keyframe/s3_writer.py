@@ -21,6 +21,7 @@ log = logging.getLogger(__name__)
 
 class S3Writer(object):
     def __init__(self, s3Bucket, config=None):
+        log.info("S3Writer.__init__(%s) called", locals())
         self.s3Bucket = s3Bucket
         self.config = config
 
@@ -53,7 +54,7 @@ class S3Writer(object):
             self._dt(),
             int(time.time()),
             str(uuid.uuid4()))
-        log.info("creating key: %s", ks)
+        log.info("creating key: %s, (bucket: %s)", ks, self.s3Bucket)
         k.key = ks
         return k
 

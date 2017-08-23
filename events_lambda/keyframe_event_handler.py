@@ -20,7 +20,8 @@ def ping():
     log.info("received ping")
     resp = json.dumps({
         "status": "OK",
-        "realm":os.getenv("REALM")
+        "REALM":os.getenv("REALM"),
+        "STAGE":os.getenv("STAGE")
     })
     return Response(resp), 200
 
@@ -46,6 +47,7 @@ def eventfile_handler(eventsFile):
     handle_records(events)
 
 def handle_records(records):
+    log.info("handle_records VERSION 1")
     accountEvents = {}
     for e in records:
         s3Prefix = "unknown"
@@ -60,7 +62,9 @@ def handle_records(records):
         events.append(e)
 
     # Now write all events to s3
+    #cfg = config.getConfig()
     s3Writer = s3_writer.S3Writer(cfg.KF_EVENTS_S3_BUCKET)
+    log.info("created s3Writer for bucket: %s", cfg.KF_EVENTS_S3_BUCKET)
     for (k,v) in accountEvents.iteritems():
         s3Prefix = "accounts/%s" % (k,)
         log.info("writing data at s3Prefix: %s", s3Prefix)
