@@ -274,7 +274,10 @@ class GenericActionSlot(GenericSlot):
     def fetchWebhook(self, webhook, botState):
         # To render a templatized url with custom parameters
         url = webhook.get("api_url")
-        custom = webhook.get("api_params", "{}")
+        custom = webhook.get("api_params")
+        log.info("custom: %s", custom)
+        if not custom:
+            custom = "{}"
         custom = json.loads(custom) # convert to dict
         entities = botState.getSessionData()
         requestBody = webhook.get("api_body")
