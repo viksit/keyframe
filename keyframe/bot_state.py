@@ -109,6 +109,17 @@ class BotState(object):
         self._sessionUtterancesType[k] = type
         self._sessionUtterancesOrdered.append((k, v))
 
+    def getSessionTranscript(self):
+        t = []
+        for (k,v) in self._sessionUtterancesOrdered:
+            d = {
+                "slotname":k,
+                "prompt":self._sessionUtterancesPrompt[k],
+                "response":v
+                }
+            t.append(d)
+        return t
+
     def getSessionDataType(self):
         return self._sessionDataType
 

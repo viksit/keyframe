@@ -39,8 +39,11 @@ class GenericSlot(keyframe.slot_fill.Slot):
     #optionsList = None
 
     def _entitiesDict(self, botState):
+        _t = botState.getSessionTranscript()
         transcript = "\n".join(
-            "%s => %s" % (k,v) for (k,v) in botState.getSessionUtterancesOrdered())
+            "%s => %s" % (d.get("prompt"), d.get("response")) for d in _t)
+        #transcript = "\n".join(
+        #    "%s => %s" % (k,v) for (k,v) in botState.getSessionUtterancesOrdered())
         #log.debug("transcript: %s", transcript)
         return {"entities":botState.getSessionData(),
                 "utterances":botState.getSessionUtterances(),
@@ -266,6 +269,10 @@ class GenericActionSlot(GenericSlot):
         elif actionType == "webhook":
             resp = self.fetchWebhook(
                 self.actionSpec.get("webhook"), botState)
+            botState.addToSessionData(
+                self.name, resp, self.entityType)
+            botState.addToSessionUtterances(
+                self.name, resp, None, self.entityType)
         else:
             raise Exception("Unknown actionType (%s)" % (actionType,))
         return self.respond(
