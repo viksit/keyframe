@@ -391,7 +391,7 @@ class GenericActionSlot(GenericSlot):
                 zc["attachments"] = [attachmentUrl]
         zr = zendesk.createTicket(zc)
         log.debug("zr (%s): %s", type(zr), zr)
-        respTemplate = "A ticket has been filed: {{ticket.url}}"
+        respTemplate = "A ticket has been filed: {{ticket.agenturl}}"
         respTemplate = zendeskConfig.get("response_text", respTemplate)
         log.debug("respTemplate: %s", respTemplate)
         _t = Template(respTemplate)

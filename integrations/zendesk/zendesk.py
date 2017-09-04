@@ -3,6 +3,7 @@ import requests
 import json
 import tempfile
 import logging
+import re
 
 import zdesk
 
@@ -167,7 +168,25 @@ def createTicket(jsonObject):
         requesterName=j.get("requester_name"),
         attachments=j.get("attachments")
     )
+    agentTicketUrl = createAgentTicketUrl(ticketResponse)
+    log.info("agentTicketUrl: ", agentTicketUrl)
+    ticketResponse.setdefault("ticket", {}).setdefault(
+        "agenturl", agentTicketUrl)
     return ticketResponse
+
+ticketNumRegex = re.compile("(http[s]*://[^/]+)/api/v2/tickets/(\d+).json")
+agentTicketPath = "%(zendeskDomain)s/agent/tickets/%(ticketNum)s"
+def createAgentTicketUrl(ticketResponse):
+    ticketUrl = None
+    u1 = ticketResponse.get("ticket",{}).get("url")
+    if u1:
+        tmp = ticketNumRegex.search(u1)
+        if tmp:
+            (zendeskDomain, ticketNum) = tmp.groups()
+            ticketUrl = agentTicketPath % {
+                "zendeskDomain":zendeskDomain,
+                "ticketNum":ticketNum}
+    return ticketUrl
 
 def test():
     if len(sys.argv) < 2:
