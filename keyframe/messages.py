@@ -56,7 +56,7 @@ class CanonicalMsg(object):
 
     def __init__(self, channel, httpType, userId, text,
                  actualName=None, rid=None, msgType=None,
-                 botStateUid=None):
+                 botStateUid=None, customProps=None):
         self.channel = channel
         self.httpType = httpType
         self.userId = userId
@@ -68,12 +68,15 @@ class CanonicalMsg(object):
             self.msgType = self.MSG_TYPE_FREETEXT
         assert self.msgType in CanonicalMsg.MSG_TYPES
         self.botStateUid = botStateUid
+        self.customProps = customProps
+        if self.customProps is None:
+            self.customProps = {}
 
     def __repr__(self):
         return ("CanonicalMsg(channel=%s, httpType=%s, userId=%s, "
-                "text=%s, rid=%s, botStateUid=%s)") % \
+                "text=%s, rid=%s, botStateUid=%s, customProps=%s)") % \
             (self.channel, self.httpType, self.userId,
-             self.text, self.rid, self.botStateUid)
+             self.text, self.rid, self.botStateUid, self.customProps)
 
     def toJSON(self):
         return {
@@ -81,7 +84,8 @@ class CanonicalMsg(object):
             "httpType": self.httpType,
             "userId": self.userId,
             "text": self.text,
-            "botStateUid": self.botStateUid
+            "botStateUid": self.botStateUid,
+            "customProps": self.customProps
         }
 
 class CanonicalResponse(object):

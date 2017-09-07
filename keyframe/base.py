@@ -218,7 +218,7 @@ class BaseBot(object):
         return k
 
     def process(self, canonicalMsg):
-
+        log.debug("BaseBot::process(%s)", locals())
         botState = self.getBotState(
             userId=canonicalMsg.userId,
             channel=canonicalMsg.channel,
@@ -316,6 +316,16 @@ class BaseBot(object):
             botStateUid=botState.getUid())
         return constants.BOT_REQUEST_STATE_PROCESSED
 
+    def _addCustomPropsToSession(self, customProps, botState):
+        log.debug("BaseBot._addCustomPropsToSession: customProps: %s", customProps)
+        if not customProps:
+            return
+        for (k,v) in customProps.iteritems():
+            log.debug("addToSessionData(%s, %s)", k, v)
+            botState.addToSessionData(k, v)
+            botState.addToSessionData("custom_props.%s" % (k,), v)
+
+
     topic_re = re.compile("\[topic=([^\]]+)\]")
     def handle(self, **kwargs):
         log.debug("BaseBot.handle(%s)", locals())
@@ -358,8 +368,12 @@ class BaseBot(object):
                 else:
                     topicId = tmp1
                     newTopic = True
-                botState.clear()
+                # This is a manual command. Don't clear state.
+                # If user wants to clear state, they can also do that manually.
+                #botState.clear()
                 botState.startSession(canonicalMsg.userId)
+                #self._addCustomPropsToSession(
+                #    canonicalMsg.customProps, botState)
                 newSession = True
                 canonicalMsg.text = canonicalMsg.text.replace(x.group(), "")
 
@@ -401,6 +415,10 @@ class BaseBot(object):
                 botState.clear()
                 botState.startSession(canonicalMsg.userId)
                 newSession = True
+
+            # Any time custom props are passed in, add them to the session.
+            self._addCustomPropsToSession(
+                canonicalMsg.customProps, botState)
 
             # Now we should have a topicId
             actionObject = self.createActionObject(
