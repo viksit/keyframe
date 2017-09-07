@@ -236,6 +236,11 @@ class BaseBot(object):
         botState.shiftUid(newBotStateUid)
         #canonicalMsg.botStateUid = botStateUid
 
+        if canonicalMsg.customProps:
+            for (k,v) in customProps.iteritems():
+                botState.addToSessionData(k, v)
+                botState.addToSessionData("custom_props.%s" % (k,), v)
+
         userProfile = self.getUserProfile(
             userId=canonicalMsg.userId,
             channel=canonicalMsg.channel
