@@ -7,6 +7,7 @@ from functools import wraps
 import yaml
 import json
 import traceback
+import base64
 import logging
 
 logging.basicConfig()
@@ -223,6 +224,15 @@ def _run_agent():
             "bot_state_uid": request.args.get("bot_state_uid")
             }
         text = request.args.get("text")
+        customProps = request.args.get("custom_props")
+        if customProps:
+            try:
+                customProps = base64.b64decode(customProps)
+                customProps = json.loads(customProps)
+                requestData["custom_props"] = customProps
+            except:
+                log.error("Could not load custom_props (%s)", customProps)
+
     # The bot should be created in the getBot() function
     # Thus we need the db call to happen before this
     event = {
