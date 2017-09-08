@@ -114,6 +114,10 @@ class ZendeskClient(object):
 
     def _createTicket(self, subject, body, requesterName, requesterEmail,
                       uploadTokens):
+        realm = os.getenv("REALM", "dev")
+        # All environments create tickets here. I can't think of anything better.
+        if realm != "prod":
+            subject = "DEV: " + subject
         ticketJson = {
             "ticket":{
                 "requester":{
