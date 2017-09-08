@@ -169,7 +169,7 @@ def createTicket(jsonObject):
         attachments=j.get("attachments")
     )
     agentTicketUrl = createAgentTicketUrl(ticketResponse)
-    log.info("agentTicketUrl: ", agentTicketUrl)
+    log.info("agentTicketUrl: %s", agentTicketUrl)
     ticketResponse.setdefault("ticket", {}).setdefault(
         "agenturl", agentTicketUrl)
     return ticketResponse
