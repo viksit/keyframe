@@ -3,6 +3,8 @@ import sys, os
 from os.path import expanduser, join
 from flask import Flask, request, Response
 from flask import Flask, current_app, jsonify, make_response
+from flask_cors import CORS, cross_origin
+
 from functools import wraps
 import yaml
 import json
@@ -76,6 +78,8 @@ def wrap_exceptions(func):
     return decorated_function
 
 app = Flask(__name__)
+CORS(app, supports_credentials=True)
+
 app.config['DEBUG'] = True
 
 class GenericBotHTTPAPI(generic_bot_api.GenericBotAPI):
@@ -203,20 +207,19 @@ def run_agent2():
     return resp
 
 def _run_agent():
-    accountId = request.args.get("account_id", None)
-    #accountSecret = request.args.get("account_secret", None)
-    agentId = request.args.get("agent_id", None)
-    GenericBotHTTPAPI.fetchBotJsonSpec(
-        accountId=accountId,
-        agentId=agentId
-        #accountSecret=accountSecret
-    )
     requestData = None
     text = None
+    accountId = None
+    agentId = None
     if request.method == 'POST':
         requestData = request.json
         text = request.json.get("text")
+        accountId = request.json.get("account_id", None)
+        agentId = request.json.get("agent_id", None)
+
     else:
+        accountId = request.args.get("account_id", None)
+        agentId = request.args.get("agent_id", None)
         requestData = {
             "user_id": request.args.get("user_id"),
             "text": request.args.get("text"),
@@ -233,6 +236,10 @@ def _run_agent():
             except:
                 log.error("Could not load custom_props (%s)", customProps)
 
+    GenericBotHTTPAPI.fetchBotJsonSpec(
+        accountId=accountId,
+        agentId=agentId
+    )
     # The bot should be created in the getBot() function
     # Thus we need the db call to happen before this
     event = {
