@@ -123,7 +123,7 @@ class BaseBot(object):
         botStateJson = botState.toJSONObject()
         self.kvStore.put_json(k, botState.toJSONObject())
         # For now, disable history until we need it.
-        if botStateUid and False:
+        if botStateUid: #  and False:
             self.putBotStateHistory(userId, channel, botState, botStateUid)
 
     def putBotStateHistory(self, userId, channel, botState, botStateUid):

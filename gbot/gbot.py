@@ -484,7 +484,7 @@ if __name__ == "__main__":
             print("%s is not a valid json bot configuration file" %
                   jsonFile, file=sys.stderr)
             sys.exit(1)
-        log.debug("config_json: %s", d['config_json'])
+        log.debug("config_json: %s", d)
 
     if cmd == "cmd":
         c = generic_cmdline.GenericCmdlineHandler(config_json=d, accountId=accountId, agentId=agentId, kvStore=kvStore, cfg=cfg)

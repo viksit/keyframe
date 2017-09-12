@@ -68,7 +68,7 @@ class GenericCmdlineHandler(BotCmdLineHandler):
             inference_proxy_client=ipc)
 
         self.bot = generic_bot.GenericBot(
-            kvStore=self.kvStore, configJson=configJson.get("config_json"), api=api, accountId=accountId, agentId=agentId)
+            kvStore=self.kvStore, configJson=cj, api=api, accountId=accountId, agentId=agentId)
         self.bot.setChannelClient(self.channelClient)
 
 
