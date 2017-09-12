@@ -149,6 +149,8 @@ class GenericActionObject(keyframe.actions.ActionObject):
             if not self.nextSlotToFillName:
                 self.nextSlotToFillName = slotObject.slotTransitions.get("__default__")
             if not self.nextSlotToFillName:
+                self.nextSlotToFillName = slotObject.slotTransitions.get("__unknown__")
+            if not self.nextSlotToFillName:
                 assert slotObject.slotType != slot_fill.Slot.SLOT_TYPE_INTENT_MODEL, "No transition for value (%s) in current slot" % (slotObject.value,)
                 log.info("slotFillConditional: returning True")
                 if self.getTopicType() == "resolution":
