@@ -203,6 +203,7 @@ class Slot(object):
             self, msg, channelClient,
             responseType=messages.ResponseElement.RESPONSE_TYPE_RESPONSE,
             botStateUid=None):
+        #log.info("_createAndSendResponse(%s)", locals())
         cr = None
         if self.entityType in ("OPTIONS", "ENUM"):
             cr = messages.createOptionsResponse(

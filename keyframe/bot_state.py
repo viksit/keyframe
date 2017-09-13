@@ -19,16 +19,15 @@ class BotState(object):
     """
 
     def __init__(self):
-        self.init()
+        self.init(keepUid=False)
+        #self.init()
 
-    def init(self):
+    def init(self, keepUid=True):
         self._waiting = None
         # Json-compatible structure that allows
         self._lastResult = None  # CanonicalResult
         self.changed = False
         self.debug = False
-        self.uid = None
-        self.previousUid = None
         self.transferTopicInfo = None
         self._sessionData = {}
         self._sessionDataType = {}
@@ -40,6 +39,9 @@ class BotState(object):
         self.sessionStartTime = None
         self.sessionId = None
         self.writeTime = None
+        if not keepUid:
+            self.uid = None
+            self.previousUid = None
 
     def _createSessionId(self, userId, ts):
         return "kf_ses_%i_%s" % (ts, random.randint(0,1000))
