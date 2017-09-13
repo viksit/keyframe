@@ -140,14 +140,14 @@ class Slot(object):
                         self.name, self.value, self.entityType)
                     botState.addToSessionUtterances(
                         self.name,
-                        canonicalMsg.text, self.prompt(), self.entityType)
+                        canonicalMsg.text, self.prompt(botState), self.entityType)
                     self.filled = True
                     return self.filled
 
             # The original sentence didn't have any items to fill this slot
             # Send a response
             self._createAndSendResponse(
-                self.prompt(), channelClient,
+                self.prompt(botState), channelClient,
                 responseType=messages.ResponseElement.RESPONSE_TYPE_SLOTFILL,
                 botStateUid=botState.getUid())
             self.state = Slot.SLOT_STATE_WAITING_FILL
@@ -165,7 +165,7 @@ class Slot(object):
                         self.name, self.value, self.entityType)
                     botState.addToSessionUtterances(
                         self.name,
-                        canonicalMsg.text, self.prompt(), self.entityType)
+                        canonicalMsg.text, self.prompt(botState), self.entityType)
                     self.filled = True
                     self.state = Slot.SLOT_STATE_FILLED
                 else:
@@ -188,7 +188,7 @@ class Slot(object):
                 botState.addToSessionData(self.name, self.value, self.entityType)
                 botState.addToSessionUtterances(
                     self.name,
-                    canonicalMsg.text, self.prompt(), self.entityType)
+                    canonicalMsg.text, self.prompt(botState), self.entityType)
                 self.filled = True
                 self.state = Slot.SLOT_STATE_FILLED
         elif self.state == Slot.SLOT_STATE_FILLED:
@@ -262,8 +262,8 @@ class Slot(object):
     def get(self):
         pass
 
-    def prompt(self):
-        pass
+    def prompt(self, botState):
+        raise NotImplementedError()
 
     def validate(self):
         pass
