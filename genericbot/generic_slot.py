@@ -12,6 +12,7 @@ from six import iteritems, add_metaclass
 import traceback
 import integrations.zendesk.zendesk as zendesk
 import re
+import random
 
 import logging
 
@@ -49,11 +50,14 @@ class GenericSlot(keyframe.slot_fill.Slot):
                 "utterances":botState.getSessionUtterances(),
                 "transcript":transcript}
 
-    def prompt(self):
+    def prompt(self, botState):
         #assert self.promptMsg
-        if self.entityType == "OPTIONS":
-            return self.promptMsg
-        return self.promptMsg
+        m = self.promptMsg
+        if type(self.promptMsg) == list:
+            m = self.promptMsg[random.randint(0, len(self.promptMsg) - 1)]
+        responseMsg = Template(m).render(
+            self._entitiesDict(botState))
+        return responseMsg
 
     def respond(self, text, canonicalMsg, responseType=None, botStateUid=None):
         log.debug("GenericSlot.respond(%s)", locals())
@@ -78,7 +82,7 @@ class GenericHiddenSlot(keyframe.slot_fill.Slot):
             topicId=topicId)
         self.customFields = None
 
-    def prompt(self):
+    def prompt(self, botState):
         raise Exception("Hidden slots do not have prompts")
 
     def fill(self, canonicalMsg, apiResult, channelClient, botState):
@@ -101,7 +105,7 @@ class GenericTransferSlot(GenericSlot):
 
     def sendMessageIfAny(
             self, canonicalMsg, apiResult, channelClient, botState):
-        if not self.prompt():
+        if not self.prompt(botState):
             return
         self.apiResult = apiResult
         self.channelClient = channelClient
@@ -110,7 +114,7 @@ class GenericTransferSlot(GenericSlot):
         # so don't use self._createAndSendResponse.
         cr = keyframe.messages.createTextResponse(
             self.canonicalMsg,
-            self.prompt(),
+            self.prompt(botState),
             keyframe.messages.ResponseElement.RESPONSE_TYPE_RESPONSE,
             responseMeta=keyframe.messages.ResponseMeta(
                 apiResult=self.apiResult,
@@ -205,19 +209,13 @@ class GenericInfoSlot(GenericSlot):
             apiResult=apiResult, newTopic=newTopic,
             topicId=topicId, channelClient=channelClient)
 
-    def prompt(self):
-        return self.promptMsg
-
     def fill(self, canonicalMsg, apiResult, channelClient, botState):
         self.apiResult = apiResult
         self.channelClient = channelClient
         self.canonicalMsg = canonicalMsg
         # We need to send inputExpected = False for this info slot,
         # so don't use self._createAndSendResponse.
-        transcript = "\n".join(
-            "%s:%s" % (k,v) for (k,v) in botState.getSessionUtterancesOrdered())
-        responseMsg = Template(self.prompt()).render(
-            self._entitiesDict(botState))
+        responseMsg = self.prompt(botState)
         cr = keyframe.messages.createTextResponse(
             self.canonicalMsg,
             responseMsg,
@@ -248,7 +246,7 @@ class GenericActionSlot(GenericSlot):
             return None
         return self.actionSpec.get("action_type")
 
-    def prompt(self):
+    def prompt(self, botState):
         raise Exception("Action slots do not have prompts")
 
     def fill(self, canonicalMsg, apiResult, channelClient, botState):
