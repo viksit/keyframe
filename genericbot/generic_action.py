@@ -229,6 +229,7 @@ class GenericActionObject(keyframe.actions.ActionObject):
             elif slotType == slot_fill.Slot.SLOT_TYPE_INPUT:
                 gc = generic_slot.GenericSlot(
                     apiResult=apiResult, newTopic=newTopic, topicId=topicId)
+                gc.useStored = slotSpec.get("use_stored", False)
             elif slotType == slot_fill.Slot.SLOT_TYPE_TRANSFER:
                 gc = generic_slot.GenericTransferSlot(
                     apiResult=apiResult, newTopic=newTopic, topicId=topicId)

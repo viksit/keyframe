@@ -48,6 +48,7 @@ class Slot(object):
         self.displayType = None
         self.slotType = None
         self.descName = None
+        self.useStored = False
 
     def __repr__(self):
         return "%s" % (json.dumps(self.toJSONObject()),)
@@ -129,6 +130,14 @@ class Slot(object):
         if self.state == Slot.SLOT_STATE_NEW:
             log.debug("(1) state: %s", self.state)
             log.debug("parseoriginal: %s", self.parseOriginal)
+            # Check if this slots id is already in entities.
+            existingEntity = botState.getSessionData().get(self.entityName)
+            if existingEntity and self.useStored:
+                log.info("This entityName (%s) is already present in botState.sessionData (%s) - I can just move on.", self.entityName, existingEntity)
+                self.value = existingEntity
+                self.filled = True
+                return self.filled
+
             if self.parseOriginal is True:
                 fillResult = None
                 if canonicalMsg.text:
