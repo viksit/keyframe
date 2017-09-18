@@ -73,7 +73,7 @@ def wrap_exceptions(func):
             return func(*args, **kwargs)
         except Exception as e:
             log.exception("GOT EXCEPTION")
-            r = Response(response=str(e), status=500)
+            r = Response(response="%s"%(e,), status=500)
             return r
     return decorated_function
 
@@ -388,7 +388,6 @@ def _run_agent_slack():
     msgChannel = event["channel"]
     botToken = None
 
-    #botToken = botmetalocal.get("slack." + str(teamId)).get("bot_token")
     agentDeploymentMeta = ads.getJsonSpec(teamId, "slack")
     botToken = agentDeploymentMeta.get("bot_token")
 

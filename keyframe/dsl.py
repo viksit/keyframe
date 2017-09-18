@@ -105,7 +105,7 @@ class APIIntent(BaseField):
                 log.debug("field_eval_fn.self.apiResult: %s", self.apiResult)
             except pymyra.api.client.InferenceClientError as ice:
                 log.exception("Exception calling myra api")
-                raise Exception("Exception calling myra api: %s" % (str(ice),))
+                raise Exception("Exception calling myra api: %s" % (ice,))
         else:
             log.debug("apiResult was passed in")
             self.apiResult = apiResult

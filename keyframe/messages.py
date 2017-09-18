@@ -73,10 +73,15 @@ class CanonicalMsg(object):
             self.customProps = {}
 
     def __repr__(self):
+        # There is a problem with structs/objects containing unicode in sequences.
+        # So this is required.
+        customProps = self.customProps
+        if customProps:
+            customProps = "".join("%s:%s"%(k,v) for (k,v) in customProps.iteritems())
         return ("CanonicalMsg(channel=%s, httpType=%s, userId=%s, "
                 "text=%s, rid=%s, botStateUid=%s, customProps=%s)") % \
             (self.channel, self.httpType, self.userId,
-             self.text, self.rid, self.botStateUid, self.customProps)
+             self.text, self.rid, self.botStateUid, customProps)
 
     def toJSON(self):
         return {
@@ -99,9 +104,15 @@ class CanonicalResponse(object):
         self.botStateUid = botStateUid
 
     def __repr__(self):
-        res = "CanonicalResponse(channel=%s, userId=%s, responseElements=%s, botStateUid=%s)" % \
-            (self.channel, self.userId, self.responseElements, self.botStateUid)
-        return res.encode("utf-8")
+        log.debug("CanonicalResponse.__repr__")
+        # ResponseElements are objects that may have unicode (non-ascii) strings.
+        # Just doing "responseElements=%s" % (self.responseElements,) does not work.
+        tmp1 = "responseElements=%s" % (["%s" % (e,) for e in self.responseElements],)
+        log.debug("type(tmp1): %s", type(tmp1))
+        res = "CanonicalResponse(channel=%s, userId=%s, %s, botStateUid=%s)" % \
+            (self.channel, self.userId, tmp1, self.botStateUid)
+        #return res.encode("utf-8")
+        return res
 
     def toJSON(self):
         return {
@@ -195,6 +206,7 @@ class ResponseElement(object):
             self.uuid = utils.getUUID()
 
     def __repr__(self):
+        log.debug("ResponseElement.__repr__")
         res = ("ResponseElement(type=%s, responseType=%s, text=%s, carousel=%s, "
                "optionsList=%s, responseMeta=%s, displayType=%s, inputExpected=%s, "
                "uuid=%s, textType=%s, textList=%s") % (
@@ -202,7 +214,10 @@ class ResponseElement(object):
                    self.carousel, self.optionsList, self.responseMeta,
                    self.displayType, self.inputExpected, self.uuid,
                    self.textType, self.textList)
-        return res.encode("utf-8")
+        #r = res.encode("utf-8")
+        r = res
+        log.debug("ResponseElement.__repr__ returning %s (type: %s)", r, type(r))
+        return r
 
     def toJSON(self):
         rm = None
