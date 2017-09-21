@@ -13,6 +13,7 @@ import traceback
 import integrations.zendesk.zendesk as zendesk
 import re
 import random
+import lxml.html
 
 import logging
 
@@ -45,7 +46,8 @@ class GenericSlot(keyframe.slot_fill.Slot):
         tl = []
         for d in _t:
             if d.get("prompt"):
-                tl.append("bot> %s" % d.get("prompt"))
+                tl.append("bot> %s" % lxml.html.fromstring(
+                    d.get("prompt")).text_content())
             if d.get("response"):
                 tl.append("user> %s" % d.get("response"))
             tl.append("")
