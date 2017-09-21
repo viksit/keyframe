@@ -41,8 +41,17 @@ class GenericSlot(keyframe.slot_fill.Slot):
 
     def _entitiesDict(self, botState):
         _t = botState.getSessionTranscript()
-        transcript = "\n".join(
-            "%s => %s" % (d.get("prompt"), d.get("response")) for d in _t)
+        #log.debug("sessionTranscript: %s", _t)
+        tl = []
+        for d in _t:
+            if d.get("prompt"):
+                tl.append("bot> %s" % d.get("prompt"))
+            if d.get("response"):
+                tl.append("user> %s" % d.get("response"))
+            tl.append("")
+        transcript = "\n".join(tl)
+        #transcript = "\n".join(
+        #    "%s => %s" % (d.get("prompt"), d.get("response")) for d in _t)
         #transcript = "\n".join(
         #    "%s => %s" % (k,v) for (k,v) in botState.getSessionUtterancesOrdered())
         #log.debug("transcript: %s", transcript)
@@ -228,7 +237,7 @@ class GenericInfoSlot(GenericSlot):
             inputExpected=False)
         channelClient.sendResponse(cr)
         botState.addToSessionUtterances(
-            self.name, responseMsg, None, self.entityType)
+            self.name, None, responseMsg, self.entityType)
         self.filled = True
         return self.filled
 
@@ -270,7 +279,7 @@ class GenericActionSlot(GenericSlot):
             botState.addToSessionData(
                 self.name, resp, self.entityType)
             botState.addToSessionUtterances(
-                self.name, resp, None, self.entityType)
+                self.name, None, resp, self.entityType)
         else:
             raise Exception("Unknown actionType (%s)" % (actionType,))
         return self.respond(
