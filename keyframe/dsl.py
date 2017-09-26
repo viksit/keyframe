@@ -164,6 +164,25 @@ class FreeTextEntity(BaseEntity):
         assert text is not None
         return text
 
+class NumberEntity(BaseEntity):
+    def __init__(self, **kwargs):
+        super(NumberEntity, self).__init__(**kwargs)
+
+    def entity_extract_fn(self, **kwargs):
+        text = kwargs.get("text", None)
+        assert text is not None
+        text = text.strip()
+        text = text.rstrip("%")  # hack to handle 20% vs 20
+        # We can't actually return a non-text because downstream assumes text.
+        try:
+            _tmp = float(text)
+        except:
+            log.info("cannot convert %s to a number", text)
+            return None
+        # We can't actually return a non-text because downstream assumes text
+        # in various places.
+        return text
+
 class AttachmentsEntity(FreeTextEntity):
     def __init__(self, **kwargs):
         super(AttachmentsEntity, self).__init__(**kwargs)

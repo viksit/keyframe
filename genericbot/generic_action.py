@@ -63,7 +63,8 @@ class GenericActionObject(keyframe.actions.ActionObject):
         "EMAIL": dsl.EmailRegexEntity,
         "OPTIONS": dsl.OptionsEntity,
         "ATTACHMENTS":dsl.AttachmentsEntity,
-        "ENUM":dsl.OptionsEntity
+        "ENUM":dsl.OptionsEntity,
+        "NUMBER":dsl.NumberEntity
     }
     def getEntityClassFromType(self, entityType):
         if entityType in self.ENTITY_TYPE_CLASS_MAP:
