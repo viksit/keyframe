@@ -172,7 +172,9 @@ class NumberEntity(BaseEntity):
         text = kwargs.get("text", None)
         assert text is not None
         text = text.strip()
-        text = text.rstrip("%")  # hack to handle 20% vs 20
+        # hack to handle people entering 20% or $30 etc etc.
+        # clearly non-ideal but will do for now.
+        text = re.sub("[^0-9|.]", "", text)
         # We can't actually return a non-text because downstream assumes text.
         try:
             _tmp = float(text)

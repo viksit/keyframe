@@ -182,7 +182,8 @@ class Slot(object):
                     # ask to re-fill.
                     # currently this is an inifnite loop.
                     # TODO(viksit/nishant): add a nice way to control this.
-                    msg = "You entered an incorrect value for %s. Please enter again." % self.name
+                    log.warn("Incorrect value (%s) entered for slot %s.", fillResult, self.name)
+                    msg = "You entered an incorrect value. Please enter again."
                     self._createAndSendResponse(
                         msg, channelClient,
                         responseType=messages.ResponseElement.RESPONSE_TYPE_SLOTFILL_RETRY,
