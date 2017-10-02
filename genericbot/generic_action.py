@@ -92,19 +92,6 @@ class GenericActionObject(keyframe.actions.ActionObject):
             assert self.nextSlotToFillName, "No nextSlotToFillName!"
             slotObject = self.slotObjectsByName[self.nextSlotToFillName]
             assert slotObject
-            if slotObject.slotType == slot_fill.Slot.SLOT_TYPE_TRANSFER:
-                slotObject.addCustomFieldsToSession(botState)
-                slotObject.sendMessageIfAny(
-                    self.canonicalMsg, self.apiResult, self.channelClient,
-                    botState)
-                transferTopicInfo = slotObject.getTransferTopicInfo()
-                assert transferTopicInfo, "Trying to transfer without transferTopicInfo"
-                botState.setTransferTopicInfo(transferTopicInfo)
-                return constants.BOT_REQUEST_STATE_TRANSFER
-            filled = slotObject.fillWrapper(
-                self.canonicalMsg, self.apiResult, self.channelClient,
-                botState)
-
             responseEvent = keyframe.event.createEvent(
                 accountId=self.accountId,
                 agentId=self.agentId,
@@ -121,6 +108,27 @@ class GenericActionObject(keyframe.actions.ActionObject):
                 ticketFiled=False,  # updated if required below
                 resolutionStatus=False
             )
+            if slotObject.slotType == slot_fill.Slot.SLOT_TYPE_TRANSFER:
+                slotObject.addCustomFieldsToSession(botState)
+                canonicalResponse = slotObject.sendMessageIfAny(
+                    self.canonicalMsg, self.apiResult, self.channelClient,
+                    botState)
+                transferTopicInfo = slotObject.getTransferTopicInfo()
+                assert transferTopicInfo, "Trying to transfer without transferTopicInfo"
+                botState.setTransferTopicInfo(transferTopicInfo)
+                if canonicalResponse:
+                    responseEvent.payload = canonicalResponse.toJSON()
+                eventWriter.write(responseEvent.toJSONStr(), responseEvent.userId)
+                return constants.BOT_REQUEST_STATE_TRANSFER
+            fwResponse = slotObject.fillWrapper(
+                self.canonicalMsg, self.apiResult, self.channelClient,
+                botState)
+            filled = fwResponse["status"]  # must be present.
+            canonicalResponse = fwResponse.get("response")
+            payload = None
+            if canonicalResponse:
+                payload = canonicalResponse.toJSON()
+            responseEvent.payload = payload
             eventWriter = event_writer.getWriter(
                 streamName=self.config.KINESIS_STREAM_NAME)
             if filled:

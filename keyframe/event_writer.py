@@ -52,7 +52,7 @@ def createWriter(streamName=None, streamSuffix=None, config=None, writerType=Non
             streamSuffix)
 
     if writerType == WRITER_TYPE_FILE:
-        f = "/tmp/%s" % (kStreamName,)
+        f = "/tmp/%s.%s" % (kStreamName, datetime.datetime.now().strftime("%s"))
         writer = FileWriter(f=f)
     elif writerType == WRITER_TYPE_KINESIS:
         writer = KinesisStreamWriter(

@@ -127,6 +127,7 @@ class Slot(object):
         #     assert self.apiResult is not None
 
         fillResult = None
+        canonicalResponse = None
         if self.state == Slot.SLOT_STATE_NEW:
             log.debug("(1) state: %s", self.state)
             log.debug("parseoriginal: %s", self.parseOriginal)
@@ -136,7 +137,7 @@ class Slot(object):
                 log.info("This entityName (%s) is already present in botState.sessionData (%s) - I can just move on.", self.entityName, existingEntity)
                 self.value = existingEntity
                 self.filled = True
-                return self.filled
+                return {"status":self.filled}
 
             if self.parseOriginal is True:
                 fillResult = None
@@ -151,11 +152,11 @@ class Slot(object):
                         self.name,
                         canonicalMsg.text, self.prompt(botState), self.entityType)
                     self.filled = True
-                    return self.filled
+                    return {"status":self.filled}
 
             # The original sentence didn't have any items to fill this slot
             # Send a response
-            self._createAndSendResponse(
+            canonicalResponse = self._createAndSendResponse(
                 self.prompt(botState), channelClient,
                 responseType=messages.ResponseElement.RESPONSE_TYPE_SLOTFILL,
                 botStateUid=botState.getUid())
@@ -184,13 +185,13 @@ class Slot(object):
                     # TODO(viksit/nishant): add a nice way to control this.
                     log.warn("Incorrect value (%s) entered for slot %s.", fillResult, self.name)
                     msg = "You entered an incorrect value. Please enter again."
-                    self._createAndSendResponse(
+                    canonicalResponse = self._createAndSendResponse(
                         msg, channelClient,
                         responseType=messages.ResponseElement.RESPONSE_TYPE_SLOTFILL_RETRY,
                         botStateUid=botState.getUid())
                     self.state = Slot.SLOT_STATE_WAITING_FILL
                     self.filled = False
-                    return self.filled
+                    return {"status":self.filled, "response":canonicalResponse}
             # Otherwise we just take the whole utterance and incorporate it.
             else:
                 fillResult = self.canonicalMsg.text
@@ -207,7 +208,11 @@ class Slot(object):
                 ("Came across a slot that is already filled!"
                 " This probably means an endless loop."))
 
-        return self.filled
+        if canonicalResponse:
+            return {"status":self.filled, "response":canonicalResponse}
+        else:
+            return {"status":self.filled}
+
 
     def _createAndSendResponse(
             self, msg, channelClient,
@@ -249,6 +254,7 @@ class Slot(object):
                 botStateUid=botStateUid,
                 inputExpected=True)
         channelClient.sendResponse(cr)
+        return cr
 
     def _extractSlotFromSentence(self, canonicalMsg):
         """

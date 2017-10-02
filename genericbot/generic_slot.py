@@ -83,7 +83,8 @@ class GenericSlot(keyframe.slot_fill.Slot):
             botStateUid=botStateUid)
 
         self.channelClient.sendResponse(cr)
-        return constants.BOT_REQUEST_STATE_PROCESSED
+        #return constants.BOT_REQUEST_STATE_PROCESSED
+        return cr
 
 class GenericHiddenSlot(keyframe.slot_fill.Slot):
     def __init__(self, apiResult=None, newTopic=None,
@@ -101,7 +102,7 @@ class GenericHiddenSlot(keyframe.slot_fill.Slot):
         self.channelClient = channelClient
         self.canonicalMsg = canonicalMsg
         self.filled = True
-        return self.filled
+        return {"status":self.filled}
 
 class GenericTransferSlot(GenericSlot):
     def __init__(self, apiResult=None, newTopic=None,
@@ -134,6 +135,7 @@ class GenericTransferSlot(GenericSlot):
             botStateUid=botState.getUid(),
             inputExpected=False)
         channelClient.sendResponse(cr)
+        return cr
 
     def fill(self, canonicalMsg, apiResult, channelClient, botState):
         raise Exception("Should not be called for GenericTransferSlot")
@@ -241,7 +243,7 @@ class GenericInfoSlot(GenericSlot):
         botState.addToSessionUtterances(
             self.name, None, responseMsg, self.entityType)
         self.filled = True
-        return self.filled
+        return {"status":self.filled, "response":cr}
 
 class GenericActionSlot(GenericSlot):
     def __init__(self, apiResult=None, newTopic=None,
@@ -263,9 +265,10 @@ class GenericActionSlot(GenericSlot):
     def fill(self, canonicalMsg, apiResult, channelClient, botState):
         log.debug("GenericActionSlot.fill(%s)", locals())
         assert self.actionSpec, "ActionSlot must have actionSpec"
-        self.doAction(canonicalMsg, apiResult, channelClient, botState)
+        canonicalResponse = self.doAction(
+            canonicalMsg, apiResult, channelClient, botState)
         self.filled = True
-        return self.filled
+        return {"status":self.filled, "response":canonicalResponse}
 
     def doAction(self, canonicalMsg, apiResult, channelClient, botState):
         assert self.actionSpec, "ActionSlot must have an action spec"
@@ -284,8 +287,9 @@ class GenericActionSlot(GenericSlot):
                 self.name, None, resp, self.entityType)
         else:
             raise Exception("Unknown actionType (%s)" % (actionType,))
-        return self.respond(
+        canonicalResponse = self.respond(
             resp, canonicalMsg, botStateUid=botState.getUid())
+        return canonicalResponse
 
     def fetchWebhook(self, webhook, botState):
         # To render a templatized url with custom parameters
