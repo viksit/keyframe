@@ -70,18 +70,18 @@ class GenericSlot(keyframe.slot_fill.Slot):
             self._entitiesDict(botState))
         return responseMsg
 
-    def respond(self, text, canonicalMsg, responseType=None, botStateUid=None):
+    def respond(self, text, canonicalMsg, responseType=None, botStateUid=None,
+                searchAPIResult=None):
         log.debug("GenericSlot.respond(%s)", locals())
-
         cr = keyframe.messages.createTextResponse(
             canonicalMsg,
             text,
             responseType,
             responseMeta=keyframe.messages.ResponseMeta(
                 apiResult=self.apiResult,
-                newTopic=self.newTopic),
+                newTopic=self.newTopic,
+                searchAPIResult=searchAPIResult),
             botStateUid=botStateUid)
-
         self.channelClient.sendResponse(cr)
         #return constants.BOT_REQUEST_STATE_PROCESSED
         return cr
@@ -270,25 +270,31 @@ class GenericActionSlot(GenericSlot):
         self.filled = True
         return {"status":self.filled, "response":canonicalResponse}
 
+
     def doAction(self, canonicalMsg, apiResult, channelClient, botState):
         assert self.actionSpec, "ActionSlot must have an action spec"
         actionType = self.actionSpec.get("action_type").lower()
+        resp = None
+        searchAPIResult = None
         if actionType == "zendesk":
             resp = self.processZendesk(botState)
         elif actionType == "email":
             resp = self.doEmail(
                 self.actionSpec.get("email"), botState)
         elif actionType == "webhook":
-            resp = self.fetchWebhook(
+            _d = self.fetchWebhook(
                 self.actionSpec.get("webhook"), botState)
+            resp = _d.get("text")
+            searchAPIResult = _d.get("api_response")
             botState.addToSessionData(
-                self.name, resp, self.entityType)
+                self.name, _d.get("text"), self.entityType)
             botState.addToSessionUtterances(
-                self.name, None, resp, self.entityType)
+                self.name, None, _d.get("text"), self.entityType)
         else:
             raise Exception("Unknown actionType (%s)" % (actionType,))
         canonicalResponse = self.respond(
-            resp, canonicalMsg, botStateUid=botState.getUid())
+            resp, canonicalMsg, botStateUid=botState.getUid(),
+            searchAPIResult=searchAPIResult)
         return canonicalResponse
 
     def fetchWebhook(self, webhook, botState):
@@ -356,7 +362,8 @@ class GenericActionSlot(GenericSlot):
         _ed = self._entitiesDict(botState)
         _ed["response"] = responseJsonObj
         renderedResponse = textResponseTemplate.render(_ed)
-        return renderedResponse
+        return {"text":renderedResponse,
+                "api_response":responseJsonObj}
 
 
     def doEmail(self, emailSpec, botState):

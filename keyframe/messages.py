@@ -124,15 +124,16 @@ class CanonicalResponse(object):
 
 class ResponseMeta(object):
     def __init__(self, apiResult=None, newTopic=None, topicId=None,
-                 actionObjectInstanceId=None):
+                 actionObjectInstanceId=None, searchAPIResult=None):
         self.apiResult = apiResult
         self.newTopic = newTopic
         self.topicId = topicId
         self.actionObjectInstanceId = actionObjectInstanceId
+        self.searchAPIResult = searchAPIResult
 
     def __repr__(self):
-        return "ResponseMeta(apiResult=%s, newTopic=%s, topicId=%s, actionObjectInstanceId=%s)" % (
-            self.apiResult, self.newTopic, self.topicId, self.actionObjectInstanceId)
+        return "ResponseMeta(apiResult=%s, newTopic=%s, topicId=%s, actionObjectInstanceId=%s, searchAPIResult=%s)" % (
+            self.apiResult, self.newTopic, self.topicId, self.actionObjectInstanceId, self.searchAPIResult)
 
     def toJSON(self):
         d = None
@@ -151,7 +152,8 @@ class ResponseMeta(object):
         return {"apiResult":d,
                 "newTopic":self.newTopic,
                 "topicId":self.topicId,
-                "actionObjectInstanceId":self.actionObjectInstanceId}
+                "actionObjectInstanceId":self.actionObjectInstanceId,
+                "searchAPIResult":self.searchAPIResult}
 
 class ResponseElement(object):
     # These are to tell the client the type of response
