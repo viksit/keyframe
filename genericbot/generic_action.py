@@ -125,16 +125,18 @@ class GenericActionObject(keyframe.actions.ActionObject):
                 botState)
             filled = fwResponse["status"]  # must be present.
             canonicalResponse = fwResponse.get("response")
-            payload = None
             if canonicalResponse:
-                payload = canonicalResponse.toJSON()
-            responseEvent.payload = payload
+                responseEvent.payload = canonicalResponse.toJSON()
             eventWriter = event_writer.getWriter(
                 streamName=self.config.KINESIS_STREAM_NAME)
             if filled:
                 responseEvent.responseType = "fill"
                 if slotObject.getActionType() == "zendesk":
                     responseEvent.ticketFiled = True
+                # Somewhat of a hack to get the value of the filled slot
+                # in the event for event processing.
+                if not responseEvent.payload and slotObject.value:
+                    responseEvent.payload = {"value":slotObject.value}
             if not filled:
                 responseEvent.responseType = "prompt"
                 botState.putWaiting(self.toJSONObject())
