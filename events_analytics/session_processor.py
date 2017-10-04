@@ -26,16 +26,33 @@ def isSearchSurveySlot(event):
             and event.get("slot_type") == "slot-type-input"
             and event.get("response_type") == "fill")
 
+def getTicket(event):
+    if (_getd(event, "slot_id", "").lower().count("ticket")
+        and event.get("event_type") == "response"
+        and event.get("ticket_filed")):
+        ticket_url = event["payload"]["responseElements"][0]["responseMeta"].get("zendeskTicketUrl")
+        return {"ticket_filed":True,
+                "ticket_url":ticket_url}
+    return None
+
 def processSession(session):
     """A session is a *chronological* list of events from a single session.
     Return the processed data required for analytics.
     """
     kb_results = []
-    session_summary = {}
-    
+    session_summary = {"kb_results": kb_results}
+
+    session_id = None
     lastSearch = None
     for event in session:
         log.debug("event: %s", event)
+        if not session_id:
+            session_id = event["session_id"]
+        elif session_id != event["session_id"]:
+            raise SessionProcessorError(
+                "current session_id: %s, new session_id: %s",
+                session_id, event["session_id"])
+            
         if event["version"] < 3:
             log.info("Session contains event at version %s. Skipping this session.", event["version"])
             return None
@@ -60,7 +77,10 @@ def processSession(session):
                 raise SessionProcessorError(
                     "No search before survey")
             lastSearch["survey_results"] = event["payload"]["value"]
-    return kb_results
+        zendeskTicket = getTicket(event)
+        if zendeskTicket:
+            session_summary["ticket_meta"] = zendeskTicket
+    return session_summary
 
                 
         
@@ -72,7 +92,7 @@ def test():
         for l in f:
             session.append(json.loads(l.strip()))
     r = processSession(session)
-    print r
+    print json.dumps(r)
 
 if __name__ == "__main__":
     logging.basicConfig()

@@ -71,7 +71,7 @@ class GenericSlot(keyframe.slot_fill.Slot):
         return responseMsg
 
     def respond(self, text, canonicalMsg, responseType=None, botStateUid=None,
-                searchAPIResult=None):
+                searchAPIResult=None, zendeskTicketUrl=None):
         log.debug("GenericSlot.respond(%s)", locals())
         cr = keyframe.messages.createTextResponse(
             canonicalMsg,
@@ -80,7 +80,8 @@ class GenericSlot(keyframe.slot_fill.Slot):
             responseMeta=keyframe.messages.ResponseMeta(
                 apiResult=self.apiResult,
                 newTopic=self.newTopic,
-                searchAPIResult=searchAPIResult),
+                searchAPIResult=searchAPIResult,
+                zendeskTicketUrl=zendeskTicketUrl),
             botStateUid=botStateUid)
         self.channelClient.sendResponse(cr)
         #return constants.BOT_REQUEST_STATE_PROCESSED
@@ -275,9 +276,13 @@ class GenericActionSlot(GenericSlot):
         assert self.actionSpec, "ActionSlot must have an action spec"
         actionType = self.actionSpec.get("action_type").lower()
         resp = None
+        ticket_url = None
         searchAPIResult = None
         if actionType == "zendesk":
-            resp = self.processZendesk(botState)
+            _d = self.processZendesk(botState)
+            log.debug("ZENDESK returns: %s", _d)
+            resp = _d.get("text")
+            ticket_url = _d.get("ticket_url")
         elif actionType == "email":
             resp = self.doEmail(
                 self.actionSpec.get("email"), botState)
@@ -294,7 +299,7 @@ class GenericActionSlot(GenericSlot):
             raise Exception("Unknown actionType (%s)" % (actionType,))
         canonicalResponse = self.respond(
             resp, canonicalMsg, botStateUid=botState.getUid(),
-            searchAPIResult=searchAPIResult)
+            searchAPIResult=searchAPIResult, zendeskTicketUrl=ticket_url)
         return canonicalResponse
 
     def fetchWebhook(self, webhook, botState):
@@ -417,4 +422,8 @@ class GenericActionSlot(GenericSlot):
         _t = Template(respTemplate)
         resp = _t.render(zr)
         log.debug("after processing zendesk, resp: %s", resp)
-        return resp
+        return {
+            "text": resp,
+            "ticket_url": zr.get("ticket",{}).get("agenturl")
+            }
+        #return resp
