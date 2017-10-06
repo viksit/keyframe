@@ -48,21 +48,26 @@ class DBApi(object):
                 
                 sql = (
                     "insert into myra2.kb_queries "
-                    "(session_id, ts, query, results, num_results, survey_results) "
-                    "values (%s, to_timestamp(%s), %s, %s, %s, %s)")
+                    "(account_id, agent_id, session_id, ts, query, results, num_results, survey_results) "
+                    "values (%s, %s, %s, to_timestamp(%s), %s, %s, %s, %s)")
                 results = q.get("results", [])
                 num_results = len(results)
                 log.info("SQL: %s", cur.mogrify(
-                    sql, (q["session_id"], q["ts"], q.get("query"),
+                    sql, (q["account_id"], q["agent_id"],
+                          q["session_id"], q["ts"], q.get("query"),
                           json.dumps(results),
                           num_results, None)))
                 cur.execute(
-                    sql, (q["session_id"], q["ts"], q.get("query"),
+                    sql, (q["account_id"], q["agent_id"],
+                          q["session_id"], q["ts"], q.get("query"),
                           json.dumps(results),
                           num_results, q.get("survey_results")))
         
     def writeSession(self, session):
         log.debug("DBApi.writeSession(%s)", session)
+        if not session:
+            log.warn("DBApi.writeSession called with: %s", session)
+            return
         s = session
         with self.dbc.cursor() as cur:
             # Don't worry about transactions for now.
@@ -70,19 +75,33 @@ class DBApi(object):
                         (s["session_id"],))
             sql = (
                 "insert into myra2.kb_sessions "
-                "(session_id, ts, topic, num_kb_queries, num_kb_negative_surveys, ticket_url) "
-                "values (%s, to_timestamp(%s), %s, %s, %s, %s)")
+                "(account_id, agent_id, session_id, ts, topic, num_kb_queries, num_kb_negative_surveys, ticket_filed, ticket_url) "
+                "values (%s, %s, %s, to_timestamp(%s), %s, %s, %s, %s, %s)")
             log.info("SQL: %s", cur.mogrify(
-                sql, (s["session_id"], s["ts"], s.get("topic"), s.get("num_kb_queries"), s.get("num_kb_negative_surveys"), s.get("ticket_url"))))
+                sql, (s["account_id"], s["agent_id"],
+                      s["session_id"], s["ts"], s.get("topic"),
+                      s.get("num_kb_queries"), s.get("num_kb_negative_surveys"),
+                      s.get("ticket_filed"), s.get("ticket_url"))))
             cur.execute(
-                sql, (s["session_id"], s["ts"], s.get("topic"), s.get("num_kb_queries"), s.get("num_kb_negative_surveys"), s.get("ticket_url")))
+                sql, (s["account_id"], s["agent_id"],
+                      s["session_id"], s["ts"], s.get("topic"),
+                      s.get("num_kb_queries"), s.get("num_kb_negative_surveys"),
+                      s.get("ticket_filed"), s.get("ticket_url")))
 
+    def writeAll(self, sessions_summaries):
+        for (session_id, session_summary) in sessions_summaries.iteritems():
+            log.info("writing session_id: %s", session_id)
+            if not session_summary:
+                log.warn("DBApi.writeAll session_summary: %s", session_summary)
+                continue
+            self.writeSession(session_summary)
+            self.writeSessionQueries(session_summary.get("kb_info",[]))
 
 def test_sessions(f):
     sessions = json.loads(open(f).read())
     dbApi = DBApi()
-    for s in sessions:
-        dbApi.writeSession(s)
+    for (session_id, session_summary) in sessions.iteritems():
+        dbApi.writeSession(session_summary)
 
 def test_sessions_queries(f):
     session_summaries = json.loads(open(f).read())
@@ -95,5 +114,5 @@ if __name__ == "__main__":
     logging.basicConfig()
     kf_log = logging.getLogger("keyframe")
     kf_log.setLevel(10)
-    #test_sessions(sys.argv[1])
+    test_sessions(sys.argv[1])
     test_sessions_queries(sys.argv[1])

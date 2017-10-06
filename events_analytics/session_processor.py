@@ -43,6 +43,8 @@ def processSession(session):
     """
     kb_info = []
     session_summary = {
+        "account_id": None,
+        "agent_id": None,
         "session_id":None,
         "ts":None,  # seconds from epoch as float
         "kb_info": kb_info,  # [kb_search,..]
@@ -54,6 +56,8 @@ def processSession(session):
     }
 
     session_id = None
+    account_id = None
+    agent_id = None
     lastSearch = None
     for event in session:
         log.debug("event: %s", event)
@@ -63,10 +67,17 @@ def processSession(session):
 
         if not session_id:
             session_id = event["session_id"]
-            session_summary["session_id"] = event["session_id"]
-        elif session_id != event["session_id"]:
+            account_id = event["account_id"]
+            agent_id = event["agent_id"]
+            session_summary["session_id"] = session_id
+            session_summary["account_id"] = account_id
+            session_summary["agent_id"] = agent_id
+            
+        elif (session_id != event["session_id"]
+              or account_id != event["account_id"]
+              or agent_id != event["agent_id"]):
             raise SessionProcessorError(
-                "current session_id: %s, new session_id: %s",
+                "Bad data for a single session. current session_id: %s, new session_id: %s",
                 session_id, event["session_id"])
         if not "ts_ms" in session_summary:
             session_summary["ts"] = float(event["ts_ms"])/1000
@@ -75,6 +86,8 @@ def processSession(session):
             log.debug("found search slot")
             # This is the schema for each kb_search.
             kb_search = {
+                "account_id": event["account_id"],
+                "agent_id": event["agent_id"],
                 "session_id": event["session_id"],
                 "ts": float(event["ts_ms"])/1000,
                 "query":None,

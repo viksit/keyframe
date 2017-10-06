@@ -1,5 +1,6 @@
 import sys
 import json
+import plac
 import logging
 
 #from pyspark import SparkContext
@@ -37,11 +38,11 @@ def _convert_row(r):
         x["payload"] = x["payload"].asDict()
     return x
 
-def process_sessions(eventsPath=EVENTS_PATH):
+def process_sessions2(eventsPath=EVENTS_PATH):
     sessions = _get_sessions(eventsPath)
     sessions_summaries = {}
     sessions_data = []
-    querys_data = []
+    queries_data = []
     for (session_id, session_rows) in sessions:
         # Sessions should not be very big so this should be ok.
         rows = [r.asDict(recursive=True) for r in session_rows]
@@ -50,20 +51,41 @@ def process_sessions(eventsPath=EVENTS_PATH):
         _d = session_processor.processSession2(rows)
         sessions_summaries[session_id] = _d.get("session_summary")
         sessions_data.append(_d.get("session_data"))
-        querys_data.extend(_d.get("query_data"))
+        queries_data.extend(_d.get("query_data"))
     return {"sessions_summaries":sessions_summaries,
             "sessions_data":sessions_data,
-            "querys_data":querys_data}
+            "queries_data":queries_data}
+
+def process_sessions(eventsPath=EVENTS_PATH):
+    sessions = _get_sessions(eventsPath)
+    sessions_summaries = {}
+    for (session_id, session_rows) in sessions:
+        # Sessions should not be very big so this should be ok.
+        rows = [r.asDict(recursive=True) for r in session_rows]
+        rows.sort(cmp=lambda a, b: cmp(a.get("ts_ms",0) , b.get("ts_ms",0)))
+        log.info("for session_id %s, got rows %s", session_id, len(rows))
+        session_summary = session_processor.processSession(rows)
+        sessions_summaries[session_id] = session_summary
+    return sessions_summaries
+
+plac.annotations(
+    action=plac.Annotation(
+        "Action (Required)", "positional", None, str,
+        ["write-to-stdout", "write-to-db"]),
+    eventsPath=plac.Annotation("Events path", "option", None, str)
+)
+def main(action, eventsPath):
+    session_summaries = process_sessions(eventsPath=eventsPath)
+    if action == "write-to-stdout":
+        print json.dumps(session_summaries, indent=True, separators=(',', ': '))
+    elif action == "write-to-db":
+        dbApi = db_api.DBApi()
+        dbApi.writeAll(session_summaries)
+    log.info("spark_event_processor DONE")
 
 if __name__ == "__main__":
     logging.basicConfig()
     keyframe_l = logging.getLogger("keyframe")
     keyframe_l.setLevel(10)
     log.setLevel(10)
-    if len(sys.argv) < 2:
-        print >> sys.stderr, "provide events files path"
-    ss = process_sessions(eventsPath=sys.argv[1])
-    #dbApi = db_api.DBApi()
-    #for s in ss.get("sessions_data", []):
-    #    dbApi.writeSession(s)
-    print json.dumps(ss.get("sessions_summaries"), indent=True, separators=(',', ': '))
+    plac.call(main)
