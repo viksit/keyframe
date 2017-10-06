@@ -66,4 +66,4 @@ if __name__ == "__main__":
     #dbApi = db_api.DBApi()
     #for s in ss.get("sessions_data", []):
     #    dbApi.writeSession(s)
-    print json.dumps(ss.get("sessions_data"), indent=True, separators=(',', ': '))
+    print json.dumps(ss.get("sessions_summaries"), indent=True, separators=(',', ': '))
