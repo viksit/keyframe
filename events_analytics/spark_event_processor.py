@@ -6,6 +6,7 @@ import logging
 from pyspark.sql import SparkSession
 
 import session_processor
+import db_api
 
 log = logging.getLogger(__name__)
 
@@ -62,4 +63,7 @@ if __name__ == "__main__":
     if len(sys.argv) < 2:
         print >> sys.stderr, "provide events files path"
     ss = process_sessions(eventsPath=sys.argv[1])
-    print json.dumps(ss.get("querys_data"), indent=True, separators=(',', ': '))
+    #dbApi = db_api.DBApi()
+    #for s in ss.get("sessions_data", []):
+    #    dbApi.writeSession(s)
+    print json.dumps(ss.get("sessions_data"), indent=True, separators=(',', ': '))
