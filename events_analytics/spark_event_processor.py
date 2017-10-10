@@ -23,6 +23,8 @@ log = logging.getLogger("keyframe.event_analytics.spark_event_processor")
 
 def _get_sessions(cfg, eventsPathList):
     log.info("_get_sessions(%s)", locals())
+    if not eventsPathList:
+        return []
     spark = SparkSession \
             .builder \
             .appName("Python Spark SQL basic example") \
