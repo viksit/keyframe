@@ -4,7 +4,7 @@ import copy
 import logging
 
 #log = logging.getLogger(__name__)
-log = logging.getLogger("keyframe.session_processor")
+log = logging.getLogger("keyframe.event_analytics.session_processor")
 
 class SessionProcessorError(Exception):
     pass
@@ -79,7 +79,7 @@ def processSession(session):
             raise SessionProcessorError(
                 "Bad data for a single session. current session_id: %s, new session_id: %s",
                 session_id, event["session_id"])
-        if not "ts_ms" in session_summary:
+        if not session_summary.get("ts"):
             session_summary["ts"] = float(event["ts_ms"])/1000
         
         if isSearchSlot(event):

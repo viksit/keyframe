@@ -20,13 +20,14 @@ def getConfig(realm=None):
     if realm == "prod":
         return ProdConfig()
     elif realm == "dev":
-        return Config()
+        return DevConfig()
     elif realm == "test":
         return TestConfig()
     else:
         raise "Unknown REALM: %s" % (realm,)
 
 class Config(object):
+    REALM = REALM
     BOTSTATE_TTL_SECONDS = int(os.getenv("BOTSTATE_TTL_SECONDS", 60*60*6))  # 6 hours
     BOTSTATE_HISTORY_TTL_SECONDS = BOTSTATE_TTL_SECONDS
     INTENT_SCORE_THRESHOLD = 0.7
@@ -72,6 +73,8 @@ class Config(object):
     # Test page access token.
     FB_PAGE_ACCESS_TOKEN = "EAANkHwib2HcBAAZAEVORAemInZAOAlIn6BzP4nmfUKxCe562rRQnZBxCHgZAaaxYskZBciitSipgUfQccKu5oCc1ZCGK6JxeXm0j5rBhI7ZBYl86gqAvEHn7aAeZA3C3x1BlczEqLwnVpKc0KXh7NwKBE85Jk1ONG36mzMetRbj93"
 
+    DB_CONN_STRING = "dbname='myra_db_dev' user='myraadmin' host='myra-db-dev.cihwyaszqq2o.us-west-2.rds.amazonaws.com' password='RZ4KvefI3f9e'"
+
 class DevConfig(Config):
     pass
 
@@ -101,3 +104,6 @@ class ProdConfig(Config):
     KINESIS_STREAM_NAME = "kf-events-prod"
 
     KF_EVENTS_S3_BUCKET = "ml-logs-prod"
+
+    DB_CONN_STRING = "dbname='myra_db_prod' user='myraadmin' host='myra-db-main.cihwyaszqq2o.us-west-2.rds.amazonaws.com' password='RZ4KvefI3f9e'"
+

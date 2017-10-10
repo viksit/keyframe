@@ -1,20 +1,15 @@
 import sys, os
 import psycopg2
 import json
-
+import config
 import logging
 
 log = logging.getLogger("keyframe.db_api")
 
-def connectToDatabase():
-    realm = os.getenv("REALM", "dev")
-    dbstring = None
-    if realm == "dev":
-        dbstring = "dbname='myra_db_dev' user='myraadmin' host='myra-db-dev.cihwyaszqq2o.us-west-2.rds.amazonaws.com' password='RZ4KvefI3f9e'"
-    elif realm == "prod":
-        dbstring = "dbname='myra_db_prod' user='myraadmin' host='myra-db-main.cihwyaszqq2o.us-west-2.rds.amazonaws.com' password='RZ4KvefI3f9e'"
-    else:
-        raise Exception("unknown REALM (%s)", realm)
+def connectToDatabase(cfg=None):
+    if not cfg:
+        cfg = config.getConfig()
+    dbstring = cfg.DB_CONN_STRING
     #log.info('dbstring: %s' % dbstring)
     conn = psycopg2.connect(dbstring)
     # Setting autocommit is important because we don't use conn.commit everywhere.
