@@ -96,6 +96,7 @@ def generateS3Paths(cfg, accountId, eventDates):
 
     log.debug("eventDates: %s", eventDates)
     eventsPathList = []
+    eventsDateList = []
     for d in eventDates:
         previousDay = d - datetime.timedelta(days=1)
         p = "accounts/%(accountId)s/%(dYear)s/%(dMonth)s/%(dDay)s/23" % {
@@ -108,6 +109,7 @@ def generateS3Paths(cfg, accountId, eventDates):
             s3np = "s3n://ml-logs-%s/%s/*" % (cfg.REALM, p)
             log.debug("adding path: %s", s3np)
             eventsPathList.append(s3np)
+            eventsDateList.append(previousDay)
         p = "accounts/%(accountId)s/%(dYear)s/%(dMonth)s/%(dDay)s" % {
             "accountId":accountId,
             "dYear":d.year,
@@ -118,6 +120,7 @@ def generateS3Paths(cfg, accountId, eventDates):
             s3np = "s3n://ml-logs-%s/%s/*" % (cfg.REALM, p)
             log.debug("adding path: %s", s3np)
             eventsPathList.append(s3np)
+            eventsDateList.append(d)
         nextDay = d + datetime.timedelta(days=1)
         p = "accounts/%(accountId)s/%(dYear)s/%(dMonth)s/%(dDay)s/00" % {
             "accountId":accountId,
@@ -129,7 +132,8 @@ def generateS3Paths(cfg, accountId, eventDates):
             s3np = "s3n://ml-logs-%s/%s/*" % (cfg.REALM, p)
             log.debug("adding path: %s", s3np)
             eventsPathList.append(s3np)
-    return eventsPathList
+            eventsDateList.append(nextDay)
+    return (eventsPathList, eventsDateList)
 
 
 @plac.annotations(
@@ -145,15 +149,17 @@ def main(action, eventsPath=None, accountId=None, dates=None):
     cfg = config.getConfig()
     eventsPathList = []
     eventDates = []
+    eventDatesList = []
     if eventsPath:
         eventsPathList = [e.strip() for e in eventsPath.strip().split(",") if e.strip()]
     if not eventsPath:
         assert accountId, "must give accountId if no eventsPath"
         eventDates = _createDates(dates)
-        eventsPathList = generateS3Paths(cfg, accountId, eventDates)
+        (eventsPathList, eventDatesList) = generateS3Paths(
+            cfg, accountId, eventDates)
 
     session_summaries = process_sessions(
-        cfg=cfg, eventsPathList=eventsPathList, dates=eventDates)
+        cfg=cfg, eventsPathList=eventsPathList, dates=eventDatesList)
     if action == "write-to-stdout":
         print json.dumps(session_summaries, indent=True, separators=(',', ': '))
     elif action == "write-to-db":

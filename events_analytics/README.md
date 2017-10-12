@@ -28,5 +28,17 @@ scp /tmp/events_analytics.tar.gz ubuntu@0.api.prod.myralabs.com:~/events_analyti
 Untar.
 Check the cron works.
 
+- Possible errors:
+```
+17/10/11 23:41:15 ERROR SparkContext: Error initializing SparkContext. 
+java.net.BindException: Cannot assign requested address: Service 'sparkDriver' failed after 16 retries (on a random free port)! Consider explicitly setting the appropri
+ate binding address for the service 'sparkDriver' (for example spark.driver.bindAddress for SparkDriver) to the correct binding address.
+```
+
+Get the hostname of the machine (```hostname```) and add it to /etc/hosts:
+```
+127.0.0.1 <hostname>
+```
+
 
 
