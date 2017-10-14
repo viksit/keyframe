@@ -247,6 +247,7 @@ class GenericActionObject(keyframe.actions.ActionObject):
                 gc.transferTopicId = slotSpec.get("transfer_topic_id")
                 gc.transferTopicNodeId = slotSpec.get("transfer_topic_node_id")
                 assert gc.transferTopicId, "Transfer slots must have transfer_topic_id defined"
+                gc.customFields = slotSpec.get("custom_fields")
             else:
                 raise Exception("Unknown slot type (%s)" % (slotType,))
 

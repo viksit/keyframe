@@ -379,7 +379,14 @@ class BaseBot(object):
 
             if not topicId:
                 if transferTopicInfo:
-                    (topicId, topicNodeId) = transferTopicInfo
+                    _d = transferTopicInfo
+                    topicId = _d["transferTopicId"]
+                    topicNodeId = _d["transferTopicNodeId"]
+                    startNewSession = _d.get("startNewSession", False)
+                    if startNewSession:
+                        botState.clear()
+                        botState.startSession(canonicalMsg.userId)
+                        newSession = True
                     transferTopicInfo = None
                     newTopic = True
                     # TODO(now): For a non (diagnostic -> resolution) transfer,

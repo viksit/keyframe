@@ -114,7 +114,12 @@ class GenericTransferSlot(GenericSlot):
         self.transferTopicNodeId = None
 
     def getTransferTopicInfo(self):
-        return (self.transferTopicId, self.transferTopicNodeId)
+        startNewSession = False
+        if self.customFields:
+            startNewSession = self.customFields.get("start_new_session", False)
+        return {"transferTopicId":self.transferTopicId,
+                "transferTopicNodeId":self.transferTopicNodeId,
+                "startNewSession":startNewSession}
 
     def sendMessageIfAny(
             self, canonicalMsg, apiResult, channelClient, botState):
