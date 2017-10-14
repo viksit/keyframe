@@ -28,6 +28,11 @@ def isSearchSurveySlot(event):
             and event.get("slot_type") == "slot-type-input"
             and event.get("response_type") == "fill")
 
+def getEscalate(event):
+    return (_getd(event, "slot_id", "").lower().count("escalate")
+            and event.get("event_type") == "response")
+
+
 def getTicket(event):
     if (_getd(event, "slot_id", "").lower().count("ticket")
         and event.get("event_type") == "response"
@@ -52,7 +57,8 @@ def processSession(session):
         "num_kb_negative_surveys": 0,
         "topic": None,
         "ticket_filed": False,
-        "ticket_url": None
+        "ticket_url": None,
+        "escalate": 0
     }
 
     session_id = None
@@ -114,6 +120,8 @@ def processSession(session):
             if survey_value.lower() in ("no", False):
                 session_summary["num_kb_negative_surveys"] += 1
         zendeskTicket = getTicket(event)
+        if getEscalate(event):
+            session_summary["escalate"] += 1
         if zendeskTicket:
             session_summary.update(zendeskTicket)
         if session_summary["kb_info"]:
