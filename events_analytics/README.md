@@ -1,4 +1,10 @@
-- Configuration
+## Overview
+
+* Knowledge base analytics
+  * myra2.kb_sessions: one row per session as defined by the keyframe agent.
+  * myra2.kb_queries: one row per query with session_id
+
+## Configuration
 
 Pip install pyspark==2.2.0 by itself does not allow reading files from s3. The following jars were added in addition to the requirements.txt to make things work.
 
