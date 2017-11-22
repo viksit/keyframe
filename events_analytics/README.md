@@ -4,6 +4,8 @@
   * myra2.kb_sessions: one row per session as defined by the keyframe agent.
   * myra2.kb_queries: one row per query with session_id
 
+Create cookie ```__myra_user_info```. Its value will be added to the user_info column in the db.
+
 ## Configuration
 
 Pip install pyspark==2.2.0 by itself does not allow reading files from s3. The following jars were added in addition to the requirements.txt to make things work.
