@@ -106,7 +106,8 @@ class GenericActionObject(keyframe.actions.ActionObject):
                 actionType=slotObject.getActionType(),
                 responseType=None,  # to be filled below
                 ticketFiled=False,  # updated if required below
-                resolutionStatus=False
+                resolutionStatus=False,
+                locationHref=self.canonicalMsg.locationHref
             )
             if slotObject.slotType == slot_fill.Slot.SLOT_TYPE_TRANSFER:
                 slotObject.addCustomFieldsToSession(botState)

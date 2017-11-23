@@ -58,7 +58,8 @@ def processSession(session):
         "topic": None,
         "ticket_filed": False,
         "ticket_url": None,
-        "escalate": 0
+        "escalate": 0,
+        "location_href": None 
     }
 
     session_id = None
@@ -78,7 +79,8 @@ def processSession(session):
             session_summary["session_id"] = session_id
             session_summary["account_id"] = account_id
             session_summary["agent_id"] = agent_id
-            
+            session_summary["location_href"] = event["location_href"]
+
         elif (session_id != event["session_id"]
               or account_id != event["account_id"]
               or agent_id != event["agent_id"]):

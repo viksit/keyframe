@@ -6,6 +6,7 @@
       "REALM":"dev",
       "KVSTORE_CACHE_SECONDS":"0"
     },
+    "keep_warm": false,
   }
   "prod": {
     "s3_bucket": "ml-lambda-prod-1",
@@ -14,6 +15,7 @@
       "REALM":"prod",
       "KVSTORE_CACHE_SECONDS":"0"
     },
+    "keep_warm": false,
   }
   "test": {
     "s3_bucket": "ml-lamdba-test-1",
