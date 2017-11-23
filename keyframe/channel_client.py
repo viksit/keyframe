@@ -203,7 +203,8 @@ class ChannelClientRESTAPI(ChannelClient):
             text=channelMsg.body.get("text"),
             rid=channelMsg.body.get("rid"),
             botStateUid=channelMsg.body.get("bot_state_uid"),
-            customProps=channelMsg.body.get("custom_props")
+            customProps=channelMsg.body.get("custom_props"),
+            locationHref=channelMsg.body.get("current_url")
         )
 
     def sendResponse(self, canonicalResponse):

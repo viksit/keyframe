@@ -207,6 +207,9 @@ def run_agent2():
     return resp
 
 def _run_agent():
+    log.info("HEADERS: %s", request.headers)
+    log.info("DATA: %s", request.data)
+    log.info("COOKIES: %s", request.cookies)
     requestData = None
     text = None
     accountId = None

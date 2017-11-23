@@ -452,7 +452,9 @@ class BaseBot(object):
                     userId=canonicalMsg.userId,
                     topicId=topicId,
                     topicType=actionObject.getTopicType(),
-                    payload=canonicalMsg.toJSON())
+                    payload=canonicalMsg.toJSON(),
+                    locationHref=canonicalMsg.locationHref
+                )
                 eventWriter = event_writer.getWriter(
                     streamName=self.config.KINESIS_STREAM_NAME)
                 eventWriter.write(requestEvent.toJSONStr(), requestEvent.userId)

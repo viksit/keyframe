@@ -47,6 +47,7 @@ class Event(object):
         self.payload = kwargs.get("payload")  # must be a json-compatible data structure (i.e. string, dict)
         self.ticketFiled = kwargs.get("ticketFiled")
         self.resolutionStatus = kwargs.get("resolutionStatus")
+        self.locationHref = kwargs.get("locationHref")
 
     def toJSON(self):
         return {
@@ -69,7 +70,8 @@ class Event(object):
             "slot_type":self.slotType,
             "action_type":self.actionType,
             "response_type":self.responseType,
-            "payload":self.payload}
+            "payload":self.payload,
+            "location_href":self.locationHref}
 
     def toJSONStr(self):
         return json.dumps(self.toJSON())
