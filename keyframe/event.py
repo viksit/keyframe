@@ -48,6 +48,7 @@ class Event(object):
         self.ticketFiled = kwargs.get("ticketFiled")
         self.resolutionStatus = kwargs.get("resolutionStatus")
         self.locationHref = kwargs.get("locationHref")
+        self.userInfo = kwargs.get("userInfo")
 
     def toJSON(self):
         return {
@@ -71,7 +72,8 @@ class Event(object):
             "action_type":self.actionType,
             "response_type":self.responseType,
             "payload":self.payload,
-            "location_href":self.locationHref}
+            "location_href":self.locationHref,
+            "user_info":self.userInfo}
 
     def toJSONStr(self):
         return json.dumps(self.toJSON())
