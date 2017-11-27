@@ -56,7 +56,8 @@ class CanonicalMsg(object):
 
     def __init__(self, channel, httpType, userId, text,
                  actualName=None, rid=None, msgType=None,
-                 botStateUid=None, customProps=None, locationHref=None):
+                 botStateUid=None, customProps=None, locationHref=None,
+                 userInfo=None):
         self.channel = channel
         self.httpType = httpType
         self.userId = userId
@@ -72,6 +73,7 @@ class CanonicalMsg(object):
         if self.customProps is None:
             self.customProps = {}
         self.locationHref = locationHref
+        self.userInfo = userInfo
 
     def __repr__(self):
         # There is a problem with structs/objects containing unicode in sequences.
@@ -81,10 +83,10 @@ class CanonicalMsg(object):
             customProps = "".join("%s:%s"%(k,v) for (k,v) in customProps.iteritems())
         return ("CanonicalMsg(channel=%s, httpType=%s, userId=%s, "
                 "text=%s, rid=%s, botStateUid=%s, customProps=%s, "
-                "locationHref=%s)") % \
+                "locationHref=%s, userInfo=%s)") % \
             (self.channel, self.httpType, self.userId,
              self.text, self.rid, self.botStateUid, customProps,
-             self.locationHref)
+             self.locationHref, self.userInfo)
 
     def toJSON(self):
         return {
@@ -94,7 +96,8 @@ class CanonicalMsg(object):
             "text": self.text,
             "botStateUid": self.botStateUid,
             "customProps": self.customProps,
-            "locationHref": self.locationHref
+            "locationHref": self.locationHref,
+            "userInfo": self.userInfo
         }
 
 class CanonicalResponse(object):
