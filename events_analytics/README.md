@@ -30,7 +30,7 @@ Data can be local or on s3. Note use s3n as prefix for s3 locations.
 ```
 tar -L -czf /tmp/events_analytics.tar.gz config.py db_api.py session_processor.py spark_event_processor.py events_to_db.sh
 
-scp /tmp/events_analytics.tar.gz ubuntu@0.api.prod.myralabs.com:~/events_analytics/
+scp /tmp/events_analytics.tar.gz ubuntu@[repo.dev.myralabs.com|0.api.prod.myralabs.com]:~/events_analytics/
 ```
 
 Untar.
