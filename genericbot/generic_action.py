@@ -119,6 +119,7 @@ class GenericActionObject(keyframe.actions.ActionObject):
                 assert transferTopicInfo, "Trying to transfer without transferTopicInfo"
                 botState.setTransferTopicInfo(transferTopicInfo)
                 if canonicalResponse:
+                    responseEvent.responseType = "transfermsg"
                     responseEvent.payload = canonicalResponse.toJSON()
                 eventWriter.write(responseEvent.toJSONStr(), responseEvent.userId)
                 return constants.BOT_REQUEST_STATE_TRANSFER
@@ -132,12 +133,15 @@ class GenericActionObject(keyframe.actions.ActionObject):
             eventWriter = event_writer.getWriter(
                 streamName=self.config.KINESIS_STREAM_NAME)
             if filled:
-                responseEvent.responseType = "fill"
+                #responseEvent.responseType = "fill"
                 if slotObject.getActionType() == "zendesk":
                     responseEvent.ticketFiled = True
                 # Somewhat of a hack to get the value of the filled slot
                 # in the event for event processing.
+                if responseEvent.payload:
+                    responseEvent.responseType = "fillmsg"
                 if not responseEvent.payload and slotObject.value:
+                    responseEvent.responseType = "fillnomsg"
                     responseEvent.payload = {"value":slotObject.value}
             if not filled:
                 responseEvent.responseType = "prompt"

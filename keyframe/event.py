@@ -43,7 +43,7 @@ class Event(object):
         self.slotId = kwargs.get("slotId")
         self.slotType = kwargs.get("slotType")
         self.actionType = kwargs.get("actionType")
-        self.responseType = kwargs.get("responseType")  # prompt, fill
+        self.responseType = kwargs.get("responseType")  # prompt, fillmsg, fillnomsg, transfermsg, 
         self.payload = kwargs.get("payload")  # must be a json-compatible data structure (i.e. string, dict)
         self.ticketFiled = kwargs.get("ticketFiled")
         self.resolutionStatus = kwargs.get("resolutionStatus")

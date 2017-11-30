@@ -135,6 +135,14 @@ def generateS3Paths(cfg, accountId, eventDates):
             eventsDateList.append(nextDay)
     return (eventsPathList, eventsDateList)
 
+def writeSessionToS3(cfg, session):
+    conn = boto.connect_s3(cfg.AWS_ACCESS_KEY_ID, cfg.AWS_SECRET_ACCESS_KEY)
+    s3b = conn.get_bucket('ml-%s' % (cfg.REALM,))
+    k = Key(s3b)
+    k.key = "keyframe-events/sessions/account_id=%s/%s.json" % (
+        session.get("account_id"),
+        session.get("session_id"))
+    k.set_contents_from_string(json.dumps(session))
 
 @plac.annotations(
     action=plac.Annotation(
@@ -165,6 +173,8 @@ def main(action, eventsPath=None, accountId=None, dates=None):
     elif action == "write-to-db":
         dbApi = db_api.DBApi()
         dbApi.writeAll(session_summaries)
+        for (session_id, session_summary) in session_summaries.iteritems():
+            writeSessionToS3(cfg, session_summary)
     log.info("spark_event_processor DONE")
 
 if __name__ == "__main__":
