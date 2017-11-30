@@ -42,11 +42,19 @@ def getTicket(event):
                 "ticket_url":ticket_url}
     return None
 
+def createTranscriptElement(ts, msgType, origin, text=None, options=None):
+        return {"ts":ts,
+                "msgType":msgType,  # start | cnv (conversation)
+                "origin":origin,  # user | agent
+                "text":text,
+                "options":options}
+
 def processSession(session):
     """A session is a *chronological* list of events from a single session.
     Return the processed data required for analytics.
     """
     kb_info = []
+    transcript = []
     session_summary = {
         "account_id": None,
         "agent_id": None,
@@ -61,13 +69,16 @@ def processSession(session):
         "escalate": 0,
         "location_href": None ,
         "user_id": None,
-        "user_info": None
+        "user_info": None,
+        "num_user_responses": 0,
+        "transcript": transcript
     }
 
     session_id = None
     account_id = None
     agent_id = None
     lastSearch = None
+
     for event in session:
         log.debug("event: %s", event)
         if event["version"] < 3:
@@ -93,7 +104,43 @@ def processSession(session):
                 session_id, event["session_id"])
         if not session_summary.get("ts"):
             session_summary["ts"] = float(event["ts_ms"])/1000
-        
+
+        if event.get("event_type") == "request":
+            if event.get("session_status") == "start":
+                transcript.append(
+                    createTranscriptElement(
+                        ts=event["ts_ms"],
+                        msgType="start",
+                        origin="user"))
+            else:
+                text = event.get("payload", {}).get("text")
+                if text:
+                    session_summary["num_user_responses"] += 1
+                    transcript.append(
+                        createTranscriptElement(
+                            ts=event["ts_ms"],
+                            msgType="cnv",
+                            origin="user",
+                            text=text))
+
+
+        if event.get("event_type") == "response" and event.get("response_type") in ["prompt", "transfermsg", "fillmsg"]:
+            reE = event.get("payload", {}).get("responseElements")
+            for e in reE:
+                text = e.get("text")
+                tl = e.get("textList")
+                if tl:
+                    text = "\n".join(_e for _e in tl)
+                options = e.get("optionsList")
+                transcript.append(
+                    createTranscriptElement(
+                        ts=event["ts_ms"],
+                        msgType="cnv",
+                        origin="agent",
+                        text=text,
+                        options=options))
+
+
         if isSearchSlot(event):
             log.debug("found search slot")
             # This is the schema for each kb_search.

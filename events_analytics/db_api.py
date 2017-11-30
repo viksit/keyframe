@@ -70,22 +70,24 @@ class DBApi(object):
                         (s["session_id"],))
             sql = (
                 "insert into myra2.kb_sessions "
-                "(account_id, agent_id, session_id, ts, topic, num_kb_queries, num_kb_negative_surveys, ticket_filed, ticket_url, escalate, location_href, user_id, user_info) "
-                "values (%s, %s, %s, to_timestamp(%s), %s, %s, %s, %s, %s, %s, %s, %s, %s)")
+                "(account_id, agent_id, session_id, ts, topic, num_kb_queries, num_kb_negative_surveys, ticket_filed, ticket_url, escalate, location_href, user_id, user_info, num_user_responses) "
+                "values (%s, %s, %s, to_timestamp(%s), %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)")
             log.info("SQL: %s", cur.mogrify(
                 sql, (s["account_id"], s["agent_id"],
                       s["session_id"], s["ts"], s.get("topic"),
                       s.get("num_kb_queries"), s.get("num_kb_negative_surveys"),
                       s.get("ticket_filed"), s.get("ticket_url"),
                       s.get("escalate"), s.get("location_href"),
-                      s.get("user_id"), s.get("user_info"))))
+                      s.get("user_id"), s.get("user_info"),
+                      s.get("num_user_responses"))))
             cur.execute(
                 sql, (s["account_id"], s["agent_id"],
                       s["session_id"], s["ts"], s.get("topic"),
                       s.get("num_kb_queries"), s.get("num_kb_negative_surveys"),
                       s.get("ticket_filed"), s.get("ticket_url"),
                       s.get("escalate"), s.get("location_href"),
-                      s.get("user_id"), s.get("user_info")))
+                      s.get("user_id"), s.get("user_info"),
+                      s.get("num_user_responses")))
 
     def writeAll(self, sessions_summaries):
         for (session_id, session_summary) in sessions_summaries.iteritems():
