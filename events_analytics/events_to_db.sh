@@ -11,6 +11,7 @@ if [[ "${REALM}" == "prod" ]]; then
 else
     python /home/ubuntu/events_analytics/spark_event_processor.py write-to-db -accountId 3rxCO9rydbBIf3DOMb9lFh  # nishant+dev
     python /home/ubuntu/events_analytics/spark_event_processor.py write-to-db -accountId 3oPxV9oFXxzHYxuvpy56a9  # viksit+dev
+    python /home/ubuntu/events_analytics/spark_event_processor.py write-to-db -accountId 2r1LMy4hhn4sgZvtlOhOtI  # viksit+fed
 fi
 
 
