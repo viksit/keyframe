@@ -102,14 +102,16 @@ def processSession(session):
             raise SessionProcessorError(
                 "Bad data for a single session. current session_id: %s, new session_id: %s",
                 session_id, event["session_id"])
+
+        eventTs = float(event["ts_ms"])/1000
         if not session_summary.get("ts"):
-            session_summary["ts"] = float(event["ts_ms"])/1000
+            session_summary["ts"] = eventTs
 
         if event.get("event_type") == "request":
             if event.get("session_status") == "start":
                 transcript.append(
                     createTranscriptElement(
-                        ts=event["ts_ms"],
+                        ts=eventTs,
                         msgType="start",
                         origin="user"))
             else:
