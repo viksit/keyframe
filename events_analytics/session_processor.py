@@ -107,40 +107,40 @@ def processSession(session):
         if not session_summary.get("ts"):
             session_summary["ts"] = eventTs
 
-        if event.get("event_type") == "request":
-            if event.get("session_status") == "start":
-                transcript.append(
-                    createTranscriptElement(
-                        ts=eventTs,
-                        msgType="start",
-                        origin="user"))
-            else:
-                text = event.get("payload", {}).get("text")
-                if text:
-                    session_summary["num_user_responses"] += 1
+        if event["version"] >= 4:
+            if event.get("event_type") == "request":
+                if event.get("session_status") == "start":
+                    transcript.append(
+                        createTranscriptElement(
+                            ts=eventTs,
+                            msgType="start",
+                            origin="user"))
+                else:
+                    text = event.get("payload", {}).get("text")
+                    if text:
+                        session_summary["num_user_responses"] += 1
+                        transcript.append(
+                            createTranscriptElement(
+                                ts=event["ts_ms"],
+                                msgType="cnv",
+                                origin="user",
+                                text=text))
+
+            if event.get("event_type") == "response" and event.get("response_type") in ["prompt", "transfermsg", "fillmsg"]:
+                reE = event.get("payload", {}).get("responseElements")
+                for e in reE:
+                    text = e.get("text")
+                    tl = e.get("textList")
+                    if tl:
+                        text = "\n".join(_e for _e in tl)
+                    options = e.get("optionsList")
                     transcript.append(
                         createTranscriptElement(
                             ts=event["ts_ms"],
                             msgType="cnv",
-                            origin="user",
-                            text=text))
-
-
-        if event.get("event_type") == "response" and event.get("response_type") in ["prompt", "transfermsg", "fillmsg"]:
-            reE = event.get("payload", {}).get("responseElements")
-            for e in reE:
-                text = e.get("text")
-                tl = e.get("textList")
-                if tl:
-                    text = "\n".join(_e for _e in tl)
-                options = e.get("optionsList")
-                transcript.append(
-                    createTranscriptElement(
-                        ts=event["ts_ms"],
-                        msgType="cnv",
-                        origin="agent",
-                        text=text,
-                        options=options))
+                            origin="agent",
+                            text=text,
+                            options=options))
 
 
         if isSearchSlot(event):

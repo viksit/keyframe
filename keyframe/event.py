@@ -2,7 +2,7 @@ import random
 import time
 import json
 
-EVENT_VERSION = 3
+EVENT_VERSION = 4
 
 def createEvent(**kwargs):
     _t = time.time()
