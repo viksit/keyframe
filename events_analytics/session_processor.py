@@ -71,7 +71,7 @@ def processSession(session):
         "user_id": None,
         "user_info": None,
         "num_user_responses": 0,
-        "transcript": transcript
+        "transcript": None  # will be assigned if version >= 4
     }
 
     session_id = None
@@ -92,9 +92,9 @@ def processSession(session):
             session_summary["session_id"] = session_id
             session_summary["account_id"] = account_id
             session_summary["agent_id"] = agent_id
-            session_summary["location_href"] = event["location_href"]
-            session_summary["user_id"] = event["user_id"]
-            session_summary["user_info"] = event["user_info"]
+            session_summary["location_href"] = event.get("location_href")
+            session_summary["user_id"] = event.get("user_id")
+            session_summary["user_info"] = event.get("user_info")
 
         elif (session_id != event["session_id"]
               or account_id != event["account_id"]
@@ -107,41 +107,43 @@ def processSession(session):
         if not session_summary.get("ts"):
             session_summary["ts"] = eventTs
 
-        if event["version"] >= 4:
-            if event.get("event_type") == "request":
-                if event.get("session_status") == "start":
-                    transcript.append(
-                        createTranscriptElement(
-                            ts=eventTs,
-                            msgType="start",
-                            origin="user"))
-                else:
-                    text = event.get("payload", {}).get("text")
-                    if text:
-                        session_summary["num_user_responses"] += 1
-                        transcript.append(
-                            createTranscriptElement(
-                                ts=event["ts_ms"],
-                                msgType="cnv",
-                                origin="user",
-                                text=text))
-
-            if event.get("event_type") == "response" and event.get("response_type") in ["prompt", "transfermsg", "fillmsg"]:
-                reE = event.get("payload", {}).get("responseElements")
-                for e in reE:
-                    text = e.get("text")
-                    tl = e.get("textList")
-                    if tl:
-                        text = "\n".join(_e for _e in tl)
-                    options = e.get("optionsList")
+        if event.get("event_type") == "request":
+            if event.get("session_status") == "start":
+                transcript.append(
+                    createTranscriptElement(
+                        ts=eventTs,
+                        msgType="start",
+                        origin="user"))
+            else:
+                text = event.get("payload", {}).get("text")
+                if text:
+                    session_summary["num_user_responses"] += 1
                     transcript.append(
                         createTranscriptElement(
                             ts=event["ts_ms"],
                             msgType="cnv",
-                            origin="agent",
-                            text=text,
-                            options=options))
+                            origin="user",
+                            text=text))
 
+        if event.get("event_type") == "response" and event.get("response_type") in ["prompt", "transfermsg", "fillmsg"]:
+            reE = event.get("payload", {}).get("responseElements")
+            for e in reE:
+                text = e.get("text")
+                tl = e.get("textList")
+                if tl:
+                    text = "\n".join(_e for _e in tl)
+                options = e.get("optionsList")
+                transcript.append(
+                    createTranscriptElement(
+                        ts=event["ts_ms"],
+                        msgType="cnv",
+                        origin="agent",
+                        text=text,
+                        options=options))
+
+        if event["version"] >= 4:
+            # Otherwise transcript will not be correct.
+            session_summary["transcript"] = transcript
 
         if isSearchSlot(event):
             log.debug("found search slot")
