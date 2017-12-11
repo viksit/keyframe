@@ -1,3 +1,7 @@
+# THIS CODE HAS BEEN MOVED TO MYRA REPO. DO NOT ADD/CHANGE THIS CODE.
+
+---------------------------------
+
 ## Overview
 
 * Knowledge base analytics
@@ -20,21 +24,17 @@ s3://ml-users/nishant/pyspark/additional_jars/hadoop-aws-2.7.3.jar
 Data can be local or on s3. Note use s3n as prefix for s3 locations.
 
 ```
-(analytics) ~/work/keyframe/events_analytics $ python ./spark_event_processor.py write-to-stdout "/mnt/s3/ml-logs-dev/accounts/3rxCO9rydbBIf3DOMb9lFh/2017/10/09/*/*"
+(myra-environment)~/work/myra $ python -m myra.v2.event_processing.keyframe.spark_event_processor write-to-db -accountId 3rxCO9rydbBIf3DOMb9lFh -dates 20171009
 
-(analytics) ~/work/keyframe/events_analytics $ python ./spark_event_processor.py write-to-stdout "s3n:///ml-logs-dev/accounts/3rxCO9rydbBIf3DOMb9lFh/2017/10/09/*/*"
+(myra-environment)~/work/myra $ python -m myra.v2.event_processing.keyframe.spark_event_processor write-to-stdout -eventsPath "/mnt/s3/ml-logs-dev/accounts/3rxCO9rydbBIf3DOMb9lFh/2017/10/09/*/*"
+
+(myra-environment)~/work/myra $ python -m myra.v2.event_processing.keyframe.spark_event_processor write-to-stdout -eventsPath "s3n://ml-logs-dev/accounts/3rxCO9rydbBIf3DOMb9lFh/2017/10/09/*/*"
 ```
 
 - Deploying
 
-```
-tar -L -czf /tmp/events_analytics.tar.gz config.py db_api.py session_processor.py spark_event_processor.py events_to_db.sh
+The code is deployed along with a deploy of the myra api.
 
-scp /tmp/events_analytics.tar.gz ubuntu@[repo.dev.myralabs.com|0.api.prod.myralabs.com]:~/events_analytics/
-```
-
-Untar.
-Check the cron works.
 
 - Possible errors:
 ```
