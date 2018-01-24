@@ -30,6 +30,7 @@ from keyframe import config
 from keyframe import store_api
 from keyframe import bot_stores
 import keyframe.utils
+import keyframe.event_api as event_api
 
 from genericbot import generic_bot
 from genericbot import generic_bot_api
@@ -81,6 +82,24 @@ app = Flask(__name__)
 CORS(app, supports_credentials=True)
 
 app.config['DEBUG'] = True
+
+@app.route("/agent_event", methods=["POST"])
+@wrap_exceptions
+def agent_event():
+    r, text = _run_agent()
+    return jsonify(r)
+
+@app.route("/event", methods=["POST"])
+@wrap_exceptions
+def handle_event():
+    r = _handle_event()
+    return jsonify(r)
+
+def _handle_event():
+    requestData = request.json
+    log.info("requestData: %s", requestData)
+    event_api.handleEvent(requestData, cfg)
+    return {"status":"OK"}
 
 class GenericBotHTTPAPI(generic_bot_api.GenericBotAPI):
 

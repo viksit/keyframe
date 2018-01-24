@@ -194,18 +194,29 @@ class ChannelClientRESTAPI(ChannelClient):
         self.config = config
         self.responses = collections.deque()
 
+    def _extractEventInfo(self, channelMsg):
+        return {
+            "event_type": channelMsg.body.get("event_type"),
+            "target_href": channelMsg.body.get("target_href"),
+            "target_title": channelMsg.body.get("target_title")}
+
     def extract(self, channelMsg):
         log.info("extract(%s)", channelMsg)
+        msgType = None
+        if channelMsg.body.get("event_type"):
+            msgType = messages.CanonicalMsg.MSG_TYPE_EVENT
         return messages.CanonicalMsg(
             channel=channelMsg.channel,
             httpType=channelMsg.httpType,
             userId=channelMsg.body.get("user_id"),
             text=channelMsg.body.get("text"),
             rid=channelMsg.body.get("rid"),
+            msgType=msgType,
             botStateUid=channelMsg.body.get("bot_state_uid"),
             customProps=channelMsg.body.get("custom_props"),
             locationHref=channelMsg.body.get("current_url"),
-            userInfo=channelMsg.body.get("user_info")
+            userInfo=channelMsg.body.get("user_info"),
+            eventInfo=self._extractEventInfo(channelMsg)
         )
 
     def sendResponse(self, canonicalResponse):

@@ -52,12 +52,13 @@ class CanonicalMsg(object):
     # The msg type will affect how it is processed.
     MSG_TYPE_FREETEXT = "msg_type_freetext"
     MSG_TYPE_SLOT_OPTION = "msg_type_slot_option"
-    MSG_TYPES = [MSG_TYPE_FREETEXT, MSG_TYPE_SLOT_OPTION]
+    MSG_TYPE_EVENT = "msg_type_event"
+    MSG_TYPES = [MSG_TYPE_FREETEXT, MSG_TYPE_SLOT_OPTION, MSG_TYPE_EVENT]
 
     def __init__(self, channel, httpType, userId, text,
                  actualName=None, rid=None, msgType=None,
                  botStateUid=None, customProps=None, locationHref=None,
-                 userInfo=None):
+                 userInfo=None, eventInfo=None):
         self.channel = channel
         self.httpType = httpType
         self.userId = userId
@@ -74,6 +75,7 @@ class CanonicalMsg(object):
             self.customProps = {}
         self.locationHref = locationHref
         self.userInfo = userInfo
+        self.eventInfo = eventInfo
 
     def __repr__(self):
         # There is a problem with structs/objects containing unicode in sequences.
@@ -83,10 +85,10 @@ class CanonicalMsg(object):
             customProps = "".join("%s:%s"%(k,v) for (k,v) in customProps.iteritems())
         return ("CanonicalMsg(channel=%s, httpType=%s, userId=%s, "
                 "text=%s, rid=%s, botStateUid=%s, customProps=%s, "
-                "locationHref=%s, userInfo=%s)") % \
+                "locationHref=%s, userInfo=%s, eventInfo=%s)") % \
             (self.channel, self.httpType, self.userId,
              self.text, self.rid, self.botStateUid, customProps,
-             self.locationHref, self.userInfo)
+             self.locationHref, self.userInfo, self.eventInfo)
 
     def toJSON(self):
         return {
@@ -97,7 +99,8 @@ class CanonicalMsg(object):
             "botStateUid": self.botStateUid,
             "customProps": self.customProps,
             "locationHref": self.locationHref,
-            "userInfo": self.userInfo
+            "userInfo": self.userInfo,
+            "eventInfo": self.eventInfo
         }
 
 class CanonicalResponse(object):

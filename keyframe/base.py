@@ -107,6 +107,7 @@ class BaseBot(object):
     def getBotState(self, userId, channel, botStateUid=None):
         log.debug("getBotState(%s)", locals())
         k = self._botStateKey(userId, channel)
+        log.debug("k: %s", k)
         if botStateUid:
             k = self._botStateHistoryKey(userId, channel, botStateUid)
         jsonObject = self.kvStore.get_json(k)
@@ -223,7 +224,10 @@ class BaseBot(object):
             userId=canonicalMsg.userId,
             channel=canonicalMsg.channel,
             botStateUid=canonicalMsg.botStateUid)
-        
+
+        if canonicalMsg.msgType == messages.CanonicalMsg.MSG_TYPE_EVENT:
+            return self.handleEvent(
+                canonicalMsg=canonicalMsg, botState=botState)
         # self.putBotStateHistory(
         #     userId=canonicalMsg.userId,
         #     channel=canonicalMsg.channel,
@@ -247,6 +251,23 @@ class BaseBot(object):
             botState = botState,
             userProfile = userProfile
         )
+
+    def handleEvent(self, canonicalMsg, botState):
+        log.debug("handleEvent(%s)", locals())
+        e = canonicalMsg.eventInfo
+        clickEvent = event.createEvent(
+            accountId=self.accountId,
+            agentId=self.agentId,
+            userId=canonicalMsg.userId,
+            eventType=e.get("event_type"),
+            sessionId=botState.getSessionId(),
+            payload={"target_href":e.get("target_href"),
+                     "target_title":e.get("target_title")})
+        eventWriter = event_writer.getWriter(
+            streamName=self.config.KINESIS_STREAM_NAME)
+        eventWriter.write(clickEvent.toJSONStr(), canonicalMsg.userId)
+        return constants.BOT_REQUEST_STATE_PROCESSED
+
 
     debug_intent_re = re.compile("\[intent=([^\]]+)\]")
     def _getDebugActionObject(self, canonicalMsg):
@@ -294,7 +315,7 @@ class BaseBot(object):
             botState = self.getBotState(
                 userId=canonicalMsg.userId,
                 channel=canonicalMsg.channel)
-            respText = botState.toJSONObject()
+            respText = json.dumps(botState.toJSONObject())
 
         if msg.find("clear state") > -1:
             botState.clear()
@@ -343,7 +364,7 @@ class BaseBot(object):
         if msg.startswith("botcmd"):
             requestState = self._handleBotCmd(canonicalMsg, botState, userProfile, requestState)
             if requestState == constants.BOT_REQUEST_STATE_PROCESSED:
-                return
+                return  # requestState
         else:
             log.debug("not a botcmd")
 
