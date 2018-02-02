@@ -66,8 +66,9 @@ class GenericSlot(keyframe.slot_fill.Slot):
         m = self.promptMsg
         if type(self.promptMsg) == list:
             m = self.promptMsg[random.randint(0, len(self.promptMsg) - 1)]
-        responseMsg = Template(m).render(
-            self._entitiesDict(botState))
+        ed = self._entitiesDict(botState)
+        log.debug("ed: %s", ed)
+        responseMsg = Template(m).render(ed)
         return responseMsg
 
     def respond(self, text, canonicalMsg, responseType=None, botStateUid=None,

@@ -270,6 +270,7 @@ class Slot(object):
         if res:
             log.info("(a) Slot was filled in this sentence")
         # Return final result
+        log.info("_extractSlotFromSentence returning %s", res)
         return res
 
     def getActionType(self):

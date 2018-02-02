@@ -303,13 +303,13 @@ class APIEntity(BaseEntity):
             k = ENTITY_TEXT
 
             # TODO(viksit): special case for DATE. needs change in API.
-            if self.entityType == ENTITY_DATE:
-                k = ENTITY_DATE.lower()
+            #if self.entityType == ENTITY_DATE:
+            #    k = ENTITY_DATE.lower()
 
             # Extract the right value.
             tmp = [i.get(k) for i in e.get(self.entityType)]
             if len(tmp) > 0:
-                log.info("\t(a) slot was filled in this sentence")
+                log.info("\t(a) slot was filled in this sentence (%s)", tmp[0])
                 res = tmp[0]
             else:
                 log.info("\t(b) slot wasn't filled in this sentence")
@@ -317,8 +317,8 @@ class APIEntity(BaseEntity):
         else:
             log.info("\t(c) slot wasn't filled in this sentence")
 
-
         # Finally.
+        log.info("returning res: %s", res)
         return res
 
 class PersonEntity(APIEntity):
