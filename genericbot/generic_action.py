@@ -359,7 +359,7 @@ class GenericActionObject(keyframe.actions.ActionObject):
         # No need to do this any more. Each slot will makes its own call.
         # 20180202: I'm enabling this because each slot does not seem to make its own call!
         # However, I think the 'parse original' flag should probably also be checked?
-        if runAPICall:
+        if runAPICall and canonicalMsg.text:
            assert api, "must have an api to runAPICall"
            apiResult = api.get(canonicalMsg.text)
            actionObject.apiResult = apiResult
