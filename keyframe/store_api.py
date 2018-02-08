@@ -89,7 +89,7 @@ class KVStore(object):
         key: (string)
         value: a python object that can be dumped as json.
         """
-        log.debug("PUT_JSON called")
+        log.debug("PUT_JSON called on value: %s", value)
         self.put(key, json.dumps(value), expiry_time)
 
 
