@@ -282,6 +282,8 @@ class GenericActionObject(keyframe.actions.ActionObject):
                 log.debug("slotSpec does not specify parseOriginal - getting default :%s", parseOriginal)
             gc.parseOriginal = parseOriginal
 
+            gc.useSlotsForParse = slotSpec.get("use_slots_for_parse", [])
+
             parseResponse = slotSpec.get("parse_response")
             if not parseResponse:
                 parseResponse = getattr(gc, "parseResponse")
