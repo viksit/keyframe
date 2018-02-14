@@ -191,7 +191,7 @@ class Slot(object):
             if self.parseResponse is True:
                 log.debug("parse response is true")
                 fillResult = self._extractSlotFromSentence(
-                    canonicalMsg.text, self.apiResult)
+                    canonicalMsg, self.apiResult)
                 if fillResult:
                     self.value = fillResult
                     botState.addToSessionData(
@@ -285,7 +285,7 @@ class Slot(object):
         channelClient.sendResponse(cr)
         return cr
 
-    def _extractSlotFromSentence(self, text, apiResult):
+    def _extractSlotFromSentence(self, canonicalMsg, apiResult):
         """
         Take a given sentence.
         For the current slot, run the entity_extract_fn() on it
@@ -293,8 +293,9 @@ class Slot(object):
         The return value of this is what we give to the result
         """
         res = None
-        log.info("_extractSlotFromSentence: %s with entity: %s from %s with apiResult %s", self.name, self.entity, text, type(apiResult))
-        res = self.entity.entity_extract_fn(text=text, apiResult=apiResult)
+        log.info("_extractSlotFromSentence: %s with entity: %s from %s with apiResult %s", self.name, self.entity, canonicalMsg.text, type(apiResult))
+        res = self.entity.entity_extract_fn(
+            text=canonicalMsg.text, apiResult=apiResult)
         if res:
             log.info("(a) Slot was filled in this sentence")
         # Return final result

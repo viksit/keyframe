@@ -185,7 +185,7 @@ class GenericIntentModelSlot(GenericSlot):
                     return intentStr
         return None
 
-    def _extractSlotFromSentence(self, canonicalMsg):
+    def _extractSlotFromSentence(self, canonicalMsg, apiResult):
         label = self._extractDirect(canonicalMsg)
         if label:
             log.debug("GOT label from direct: %s", label)
@@ -198,6 +198,9 @@ class GenericIntentModelSlot(GenericSlot):
                 return intent
         if not self.intentModelId:
             return "__unknown__"
+        if apiResult and apiResult.intent and apiResult.intent.label:
+            return apiResult.intent.label
+    
         log.debug("Calling intent model")
         urlParams = {}
         if canonicalMsg.rid:

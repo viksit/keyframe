@@ -215,7 +215,8 @@ class BotState(object):
         """
         sessionApiResultsJson = {}
         for (k, v) in self._sessionApiResults.iteritems():
-            sessionApiResultsJson[k] = v.toJSON()
+            if v:
+                sessionApiResultsJson[k] = v.toJSON()
         return {
             "class":self.__class__.__name__,
             "waiting":self._waiting,
