@@ -75,7 +75,7 @@ Deal with the different types of slots, get the right slot type and call *fill*
 on it. Depending on its return, loop to the next slot or exit.
 
 ##### GenericActionObject.createActionObject
-Creates the actionObject from the json spec. A lot of code here.
+Creates the actionObject from the json spec. A lot of code here, including an api call after evaluating if any of the slots require an api call.
 
 ### Code for slots is divided into generic_slot.py and slot_fill.py
 
