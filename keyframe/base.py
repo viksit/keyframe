@@ -219,7 +219,7 @@ class BaseBot(object):
         return k
 
     def process(self, canonicalMsg):
-        log.debug("BaseBot::process(%s)", locals())
+        log.info("BaseBot::process(%s)", canonicalMsg.text)
         botState = self.getBotState(
             userId=canonicalMsg.userId,
             channel=canonicalMsg.channel,
@@ -291,6 +291,7 @@ class BaseBot(object):
                            userProfile, requestState,
                            apiResult=None, newTopic=None, topicNodeId=None,
                            config=None):
+        log.info("createActionObject called")
         log.debug("BaseBot.createActionObject(%s)", locals())
         return actions.ActionObject.createActionObject(
             accountId, agentId,
@@ -349,6 +350,7 @@ class BaseBot(object):
 
     topic_re = re.compile("\[topic=([^\]]+)\]")
     def handle(self, **kwargs):
+        log.info("BaseBot.handle called")
         log.debug("BaseBot.handle(%s)", locals())
         canonicalMsg = kwargs.get("canonicalMsg")
         botState = kwargs.get("botState")
@@ -455,12 +457,16 @@ class BaseBot(object):
                 canonicalMsg, botState, userProfile,
                 requestState, newTopic=newTopic, topicNodeId=topicNodeId,
                 config=self.config)
+            log.info("created actionObject")
             if actionStateJson:
                 actionObject.fromJSONObject(actionStateJson)
+                log.info("added actionStateJson")
 
             sessionStatus = None
             if newSession:
                 sessionStatus = "start"
+
+            log.info("sessionStatus: %s", sessionStatus)
 
             # Only write the request event once.
             if not wroteEvent:
@@ -483,7 +489,8 @@ class BaseBot(object):
                 wroteEvent = True
 
             requestState = actionObject.processWrapper(botState)
-            log.debug("requestState: %s", requestState)
+            log.info("requestState: %s", requestState)
+
             if requestState == constants.BOT_REQUEST_STATE_PROCESSED:
                 break
             if requestState == constants.BOT_REQUEST_STATE_TRANSFER:

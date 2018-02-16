@@ -162,8 +162,8 @@ class GenericIntentModelSlot(GenericSlot):
         self.regexMatcherJson = regexMatcherJson
 
     intent_str_re = re.compile("\[intent=([^\]]+)\]")
-    def _extractDirect(self, canonicalMsg):
-        x = self.intent_str_re.match(canonicalMsg.text)
+    def _extractDirect(self, text):
+        x = self.intent_str_re.match(text)
         if x:
             return x.groups()[0]
         return None
@@ -185,14 +185,14 @@ class GenericIntentModelSlot(GenericSlot):
                     return intentStr
         return None
 
-    def _extractSlotFromSentence(self, canonicalMsg, apiResult):
-        label = self._extractDirect(canonicalMsg)
+    def _extractSlotFromSentence(self, text, apiResult):
+        label = self._extractDirect(text)
         if label:
             log.debug("GOT label from direct: %s", label)
             return label
         if self.regexMatcherJson:
             intent = self.checkRegexMatch(
-                canonicalMsg.text, self.regexMatcherJson)
+                text, self.regexMatcherJson)
             if intent:
                 log.info("GOT label from regexMatch: %s", intent)
                 return intent
@@ -203,8 +203,9 @@ class GenericIntentModelSlot(GenericSlot):
     
         log.debug("Calling intent model")
         urlParams = {}
-        if canonicalMsg.rid:
-            urlParams = {"rid":canonicalMsg.rid}
+        # We now can't pass the whole canonicalMsg because we need to look at past slots.
+        # if canonicalMsg.rid:
+        #     urlParams = {"rid":canonicalMsg.rid}
         # We're not going to pass model params from keyframe - they will
         # be looked up by the inference_proxy.
         if False:
@@ -218,7 +219,7 @@ class GenericIntentModelSlot(GenericSlot):
             log.info("modelInvocationParams: %s", modelInvocationParams)
             #urlParams.update(modelInvocationParams)
         apiResult = self.api.get(
-            canonicalMsg.text,
+            text,
             intent_model_id=self.intentModelId,
             url_params=urlParams)
         log.debug("GenericIntentModelSlot.fill apiResult: %s", apiResult)
@@ -233,6 +234,7 @@ class GenericInfoSlot(GenericSlot):
             topicId=topicId, channelClient=channelClient)
 
     def fill(self, canonicalMsg, apiResult, channelClient, botState):
+        log.info("fill called with txt: %s", canonicalMsg.text)
         self.apiResult = apiResult
         self.channelClient = channelClient
         self.canonicalMsg = canonicalMsg

@@ -206,6 +206,7 @@ class ActionObject(object):
         raise NotImplementedError()
 
     def processWrapper(self, botState):
+        log.info("processWrapper called")
         # Old processWrapper called transitionmsg and did response.
         # but now ActionObject is just a shell for slots.
         return self.slotFill(botState)

@@ -60,6 +60,7 @@ class GenericBot(keyframe.base.BaseBot):
                            userProfile, requestState,
                            apiResult=None, newTopic=None, topicNodeId=None,
                            config=None):
+        log.info("createActionObject called")
         log.debug("GenericBot.createActionObject(%s) called", locals())
         actionObjectSpecJson = self.specJson.get(
             "topics", {}).get(topicId)

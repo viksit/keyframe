@@ -119,7 +119,6 @@ class APIIntent(BaseField):
 # Entities
 
 # Extracting entities
-ENTITY_BUILTIN = "builtin"
 ENTITY_DATE = "DATE"
 ENTITY_TEXT = "text"
 
@@ -282,6 +281,7 @@ class PhoneRegexEntity(BaseEntity):
 
 # Entities that we get from the API.
 class APIEntity(BaseEntity):
+    RESULT_KEY = None  # set to correct value in derived class
 
     def __init__(self, **kwargs):
         super(APIEntity, self).__init__(**kwargs)
@@ -293,7 +293,7 @@ class APIEntity(BaseEntity):
         assert apiResult is not None, "apiResult is None in extract_entity_fn"
 
         res = None
-        e = apiResult.entities.entity_dict.get(ENTITY_BUILTIN, {})
+        e = apiResult.entities.entity_dict.get(self.RESULT_KEY, {})
         # We now store entity types inside of entity field definitions
         # So, we look at the entity object to see what kind of label it contains
         # Entity type was found
@@ -321,7 +321,13 @@ class APIEntity(BaseEntity):
         log.info("returning res: %s", res)
         return res
 
-class PersonEntity(APIEntity):
+class BuiltInEntity(APIEntity):
+    RESULT_KEY = "builtin"
+
+class UserDefinedEntity(APIEntity):
+    RESULT_KEY = "user_defined"
+
+class PersonEntity(BuiltInEntity):
     _params = {}
 
     def __init__(self, **kwargs):
@@ -329,21 +335,21 @@ class PersonEntity(APIEntity):
         self.entityType = "PERSON"
 
 
-class DateEntity(APIEntity):
+class DateEntity(BuiltInEntity):
     _params = {}
 
     def __init__(self, **kwargs):
         super(DateEntity, self).__init__(**kwargs)
         self.entityType = "DATE"
 
-class LocationEntity(APIEntity):
+class LocationEntity(BuiltInEntity):
     _params = {}
 
     def __init__(self, **kwargs):
         super(LocationEntity, self).__init__(**kwargs)
         self.entityType = "GPE"
 
-class OrgEntity(APIEntity):
+class OrgEntity(BuiltInEntity):
     _params = {}
 
     def __init__(self, **kwargs):

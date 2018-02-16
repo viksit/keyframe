@@ -34,6 +34,7 @@ class GenericActionObject(keyframe.actions.ActionObject):
         self.specJson = None
         self.slotsType = None
         self.nextSlotToFill = None
+        self.entityModelId = None
 
     def getTopicType(self):
         return self.specJson.get("topic_type")
@@ -69,6 +70,8 @@ class GenericActionObject(keyframe.actions.ActionObject):
     def getEntityClassFromType(self, entityType):
         if entityType in self.ENTITY_TYPE_CLASS_MAP:
             return self.ENTITY_TYPE_CLASS_MAP[entityType]
+        elif entityType and entityType == "USER_DEFINED":
+            return dsl.UserDefinedEntity
         return self.ENTITY_TYPE_CLASS_MAP.get("FREETEXT")
 
     def slotFill(self, botState):
@@ -123,10 +126,13 @@ class GenericActionObject(keyframe.actions.ActionObject):
                     responseEvent.payload = canonicalResponse.toJSON()
                 eventWriter.write(responseEvent.toJSONStr(), responseEvent.userId)
                 return constants.BOT_REQUEST_STATE_TRANSFER
+            log.info("calling slotObject.fillWrapper with text: %s",
+                     self.canonicalMsg.text)
             fwResponse = slotObject.fillWrapper(
                 self.canonicalMsg, self.apiResult, self.channelClient,
                 botState)
             filled = fwResponse["status"]  # must be present.
+            log.info("fwResponse.status (filled): %s", filled)
             canonicalResponse = fwResponse.get("response")
             if canonicalResponse:
                 responseEvent.payload = canonicalResponse.toJSON()
@@ -196,6 +202,7 @@ class GenericActionObject(keyframe.actions.ActionObject):
                            intentModelParams=None,
                            topicNodeId=None,
                            config=None):
+        log.info("GenericActionObject.createActionObject")
         log.debug("GenericActionObject.createActionObject(%s)", locals())
 
         # Create a GenericActionObject using specJson
@@ -208,6 +215,7 @@ class GenericActionObject(keyframe.actions.ActionObject):
         actionObject.slotsType = specJson.get(
             "slots_type", cls.SLOTS_TYPE_CONDITIONAL)
         slots = specJson.get("slots", [])
+        actionObject.entityModelId = specJson.get("entity_model_id")
 
         slotObjects = []
         slotObjectsByName = {}
@@ -313,6 +321,10 @@ class GenericActionObject(keyframe.actions.ActionObject):
                     gc.optionsList = optionsList
                 gc.entity.optionsList = gc.optionsList
                 log.debug("set optionsList to %s", gc.optionsList)
+            elif entityType and entityType == "USER_DEFINED":
+                assert isinstance(gc.entity, dsl.UserDefinedEntity)
+                gc.entity.entityType = slotSpec.get("user_defined_entity_name")
+                log.info("set gc.entity.entityType to %s", gc.entity.entityType)
 
             if actionObject.slotsType == cls.SLOTS_TYPE_CONDITIONAL:
                 # If a slot does not have slot_transitions, this is the last
@@ -329,6 +341,8 @@ class GenericActionObject(keyframe.actions.ActionObject):
             slotObjectsByName[gc.name] = gc
             if gc.entity.needsAPICall:
                 runAPICall = True
+
+        log.info("after evaluating all slots, runAPICall: %s", runAPICall)
 
         # Maintain indent
         actionObject.slotObjects = slotObjects
@@ -363,7 +377,9 @@ class GenericActionObject(keyframe.actions.ActionObject):
         # However, I think the 'parse original' flag should probably also be checked?
         if runAPICall and canonicalMsg.text:
            assert api, "must have an api to runAPICall"
-           apiResult = api.get(canonicalMsg.text)
+           log.info("Going to make api call")
+           apiResult = api.get(
+               canonicalMsg.text, entity_model_id=actionObject.entityModelId)
            actionObject.apiResult = apiResult
 
         actionObject.canonicalMsg = canonicalMsg
