@@ -99,6 +99,7 @@ class Slot(object):
                 botState.addToSessionData(k, v, self.entityType)
 
     def fillWrapper(self, canonicalMsg, apiResult, channelClient, botState):
+        log.info("fillWrapper called with apiResult: %s", apiResult)
         self.addCustomFieldsToSession(botState)
         return self.fill(canonicalMsg, apiResult, channelClient, botState)
 
@@ -116,6 +117,7 @@ class Slot(object):
         else
           take the whole response and fill the slot with it
         """
+        log.info("fill called with text: %s", canonicalMsg.text)
         self.apiResult = apiResult
         self.channelClient = channelClient
         self.canonicalMsg = canonicalMsg
@@ -191,7 +193,7 @@ class Slot(object):
             if self.parseResponse is True:
                 log.debug("parse response is true")
                 fillResult = self._extractSlotFromSentence(
-                    canonicalMsg, self.apiResult)
+                    canonicalMsg.text, self.apiResult)
                 if fillResult:
                     self.value = fillResult
                     botState.addToSessionData(
@@ -285,7 +287,7 @@ class Slot(object):
         channelClient.sendResponse(cr)
         return cr
 
-    def _extractSlotFromSentence(self, canonicalMsg, apiResult):
+    def _extractSlotFromSentence(self, text, apiResult):
         """
         Take a given sentence.
         For the current slot, run the entity_extract_fn() on it
@@ -293,9 +295,9 @@ class Slot(object):
         The return value of this is what we give to the result
         """
         res = None
-        log.info("_extractSlotFromSentence: %s with entity: %s from %s with apiResult %s", self.name, self.entity, canonicalMsg.text, type(apiResult))
+        log.info("_extractSlotFromSentence: %s with entity: %s from %s with apiResult %s", self.name, self.entity, text, type(apiResult))
         res = self.entity.entity_extract_fn(
-            text=canonicalMsg.text, apiResult=apiResult)
+            text=text, apiResult=apiResult)
         if res:
             log.info("(a) Slot was filled in this sentence")
         # Return final result

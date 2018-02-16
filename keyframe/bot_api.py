@@ -48,7 +48,10 @@ class BotAPI(object):
         log.debug("created canonicalMsg: %s", canonicalMsg)
         # The bot to be created may depend on the user.
         bot = self.getBot()
+        log.info("got bot: %s", bot)
         bot.setChannelClient(self.channelClient)
+        log.info("now calling process on the bot with canonicalMsg.text: %s",
+                 canonicalMsg.text)
         bot.process(canonicalMsg)
 
     def getBot(self):
