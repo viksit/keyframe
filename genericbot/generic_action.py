@@ -282,6 +282,8 @@ class GenericActionObject(keyframe.actions.ActionObject):
                 log.debug("slotSpec does not specify parseOriginal - getting default :%s", parseOriginal)
             gc.parseOriginal = parseOriginal
 
+            gc.useSlotsForParse = slotSpec.get("use_slots_for_parse", [])
+
             parseResponse = slotSpec.get("parse_response")
             if not parseResponse:
                 parseResponse = getattr(gc, "parseResponse")
@@ -357,10 +359,12 @@ class GenericActionObject(keyframe.actions.ActionObject):
                       canonicalMsg.text)
             actionObject.originalUtterance = canonicalMsg.text
         # No need to do this any more. Each slot will makes its own call.
-        #if runAPICall:
-        #    assert api, "must have an api to runAPICall"
-        #    apiResult = api.get(canonicalMsg.text)
-        #    actionObject.apiResult = apiResult
+        # 20180202: I'm enabling this because each slot does not seem to make its own call!
+        # However, I think the 'parse original' flag should probably also be checked?
+        if runAPICall and canonicalMsg.text:
+           assert api, "must have an api to runAPICall"
+           apiResult = api.get(canonicalMsg.text)
+           actionObject.apiResult = apiResult
 
         actionObject.canonicalMsg = canonicalMsg
         actionObject.channelClient = channelClient

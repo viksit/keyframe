@@ -66,8 +66,9 @@ class GenericSlot(keyframe.slot_fill.Slot):
         m = self.promptMsg
         if type(self.promptMsg) == list:
             m = self.promptMsg[random.randint(0, len(self.promptMsg) - 1)]
-        responseMsg = Template(m).render(
-            self._entitiesDict(botState))
+        ed = self._entitiesDict(botState)
+        log.debug("ed: %s", ed)
+        responseMsg = Template(m).render(ed)
         return responseMsg
 
     def respond(self, text, canonicalMsg, responseType=None, botStateUid=None,
@@ -184,7 +185,7 @@ class GenericIntentModelSlot(GenericSlot):
                     return intentStr
         return None
 
-    def _extractSlotFromSentence(self, canonicalMsg):
+    def _extractSlotFromSentence(self, canonicalMsg, apiResult):
         label = self._extractDirect(canonicalMsg)
         if label:
             log.debug("GOT label from direct: %s", label)
@@ -197,6 +198,9 @@ class GenericIntentModelSlot(GenericSlot):
                 return intent
         if not self.intentModelId:
             return "__unknown__"
+        if apiResult and apiResult.intent and apiResult.intent.label:
+            return apiResult.intent.label
+    
         log.debug("Calling intent model")
         urlParams = {}
         if canonicalMsg.rid:

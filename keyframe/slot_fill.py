@@ -38,6 +38,7 @@ class Slot(object):
         self.state = Slot.SLOT_STATE_NEW
         self.required = False
         self.parseOriginal = False
+        self.useSlotsForParse = []
         self.parseResponse = False
         self.optionsList = None
         self.entityType = None
@@ -68,7 +69,8 @@ class Slot(object):
             "required": self.required,
             "optionsList":self.optionsList,
             "entityName":self.entityName,
-            "slotType":self.slotType
+            "slotType":self.slotType,
+            "useSlotsForParse":self.useSlotsForParse
         }
 
     def fromJSONObject(self, j):
@@ -85,6 +87,7 @@ class Slot(object):
         self.required = j.get("required")
         self.optionsList = j.get("optionsList"),
         self.slotType = j.get("slotType")
+        self.useSlotsForParse = j.get("useSlotsForParse", [])
 
     def init(self, **kwargs):
         self.channelClient = kwargs.get("channelClient")
@@ -140,10 +143,27 @@ class Slot(object):
                 return {"status":self.filled}
 
             if self.parseOriginal is True:
+                parseTextList = []
+                for parseSlotName in self.useSlotsForParse:
+                    log.debug("looking for slot to parse: %s", parseSlotName)
+                    pText = botState.getSessionData().get(parseSlotName)
+                    pApiResult = botState.getSessionApiResults().get(parseSlotName)
+                    if pText:
+                        log.debug("adding slot to parse: %s, %s, %s", parseSlotName, pText, type(pApiResult))
+                        parseTextList.append((pText, pApiResult))
                 fillResult = None
                 if canonicalMsg.text:
-                    fillResult = self._extractSlotFromSentence(canonicalMsg)
-                log.debug("fillresult: %s", fillResult)
+                    parseTextList.insert(0, (canonicalMsg.text, self.apiResult))
+                fillText = None
+                fillApiResult = None
+                for (parseText, parseApiResult) in parseTextList:
+                    fillResult = self._extractSlotFromSentence(
+                        parseText, parseApiResult)
+                    log.debug("fillresult: %s", fillResult)
+                    if fillResult:
+                        fillText = parseText
+                        fillApiResult = parseApiResult
+                        break
                 if fillResult:
                     self.value = fillResult
                     botState.addToSessionData(
@@ -151,6 +171,8 @@ class Slot(object):
                     botState.addToSessionUtterances(
                         self.name,
                         canonicalMsg.text, self.prompt(botState), self.entityType)
+                    botState.addToSessionApiResults(
+                        self.name, fillApiResult)
                     self.filled = True
                     return {"status":self.filled}
 
@@ -168,7 +190,8 @@ class Slot(object):
             # If we want the incoming response to be put through an entity extractor
             if self.parseResponse is True:
                 log.debug("parse response is true")
-                fillResult = self._extractSlotFromSentence(canonicalMsg)
+                fillResult = self._extractSlotFromSentence(
+                    canonicalMsg, self.apiResult)
                 if fillResult:
                     self.value = fillResult
                     botState.addToSessionData(
@@ -176,6 +199,9 @@ class Slot(object):
                     botState.addToSessionUtterances(
                         self.name,
                         canonicalMsg.text, self.prompt(botState), self.entityType)
+                    botState.addToSessionApiResults(
+                        self.name,
+                        self.apiResult)
                     self.filled = True
                     self.state = Slot.SLOT_STATE_FILLED
                 else:
@@ -200,6 +226,9 @@ class Slot(object):
                 botState.addToSessionUtterances(
                     self.name,
                     canonicalMsg.text, self.prompt(botState), self.entityType)
+                botState.addToSessionApiResults(
+                    self.name,
+                    self.apiResult)
                 self.filled = True
                 self.state = Slot.SLOT_STATE_FILLED
         elif self.state == Slot.SLOT_STATE_FILLED:
@@ -256,20 +285,21 @@ class Slot(object):
         channelClient.sendResponse(cr)
         return cr
 
-    def _extractSlotFromSentence(self, canonicalMsg):
+    def _extractSlotFromSentence(self, canonicalMsg, apiResult):
         """
         Take a given sentence.
         For the current slot, run the entity_extract_fn() on it
 
         The return value of this is what we give to the result
         """
-        text = canonicalMsg.text
         res = None
-        log.info("_extractSlotFromSentence: %s with entity: %s", self.name, self.entity)
-        res = self.entity.entity_extract_fn(text=text, apiResult=self.apiResult)
+        log.info("_extractSlotFromSentence: %s with entity: %s from %s with apiResult %s", self.name, self.entity, canonicalMsg.text, type(apiResult))
+        res = self.entity.entity_extract_fn(
+            text=canonicalMsg.text, apiResult=apiResult)
         if res:
             log.info("(a) Slot was filled in this sentence")
         # Return final result
+        log.info("_extractSlotFromSentence returning %s", res)
         return res
 
     def getActionType(self):

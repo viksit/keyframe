@@ -10,6 +10,7 @@ import slot_fill
 import copy
 import bot_api
 import store_api
+from pymyra.api.messages import InferenceResult
 
 log = logging.getLogger(__name__)
 
@@ -35,6 +36,7 @@ class BotState(object):
         self._sessionUtterancesOrdered = []
         self._sessionUtterancesType = {}
         self._sessionUtterancesPrompt = {}
+        self._sessionApiResults = {}
         self.sessionIntent = None
         self.sessionStartTime = None
         self.sessionId = None
@@ -80,6 +82,9 @@ class BotState(object):
     def getSessionData(self):
         return self._sessionData
 
+    def getSessionApiResults(self):
+        return self._sessionApiResults
+
     def getSessionDataType(self):
         return self._sessionDataType
 
@@ -110,6 +115,9 @@ class BotState(object):
         self._sessionUtterancesPrompt[k] = p
         self._sessionUtterancesType[k] = type
         self._sessionUtterancesOrdered.append((k, v))
+
+    def addToSessionApiResults(self, k, v):
+        self._sessionApiResults[k] = v
 
     def getSessionTranscript(self):
         t = []
@@ -205,6 +213,10 @@ class BotState(object):
         """Return a json-compatible data structure with all of the
         data required to reconstruct this instance.
         """
+        sessionApiResultsJson = {}
+        for (k, v) in self._sessionApiResults.iteritems():
+            if v:
+                sessionApiResultsJson[k] = v.toJSON()
         return {
             "class":self.__class__.__name__,
             "waiting":self._waiting,
@@ -217,6 +229,7 @@ class BotState(object):
             "session_utterances_type": self._sessionUtterancesType,
             "session_utterances_ordered":self._sessionUtterancesOrdered,
             "session_utterances_prompt": self._sessionUtterancesPrompt,
+            "session_api_results": sessionApiResultsJson,
             "write_time":self.writeTime,
             "session_intent":self.sessionIntent,
             "session_id":self.sessionId,
@@ -247,6 +260,11 @@ class BotState(object):
         if botState._sessionUtterancesPrompt is None:
             log.debug("botState._sessionUtterancesPrompt = {}")
             botState._sessionUtterancesPrompt = {}
+        botState._sessionApiResults = {}
+        _d = jsonObject.get("session_api_results", {})
+        for (k,v) in _d.iteritems():
+            botState._sessionApiResults[k] = InferenceResult.fromJSON(v)
+            
         botState.writeTime = jsonObject.get("write_time")
         botState.sessionIntent = jsonObject.get("session_intent")
         botState.sessionId = jsonObject.get("session_id")
