@@ -65,13 +65,12 @@ class GenericActionObject(keyframe.actions.ActionObject):
         "OPTIONS": dsl.OptionsEntity,
         "ATTACHMENTS":dsl.AttachmentsEntity,
         "ENUM":dsl.OptionsEntity,
-        "NUMBER":dsl.NumberEntity
+        "NUMBER":dsl.NumberEntity,
+        "USER_DEFINED":dsl.UserDefinedEntity
     }
     def getEntityClassFromType(self, entityType):
         if entityType in self.ENTITY_TYPE_CLASS_MAP:
             return self.ENTITY_TYPE_CLASS_MAP[entityType]
-        elif entityType and entityType == "USER_DEFINED":
-            return dsl.UserDefinedEntity
         return self.ENTITY_TYPE_CLASS_MAP.get("FREETEXT")
 
     def slotFill(self, botState):
