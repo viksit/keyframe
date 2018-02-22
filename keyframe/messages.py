@@ -179,6 +179,7 @@ class ResponseElement(object):
     TYPE_OPTIONS = "options"
     TYPE_ATTACHMENTS = "attachments"
     TYPE_SEARCH_RESULT = "searchresult"
+    TYPE_NEW_TOPIC = "newtopic"
 
     RESPONSE_TYPE_RESPONSE = "response"
     RESPONSE_TYPE_CTA = "cta"
@@ -198,7 +199,8 @@ class ResponseElement(object):
     def __init__(self, type, text=None, carousel=None, responseType=None,
                  responseMeta=None, optionsList=None, displayType=None,
                  inputExpected=None, uuid=None,
-                 textList=None, textType="single", structuredResults=None):
+                 textList=None, textType="single", structuredResults=None,
+                 screenId=None):
         """
         text: Text response to show user
         carousel: To render a series of images on the channel
@@ -221,16 +223,17 @@ class ResponseElement(object):
         if not self.uuid:
             self.uuid = utils.getUUID()
         self.structuredResults = structuredResults
+        self.screenId = screenId
 
     def __repr__(self):
         log.debug("ResponseElement.__repr__")
         res = ("ResponseElement(type=%s, responseType=%s, text=%s, carousel=%s, "
                "optionsList=%s, responseMeta=%s, displayType=%s, inputExpected=%s, "
-               "uuid=%s, textType=%s, textList=%s") % (
+               "uuid=%s, textType=%s, textList=%s, screenId=%s") % (
                    self.type, self.responseType, self.text,
                    self.carousel, self.optionsList, self.responseMeta,
                    self.displayType, self.inputExpected, self.uuid,
-                   self.textType, self.textList)
+                   self.textType, self.textList, self.screenId)
         #r = res.encode("utf-8")
         r = res
         log.debug("ResponseElement.__repr__ returning %s (type: %s)", r, type(r))
@@ -251,7 +254,8 @@ class ResponseElement(object):
             "responseMeta": rm,
             "displayType": self.displayType,
             "inputExpected": self.inputExpected,
-            "uuid": self.uuid
+            "uuid": self.uuid,
+            "screenId": self.screenId
         }
 
 def createSearchResponse(canonicalMsg, searchResults, responseType=None,
@@ -268,6 +272,22 @@ def createSearchResponse(canonicalMsg, searchResults, responseType=None,
         userId=canonicalMsg.userId,
         responseElements=[responseElement],
         botStateUid=botStateUid)
+
+def createNewTopicResponse(canonicalMsg, screenId, responseType=None,
+                           responseMeta=None, displayType=None, botStateUid=None):
+    responseElement = ResponseElement(
+        type=ResponseElement.TYPE_NEW_TOPIC,
+        screenId=screenId,
+        responseType=responseType,
+        responseMeta=responseMeta,
+        displayType=displayType)
+    return CanonicalResponse(
+        channel=canonicalMsg.channel,
+        userId=canonicalMsg.userId,
+        responseElements=[responseElement],
+        botStateUid=botStateUid)
+
+
 
 def createOptionsResponse(canonicalMsg, text, optionsList, responseType=None,
                           responseMeta=None, displayType=None, botStateUid=None):
