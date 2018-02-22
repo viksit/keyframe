@@ -178,6 +178,7 @@ class ResponseElement(object):
     TYPE_YESNOBUTTON = "yesnobutton"
     TYPE_OPTIONS = "options"
     TYPE_ATTACHMENTS = "attachments"
+    TYPE_SEARCH_RESULT = "searchresult"
 
     RESPONSE_TYPE_RESPONSE = "response"
     RESPONSE_TYPE_CTA = "cta"
@@ -197,7 +198,7 @@ class ResponseElement(object):
     def __init__(self, type, text=None, carousel=None, responseType=None,
                  responseMeta=None, optionsList=None, displayType=None,
                  inputExpected=None, uuid=None,
-                 textList=None, textType="single"):
+                 textList=None, textType="single", structuredResults=None):
         """
         text: Text response to show user
         carousel: To render a series of images on the channel
@@ -219,6 +220,7 @@ class ResponseElement(object):
         self.uuid = uuid
         if not self.uuid:
             self.uuid = utils.getUUID()
+        self.structuredResults = structuredResults
 
     def __repr__(self):
         log.debug("ResponseElement.__repr__")
@@ -251,6 +253,21 @@ class ResponseElement(object):
             "inputExpected": self.inputExpected,
             "uuid": self.uuid
         }
+
+def createSearchResponse(canonicalMsg, searchResults, responseType=None,
+                         responseMeta=None, displayType=None, botStateUid=None):
+    log.info("createSearchResponse(%s)", locals())
+    responseElement = ResponseElement(
+        type=ResponseElement.TYPE_SEARCH_RESULT,
+        responseType=responseType,
+        responseMeta=responseMeta,
+        displayType=displayType,
+        inputExpected=False)
+    return CanonicalResponse(
+        channel=canonicalMsg.channel,
+        userId=canonicalMsg.userId,
+        responseElements=[responseElement],
+        botStateUid=botStateUid)
 
 def createOptionsResponse(canonicalMsg, text, optionsList, responseType=None,
                           responseMeta=None, displayType=None, botStateUid=None):
@@ -287,6 +304,7 @@ def createAttachmentsResponse(canonicalMsg, text, responseType=None,
 def createTextResponse(canonicalMsg, text, responseType=None,
                        responseMeta=None, botStateUid=None,
                        inputExpected=False):
+    log.debug("createTextResponse(%s)", locals())
     textList = None
     textType = "single"
     x = text.split(ResponseElement.MSG_BREAK_TAG)
