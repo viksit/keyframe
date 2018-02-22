@@ -35,6 +35,7 @@ class GenericActionObject(keyframe.actions.ActionObject):
         self.slotsType = None
         self.nextSlotToFill = None
         self.entityModelId = None
+        self.screenId = None
 
     def getTopicType(self):
         return self.specJson.get("topic_type")
@@ -215,6 +216,7 @@ class GenericActionObject(keyframe.actions.ActionObject):
             "slots_type", cls.SLOTS_TYPE_CONDITIONAL)
         slots = specJson.get("slots", [])
         actionObject.entityModelId = specJson.get("entity_model_id")
+        actionObject.screenId = specJson.get("screen_id")
 
         slotObjects = []
         slotObjectsByName = {}

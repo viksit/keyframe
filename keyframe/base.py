@@ -488,6 +488,16 @@ class BaseBot(object):
                 eventWriter.write(requestEvent.toJSONStr(), requestEvent.userId)
                 wroteEvent = True
 
+            # If new topic, send new topic msg.
+            if newTopic:
+                newTopicResponse = messages.createNewTopicResponse(
+                    canonicalMsg=canonicalMsg,
+                    screenId=actionObject.screenId,
+                    responseMeta=messages.ResponseMeta(
+                        newTopic=newTopic, topicId=topicId),
+                    botStateUid=botState.getUid())
+                self.channelClient.sendResponse(newTopicResponse)
+
             requestState = actionObject.processWrapper(botState)
             log.info("requestState: %s", requestState)
 
