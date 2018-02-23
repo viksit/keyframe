@@ -88,8 +88,9 @@ class GenericSlot(keyframe.slot_fill.Slot):
                 responseMeta=responseMeta,
                 botStateUid=botStateUid)
         elif contentType == "search":
+            searchResults = searchAPIResult.get("hits")
             cr = keyframe.messages.createSearchResponse(
-                canonicalMsg=canonicalMsg, searchResults=searchAPIResult,
+                canonicalMsg=canonicalMsg, searchResults=searchResults,
                 responseType=responseType, 
                 responseMeta=responseMeta, botStateUid=botStateUid)
         else:

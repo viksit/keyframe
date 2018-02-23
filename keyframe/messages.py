@@ -229,11 +229,12 @@ class ResponseElement(object):
         log.debug("ResponseElement.__repr__")
         res = ("ResponseElement(type=%s, responseType=%s, text=%s, carousel=%s, "
                "optionsList=%s, responseMeta=%s, displayType=%s, inputExpected=%s, "
-               "uuid=%s, textType=%s, textList=%s, screenId=%s") % (
+               "uuid=%s, textType=%s, textList=%s, screenId=%s, structuredResults=%s") % (
                    self.type, self.responseType, self.text,
                    self.carousel, self.optionsList, self.responseMeta,
                    self.displayType, self.inputExpected, self.uuid,
-                   self.textType, self.textList, self.screenId)
+                   self.textType, self.textList, self.screenId,
+                   self.structuredResults)
         #r = res.encode("utf-8")
         r = res
         log.debug("ResponseElement.__repr__ returning %s (type: %s)", r, type(r))
@@ -255,7 +256,8 @@ class ResponseElement(object):
             "displayType": self.displayType,
             "inputExpected": self.inputExpected,
             "uuid": self.uuid,
-            "screenId": self.screenId
+            "screenId": self.screenId,
+            "structuredResults": self.structuredResults
         }
 
 def createSearchResponse(canonicalMsg, searchResults, responseType=None,
@@ -266,7 +268,8 @@ def createSearchResponse(canonicalMsg, searchResults, responseType=None,
         responseType=responseType,
         responseMeta=responseMeta,
         displayType=displayType,
-        inputExpected=False)
+        inputExpected=False,
+        structuredResults=searchResults)
     return CanonicalResponse(
         channel=canonicalMsg.channel,
         userId=canonicalMsg.userId,
