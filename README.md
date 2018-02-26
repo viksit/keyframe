@@ -23,10 +23,10 @@ env KEYFRAME_KV_STORE_TYPE=type-localfile GBOT_LOG_LEVEL=10 MYRA_API_HOSTNAME="l
 
 ### Zendesk
 
-API Host: https://myralabsdemo.zendesk.com/
-Auth: greg@myralabs.com:cpUV4X9R8lEvGeguAa86Qph2rtIeSsL10bdL7ouA
-Ticket body: {{transcript}}
-Response: An email has been sent and you will get a response asap. ticket url: {{ticket.agenturl}}
+API Host: https://myralabsdemo.zendesk.com/ <br>
+Auth: greg@myralabs.com:cpUV4X9R8lEvGeguAa86Qph2rtIeSsL10bdL7ouA <br>
+Ticket body: {{transcript}} <br>
+Response: An email has been sent and you will get a response asap. ticket url: {{ticket.agenturl}} <br>
 
 ## To debug most things
 
