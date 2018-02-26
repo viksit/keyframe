@@ -21,6 +21,12 @@ To debug keyframe with a custom bot spec via a file, you can download the bot sp
 env KEYFRAME_KV_STORE_TYPE=type-localfile GBOT_LOG_LEVEL=10 MYRA_API_HOSTNAME="localhost:7097" rlwrap python gbot.py  cmd file 3rxCO9rydbBIf3DOMb9lFh 4b94f2de6d6554a006099c963e586d47485f9b4d  /Users/nishant/Downloads/nishant-topics-test-2.keyframe-config_6.json 
 ```
 
+### Zendesk
+
+API Host: https://myralabsdemo.zendesk.com/
+Auth: greg@myralabs.com:cpUV4X9R8lEvGeguAa86Qph2rtIeSsL10bdL7ouA
+Ticket body: {{transcript}}
+Response: An email has been sent and you will get a response asap. ticket url: {{ticket.agenturl}}
 
 ## To debug most things
 
