@@ -261,7 +261,8 @@ class ResponseElement(object):
         }
 
 def createSearchResponse(canonicalMsg, searchResults, responseType=None,
-                         responseMeta=None, displayType=None, botStateUid=None):
+                         responseMeta=None, displayType=None, botStateUid=None,
+                         text=None):
     log.info("createSearchResponse(%s)", locals())
     responseElement = ResponseElement(
         type=ResponseElement.TYPE_SEARCH_RESULT,
@@ -269,7 +270,8 @@ def createSearchResponse(canonicalMsg, searchResults, responseType=None,
         responseMeta=responseMeta,
         displayType=displayType,
         inputExpected=False,
-        structuredResults=searchResults)
+        structuredResults=searchResults,
+        text=text)
     return CanonicalResponse(
         channel=canonicalMsg.channel,
         userId=canonicalMsg.userId,

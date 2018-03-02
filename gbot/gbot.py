@@ -83,6 +83,28 @@ CORS(app, supports_credentials=True)
 
 app.config['DEBUG'] = True
 
+@app.route("/agent_pin_config", methods=["GET","POST"])
+@wrap_exceptions
+def agent_pin_config():
+    if request.method == 'POST':
+        accountId = request.json.get("account_id", None)
+        agentId = request.json.get("agent_id", None)
+    else:
+        accountId = request.args.get("account_id", None)
+        agentId = request.args.get("agent_id", None)
+    log.info("agent_pin_config(account_id=%s, agent_id=%s)",
+             accountId, agentId)
+    GenericBotHTTPAPI.fetchBotJsonSpec(
+        accountId=accountId,
+        agentId=agentId)
+    jsonSpec = GenericBotHTTPAPI.configJson.get("config_json")
+    pinConfig = jsonSpec.get("params", {}).get("pin_json")
+    log.info("agent_pin_config returning: %s" % (pinConfig,))
+    return jsonify({
+        "pinconfig": pinConfig
+    })
+
+
 @app.route("/agent_event", methods=["POST"])
 @wrap_exceptions
 def agent_event():
@@ -524,4 +546,4 @@ if __name__ == "__main__":
         app.config["cmd_mode"] = cmd
         app.config["run_mode"] = runtype
         app.config["config_json"] = d
-        app.run(debug=True)
+        app.run(debug=True)  # default port is 5000
