@@ -92,7 +92,8 @@ class GenericSlot(keyframe.slot_fill.Slot):
             cr = keyframe.messages.createSearchResponse(
                 canonicalMsg=canonicalMsg, searchResults=searchResults,
                 responseType=responseType, 
-                responseMeta=responseMeta, botStateUid=botStateUid)
+                responseMeta=responseMeta, botStateUid=botStateUid,
+                text=text)
         else:
             raise Exception("unknown contentType (%s)" % (contentType,))
         self.channelClient.sendResponse(cr)
@@ -319,8 +320,10 @@ class GenericActionSlot(GenericSlot):
             botState.addToSessionUtterances(
                 self.name, None, _d.get("text"), self.entityType)
         elif actionType == "search":
-            searchAPIResult = self.fetchWebhook(
+            _d = self.fetchWebhookAndFormat(
                 self.actionSpec.get("webhook"), botState)
+            text = _d.get("text")
+            searchAPIResult = _d.get("api_response")
             contentType = "search"
         else:
             raise Exception("Unknown actionType (%s)" % (actionType,))
