@@ -98,7 +98,7 @@ def agent_pin_config():
         accountId=accountId,
         agentId=agentId)
     jsonSpec = GenericBotHTTPAPI.configJson.get("config_json")
-    pinConfig = jsonSpec.get("params", {}).get("pin_json")
+    pinConfig = jsonSpec.get("params", {}).get("pin_json", [])
     log.info("agent_pin_config returning: %s" % (pinConfig,))
     return jsonify({
         "pinconfig": pinConfig
