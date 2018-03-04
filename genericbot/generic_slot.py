@@ -325,6 +325,10 @@ class GenericActionSlot(GenericSlot):
             text = _d.get("text")
             searchAPIResult = _d.get("api_response")
             contentType = "search"
+            botState.addToSessionData(
+                self.name, _d.get("text"), self.entityType)
+            botState.addToSessionUtterances(
+                self.name, None, _d.get("text"), self.entityType)
         else:
             raise Exception("Unknown actionType (%s)" % (actionType,))
         canonicalResponse = self.respond(
