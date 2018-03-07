@@ -102,7 +102,7 @@ class ChannelClientFacebook(ChannelClient):
         )
 
     def sendResponse(self, canonicalResponse):
-        log.info("sendResponse(%s)", canonicalResponse)
+        log.debug("sendResponse(%s)", canonicalResponse)
         for rElem in canonicalResponse.responseElements:
             fbFormattedJsonObject = None
             if rElem.type == messages.ResponseElement.TYPE_TEXT:
@@ -123,7 +123,7 @@ class ChannelClientFacebook(ChannelClient):
 
     def getResponses(self):
         ret = [r for r in self.responses]
-        log.info("getResponses called, returning: %s", ret)
+        log.debug("getResponses called, returning: %s", ret)
         return ret
 
     def popResponses(self):
@@ -201,7 +201,7 @@ class ChannelClientRESTAPI(ChannelClient):
             "target_title": channelMsg.body.get("target_title")}
 
     def extract(self, channelMsg):
-        log.info("extract(%s)", channelMsg)
+        log.debug("extract(%s)", channelMsg)
         msgType = None
         if channelMsg.body.get("event_type"):
             msgType = messages.CanonicalMsg.MSG_TYPE_EVENT
@@ -220,12 +220,12 @@ class ChannelClientRESTAPI(ChannelClient):
         )
 
     def sendResponse(self, canonicalResponse):
-        log.info("sendResponse(%s)", canonicalResponse)
+        log.debug("sendResponse(%s)", canonicalResponse)
         self.responses.append(canonicalResponse)
 
     def getResponses(self):
         ret = [r.toJSON() for r in self.responses]
-        log.info("getResponses called, returning: %s", ret)
+        log.debug("getResponses called, returning: %s", ret)
         return ret
 
     def popResponses(self):
@@ -240,7 +240,7 @@ class ChannelClientScript(ChannelClientRESTAPI):
     def getResponses(self):
         # Just get the response objects back vs json as for base class.
         ret = [r for r in self.responses]
-        log.info("getResponses called, returning: %s", ret)
+        log.debug("getResponses called, returning: %s", ret)
         return ret
 
 

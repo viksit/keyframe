@@ -74,4 +74,5 @@ class GenericBot(keyframe.base.BaseBot):
             userProfile, requestState, self.api, self.channelClient,
             apiResult=apiResult, newTopic=newTopic,
             intentModelParams=self.specJson.get("intent_model_params"),
-            topicNodeId=topicNodeId, config=config)
+            topicNodeId=topicNodeId, config=config,
+            agentParams=self.specJson.get("params"))

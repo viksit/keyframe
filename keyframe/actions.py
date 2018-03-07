@@ -41,6 +41,7 @@ class ActionObject(object):
         self.__clsid__ = utils.getUUID()
         self.accountId = kwargs.get("accountId")
         self.agentId = kwargs.get("agentId")
+        self.agentParams = kwargs.get("agentParams")
         self.apiResult = kwargs.get("apiResult")
         self.canonicalMsg = kwargs.get("canonicalMsg")
         self.state = "new"
@@ -78,7 +79,8 @@ class ActionObject(object):
             cls, accountId, agentId,
             topicId, canonicalMsg, botState,
             userProfile, requestState, api, channelClient, actionObjectParams={},
-            apiResult=None, newTopic=None, config=None):
+            apiResult=None, newTopic=None, config=None,
+            agentParams=None):
         log.debug("ActionObject.createActionObject(%s)", locals())
         """
         Create a new action object from the given data
@@ -91,6 +93,7 @@ class ActionObject(object):
         actionObject = cls()
         actionObject.accountId = accountId
         actionObject.agentId = agentId
+        actionObject.agentParams = agentParams
         if config:
             actionObject.config = config
         # Get the intent string and create an object from it.

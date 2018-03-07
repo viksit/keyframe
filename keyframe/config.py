@@ -28,6 +28,7 @@ def getConfig(realm=None):
 
 class Config(object):
     REALM = REALM
+    HTTP_SCHEME = os.getenv("HTTP_SCHEME", "http")
     BOTSTATE_TTL_SECONDS = int(os.getenv("BOTSTATE_TTL_SECONDS", 60*60*6))  # 6 hours
     BOTSTATE_HISTORY_TTL_SECONDS = BOTSTATE_TTL_SECONDS
     INTENT_SCORE_THRESHOLD = 0.7
@@ -67,6 +68,9 @@ class Config(object):
     MYRA_INFERENCE_PROXY_LB_PORT = os.getenv(
         "MYRA_INFERENCE_PROXY_LB_PORT", 81)
 
+    MYRA_SEARCH_SERVER = os.getenv("MYRA_SEARCH_SERVER", "search.dev.myralabs.com")
+    MYRA_SEARCH_ENDPOINT = os.getenv("MYRA_SEARCH_ENDPOINT", "nlp_search")
+
     SEND_EMAIL = distutils.util.strtobool(os.getenv("MYRA_SEND_EMAIL", "true"))
     SEND_EMAIL_AUTH_KEY = "key-82392a82671aef14bc88bdf73977182d"
 
@@ -94,6 +98,8 @@ class ProdConfig(Config):
         "inference.prod.myralabs.com")
     MYRA_INFERENCE_PROXY_LB_PORT = os.getenv(
         "MYRA_INFERENCE_PROXY_LB_PORT", 81)
+
+    MYRA_SEARCH_SERVER = os.getenv("MYRA_SEARCH_SERVER", "search.prod.myralabs.com")
 
     # This is IAM user dyndb-prod
     AWS_ACCESS_KEY_ID = "AKIAJACRM3ORXT3E6HVA"

@@ -1,6 +1,7 @@
 import json
 import logging
 import urlparse
+import urllib
 import copy
 import uuid
 from collections import defaultdict
@@ -27,9 +28,11 @@ log = logging.getLogger(__name__)
 
 class GenericSlot(keyframe.slot_fill.Slot):
     def __init__(self, apiResult=None, newTopic=None,
-                 promptMsg=None, topicId=None, channelClient=None):
+                 promptMsg=None, topicId=None, channelClient=None,
+                 config=None):
         super(GenericSlot, self).__init__(
-            apiResult=apiResult, newTopic=newTopic, topicId=topicId)
+            apiResult=apiResult, newTopic=newTopic, topicId=topicId,
+            config=config)
         self.promptMsg = promptMsg
         self.channelClient = channelClient
 
@@ -102,10 +105,10 @@ class GenericSlot(keyframe.slot_fill.Slot):
 
 class GenericHiddenSlot(keyframe.slot_fill.Slot):
     def __init__(self, apiResult=None, newTopic=None,
-                 topicId=None):
+                 topicId=None, config=None):
         super(GenericHiddenSlot, self).__init__(
             apiResult=apiResult, newTopic=newTopic,
-            topicId=topicId)
+            topicId=topicId, config=config)
         self.customFields = None
 
     def prompt(self, botState):
@@ -120,9 +123,11 @@ class GenericHiddenSlot(keyframe.slot_fill.Slot):
 
 class GenericTransferSlot(GenericSlot):
     def __init__(self, apiResult=None, newTopic=None,
-                 promptMsg=None, topicId=None, channelClient=None):
+                 promptMsg=None, topicId=None, channelClient=None,
+                 config=None):
         super(GenericSlot, self).__init__(
-            apiResult=apiResult, newTopic=newTopic, topicId=topicId)
+            apiResult=apiResult, newTopic=newTopic, topicId=topicId,
+            config=config)
         self.transferTopicId = None
         self.transferTopicNodeId = None
 
@@ -164,10 +169,12 @@ class GenericIntentModelSlot(GenericSlot):
                  promptMsg=None, topicId=None,
                  channelClient=None, api=None,
                  intentModelParams=None,
-                 regexMatcherJson=None):
+                 regexMatcherJson=None,
+                 config=None):
         super(GenericIntentModelSlot, self).__init__(
             apiResult=apiResult, newTopic=newTopic,
-            topicId=topicId, channelClient=channelClient)
+            topicId=topicId, channelClient=channelClient,
+            config=config)
         self.intentModelId = None
         self.api = api
         self.intentModelParams = intentModelParams
@@ -240,10 +247,12 @@ class GenericIntentModelSlot(GenericSlot):
 class GenericInfoSlot(GenericSlot):
     def __init__(self, apiResult=None, newTopic=None,
                  promptMsg=None, topicId=None,
-                 channelClient=None):
+                 channelClient=None,
+                 config=None):
         super(GenericInfoSlot, self).__init__(
             apiResult=apiResult, newTopic=newTopic,
-            topicId=topicId, channelClient=channelClient)
+            topicId=topicId, channelClient=channelClient,
+            config=config)
 
     def fill(self, canonicalMsg, apiResult, channelClient, botState):
         log.info("fill called with txt: %s", canonicalMsg.text)
@@ -271,11 +280,16 @@ class GenericInfoSlot(GenericSlot):
 
 class GenericActionSlot(GenericSlot):
     def __init__(self, apiResult=None, newTopic=None,
-                 topicId=None, channelClient=None):
+                 topicId=None, channelClient=None, config=None,
+                 searchIndex=None, agentId=None):
+        log.info("GenericActionSlot.__init__(config=%s, searchIndex=%s, agentId=%s)",
+                 config, searchIndex, agentId)
         super(GenericActionSlot, self).__init__(
             apiResult=apiResult, newTopic=newTopic,
-            topicId=topicId)
+            topicId=topicId, config=config)
         self.channelClient = channelClient
+        self.searchIndex = searchIndex
+        self.agentId = agentId
         self.actionSpec = None
 
     def getActionType(self):
@@ -320,8 +334,11 @@ class GenericActionSlot(GenericSlot):
             botState.addToSessionUtterances(
                 self.name, None, _d.get("text"), self.entityType)
         elif actionType == "search":
+            searchWebhook = copy.deepcopy(self.actionSpec.get("webhook"))
+            searchUrl = self._addSearchDefaults(searchWebhook.get("api_url"))
+            searchWebhook["api_url"] = searchUrl
             _d = self.fetchWebhookAndFormat(
-                self.actionSpec.get("webhook"), botState)
+                searchWebhook, botState)
             text = _d.get("text")
             searchAPIResult = _d.get("api_response")
             contentType = "search"
@@ -336,6 +353,34 @@ class GenericActionSlot(GenericSlot):
             text, canonicalMsg, botStateUid=botState.getUid(),
             searchAPIResult=searchAPIResult, zendeskTicketUrl=ticket_url)
         return canonicalResponse
+
+    def _addSearchDefaults(self, apiUrl):
+        """Return the right apiUrl for search.
+        """
+        log.info("_addSearchDefaults(%s)", apiUrl)
+        x = urlparse.urlparse(apiUrl)
+        if x.scheme and x.netloc and x.path and x.query:
+            return apiUrl
+
+        assert not (x.scheme and x.netloc)
+        log.info("No search server specified. Assuming only parameters are specified and will add search server and path")
+        urlTuple = [self.config.HTTP_SCHEME, self.config.MYRA_SEARCH_SERVER, self.config.MYRA_SEARCH_ENDPOINT, '', '', '']
+        # Assume anything specified in the webhook url are url parameters
+        params = {}
+        if apiUrl:
+            params = dict(urlparse.parse_qsl(apiUrl))
+        # Need to add two parameters for search if they are not explicitly specified.
+        if "idx" not in params:
+            params["idx"] = self.searchIndex
+        if "agentid" not in params:
+            params["agentid"] = self.agentId
+        queryStr = urllib.urlencode([(k,v) for (k,v) in params.iteritems()])
+        queryStr = urllib.unquote(queryStr)  # for the {{xxx}} placeholders
+        urlTuple[4] = queryStr
+        newUrl = urlparse.urlunparse(urlTuple)
+        log.info("_addSearchDefaults returning new url: %s", newUrl)
+        return newUrl
+
 
     def fetchWebhookAndFormat(self, webhook, botState):
         responseJsonObj = self.fetchWebhook(webhook, botState)
