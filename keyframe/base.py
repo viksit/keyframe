@@ -349,6 +349,7 @@ class BaseBot(object):
 
 
     topic_re = re.compile("\[topic=([^\]]+)\]")
+    transfer_topic_re = re.compile("\[transfer-topic=([^\]]+)\]")
     def handle(self, **kwargs):
         log.info("BaseBot.handle called")
         log.debug("BaseBot.handle(%s)", locals())
@@ -383,6 +384,11 @@ class BaseBot(object):
 
             # check for [topic=xxxx]
             x = self.topic_re.match(canonicalMsg.text.lower())
+            xt = False
+            if not x:
+                x = self.transfer_topic_re.match(canonicalMsg.text.lower())
+                if x:
+                    xt = True
             if x:
                 tmp1 = x.groups()[0].lower()
                 if tmp1 == "default":
@@ -394,10 +400,11 @@ class BaseBot(object):
                 # This is a manual command. Don't clear state.
                 # If user wants to clear state, they can also do that manually.
                 #botState.clear()
-                botState.startSession(canonicalMsg.userId)
-                #self._addCustomPropsToSession(
-                #    canonicalMsg.customProps, botState)
-                newSession = True
+                if not xt:
+                    botState.startSession(canonicalMsg.userId)
+                    #self._addCustomPropsToSession(
+                    #    canonicalMsg.customProps, botState)
+                    newSession = True
                 canonicalMsg.text = canonicalMsg.text.replace(x.group(), "")
 
             if not topicId:
