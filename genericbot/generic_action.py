@@ -107,6 +107,7 @@ class GenericActionObject(keyframe.actions.ActionObject):
                 topicId=self.originalTopicId,
                 topicType=self.getTopicType(),
                 slotId=slotObject.name,
+                slotTags=slotObject.tags,
                 slotType=slotObject.slotType,
                 actionType=slotObject.getActionType(),
                 responseType=None,  # to be filled below
@@ -235,21 +236,21 @@ class GenericActionObject(keyframe.actions.ActionObject):
                 gc = generic_slot.GenericInfoSlot(
                     apiResult=apiResult, newTopic=newTopic,
                     topicId=topicId, channelClient=channelClient,
-                    config=config)
+                    config=config, tags=slotSpec.get("tags"))
             elif slotType == slot_fill.Slot.SLOT_TYPE_INTENT_MODEL:
                 gc = generic_slot.GenericIntentModelSlot(
                     apiResult=apiResult, newTopic=newTopic,
                     topicId=topicId, channelClient=channelClient, api=api,
                     intentModelParams=intentModelParams,
                     regexMatcherJson=slotSpec.get("intent_regexes"),
-                    config=config)
+                    config=config, tags=slotSpec.get("tags"))
                 gc.intentModelId = slotSpec.get("intent_model_id")
                 #gc.outlierCutoff = slotSpec.get("outlier_cutoff")
                 #gc.outlierFrac = slotSpec.get("outlier_frac")
             elif slotType == slot_fill.Slot.SLOT_TYPE_HIDDEN:
                 gc = generic_slot.GenericHiddenSlot(
                     apiResult=apiResult, newTopic=newTopic,
-                    topicId=topicId, config=config)
+                    topicId=topicId, config=config, tags=slotSpec.get("tags"))
                 gc.customFields = slotSpec.get("custom_fields")
                 assert gc.customFields, "Hidden slot must have customFields"
             elif slotType == slot_fill.Slot.SLOT_TYPE_ACTION:
@@ -259,18 +260,18 @@ class GenericActionObject(keyframe.actions.ActionObject):
                     topicId=topicId, channelClient=channelClient,
                     config=config,
                     searchIndex=agentParams.get("search_index_for_workflows"),
-                    agentId=agentId)
+                    agentId=agentId, tags=slotSpec.get("tags"))
                 gc.actionSpec = slotSpec.get("action_spec")
                 assert gc.actionSpec, "Action slot must have actionSpec"
             elif slotType == slot_fill.Slot.SLOT_TYPE_INPUT:
                 gc = generic_slot.GenericSlot(
                     apiResult=apiResult, newTopic=newTopic, topicId=topicId,
-                    config=config)
+                    config=config, tags=slotSpec.get("tags"))
                 gc.useStored = slotSpec.get("use_stored", False)
             elif slotType == slot_fill.Slot.SLOT_TYPE_TRANSFER:
                 gc = generic_slot.GenericTransferSlot(
                     apiResult=apiResult, newTopic=newTopic, topicId=topicId,
-                    config=config)
+                    config=config, tags=slotSpec.get("tags"))
                 gc.transferTopicId = slotSpec.get("transfer_topic_id")
                 gc.transferTopicNodeId = slotSpec.get("transfer_topic_node_id")
                 assert gc.transferTopicId, "Transfer slots must have transfer_topic_id defined"

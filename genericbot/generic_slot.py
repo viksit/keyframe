@@ -29,10 +29,10 @@ log = logging.getLogger(__name__)
 class GenericSlot(keyframe.slot_fill.Slot):
     def __init__(self, apiResult=None, newTopic=None,
                  promptMsg=None, topicId=None, channelClient=None,
-                 config=None):
+                 config=None, tags=None):
         super(GenericSlot, self).__init__(
             apiResult=apiResult, newTopic=newTopic, topicId=topicId,
-            config=config)
+            config=config, tags=tags)
         self.promptMsg = promptMsg
         self.channelClient = channelClient
 
@@ -105,10 +105,10 @@ class GenericSlot(keyframe.slot_fill.Slot):
 
 class GenericHiddenSlot(keyframe.slot_fill.Slot):
     def __init__(self, apiResult=None, newTopic=None,
-                 topicId=None, config=None):
+                 topicId=None, config=None, tags=None):
         super(GenericHiddenSlot, self).__init__(
             apiResult=apiResult, newTopic=newTopic,
-            topicId=topicId, config=config)
+            topicId=topicId, config=config, tags=tags)
         self.customFields = None
 
     def prompt(self, botState):
@@ -124,10 +124,10 @@ class GenericHiddenSlot(keyframe.slot_fill.Slot):
 class GenericTransferSlot(GenericSlot):
     def __init__(self, apiResult=None, newTopic=None,
                  promptMsg=None, topicId=None, channelClient=None,
-                 config=None):
+                 config=None, tags=None):
         super(GenericSlot, self).__init__(
             apiResult=apiResult, newTopic=newTopic, topicId=topicId,
-            config=config)
+            config=config, tags=tags)
         self.transferTopicId = None
         self.transferTopicNodeId = None
 
@@ -170,11 +170,11 @@ class GenericIntentModelSlot(GenericSlot):
                  channelClient=None, api=None,
                  intentModelParams=None,
                  regexMatcherJson=None,
-                 config=None):
+                 config=None, tags=None):
         super(GenericIntentModelSlot, self).__init__(
             apiResult=apiResult, newTopic=newTopic,
             topicId=topicId, channelClient=channelClient,
-            config=config)
+            config=config, tags=tags)
         self.intentModelId = None
         self.api = api
         self.intentModelParams = intentModelParams
@@ -248,11 +248,11 @@ class GenericInfoSlot(GenericSlot):
     def __init__(self, apiResult=None, newTopic=None,
                  promptMsg=None, topicId=None,
                  channelClient=None,
-                 config=None):
+                 config=None, tags=None):
         super(GenericInfoSlot, self).__init__(
             apiResult=apiResult, newTopic=newTopic,
             topicId=topicId, channelClient=channelClient,
-            config=config)
+            config=config, tags=tags)
 
     def fill(self, canonicalMsg, apiResult, channelClient, botState):
         log.info("fill called with txt: %s", canonicalMsg.text)
@@ -281,12 +281,12 @@ class GenericInfoSlot(GenericSlot):
 class GenericActionSlot(GenericSlot):
     def __init__(self, apiResult=None, newTopic=None,
                  topicId=None, channelClient=None, config=None,
-                 searchIndex=None, agentId=None):
+                 searchIndex=None, agentId=None, tags=None):
         log.info("GenericActionSlot.__init__(config=%s, searchIndex=%s, agentId=%s)",
                  config, searchIndex, agentId)
         super(GenericActionSlot, self).__init__(
             apiResult=apiResult, newTopic=newTopic,
-            topicId=topicId, config=config)
+            topicId=topicId, config=config, tags=tags)
         self.channelClient = channelClient
         self.searchIndex = searchIndex
         self.agentId = agentId

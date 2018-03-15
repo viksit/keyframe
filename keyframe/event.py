@@ -41,6 +41,7 @@ class Event(object):
         self.topicId = kwargs.get("topicId")
         self.topicType = kwargs.get("topicType")
         self.slotId = kwargs.get("slotId")
+        self.slotTags = kwargs.get("slotTags")
         self.slotType = kwargs.get("slotType")
         self.actionType = kwargs.get("actionType")
         self.responseType = kwargs.get("responseType")  # prompt, fillmsg, fillnomsg, transfermsg, 
@@ -68,6 +69,7 @@ class Event(object):
             "topic_id":self.topicId,
             "topic_type":self.topicType,
             "slot_id":self.slotId,
+            "slot_tags":self.slotTags,
             "slot_type":self.slotType,
             "action_type":self.actionType,
             "response_type":self.responseType,
