@@ -195,10 +195,27 @@ class ChannelClientRESTAPI(ChannelClient):
         self.responses = collections.deque()
 
     def _extractEventInfo(self, channelMsg):
-        return {
-            "event_type": channelMsg.body.get("event_type"),
-            "target_href": channelMsg.body.get("target_href"),
-            "target_title": channelMsg.body.get("target_title")}
+        eventType = channelMsg.body.get("event_type")
+        if not eventType:
+            return {}
+        if eventType == "kb_click":
+            return {
+                "event_type": eventType,
+                "target_href": channelMsg.body.get("target_href"),
+                "target_title": channelMsg.body.get("target_title")}
+        elif eventType == "workflow_click":
+            return {
+                "event_type": eventType,
+                "target_title": channelMsg.body.get("target_title"),
+                "target_href": channelMsg.body.get("workflow_text")
+            }
+        elif eventType == "url_click":
+            return {
+                "event_type": eventType,
+                "target_href": channelMsg.body.get("target_href"),
+                "target_title": channelMsg.body.get("target_title")}
+        else:
+            raise Exception("Unknown eventType: %s", eventType)
 
     def extract(self, channelMsg):
         log.debug("extract(%s)", channelMsg)
