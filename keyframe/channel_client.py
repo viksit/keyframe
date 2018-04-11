@@ -222,6 +222,12 @@ class ChannelClientRESTAPI(ChannelClient):
         msgType = None
         if channelMsg.body.get("event_type"):
             msgType = messages.CanonicalMsg.MSG_TYPE_EVENT
+        userInfo = channelMsg.body.get("user_info", {})
+        if not userInfo.get("user_id"):
+            userInfo["user_id"] = channelMsg.body.get("user_id")
+        instanceId = channelMsg.body.get("instance_id")
+        if not instanceId:
+            instanceId = "default_iid"
         return messages.CanonicalMsg(
             channel=channelMsg.channel,
             httpType=channelMsg.httpType,
@@ -233,7 +239,8 @@ class ChannelClientRESTAPI(ChannelClient):
             customProps=channelMsg.body.get("custom_props"),
             locationHref=channelMsg.body.get("current_url"),
             userInfo=channelMsg.body.get("user_info"),
-            eventInfo=self._extractEventInfo(channelMsg)
+            eventInfo=self._extractEventInfo(channelMsg),
+            instanceId=instanceId
         )
 
     def sendResponse(self, canonicalResponse):

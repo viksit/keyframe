@@ -91,25 +91,25 @@ class BaseBot(object):
         log.info("BaseBot.getUserProfile returning: %s", userProfile)
         return userProfile
 
-    def _botStateKey(self, userId, channel):
-        k = "botstate.%s.%s.%s.%s" % (
-            self.__class__.__name__, self.name, userId, channel)
+    def _botStateKey(self, userId, channel, instanceId):
+        k = "botstate.%s.%s.%s.%s.%s" % (
+            self.__class__.__name__, self.name, userId, channel, instanceId)
         log.debug("BaseBot: returning botstate key: %s", k)
         return k
 
-    def _botStateHistoryKey(self, userId, channel, botStateUid):
+    def _botStateHistoryKey(self, userId, channel, instanceId, botStateUid):
         log.debug("_botStateHistoryKey(%s)", locals())
-        k = self._botStateKey(userId, channel)
+        k = self._botStateKey(userId, channel, instanceId)
         k = "history." + k + "." + botStateUid
         log.debug("BaseBot._botStateHistoryKey returning: %s", k)
         return k
 
-    def getBotState(self, userId, channel, botStateUid=None):
-        log.debug("getBotState(%s)", locals())
-        k = self._botStateKey(userId, channel)
-        log.debug("k: %s", k)
+    def getBotState(self, userId, channel, instanceId, botStateUid=None):
+        log.info("getBotState(%s)", locals())
+        k = self._botStateKey(userId, channel, instanceId)
+        log.info("botstatekey: %s", k)
         if botStateUid:
-            k = self._botStateHistoryKey(userId, channel, botStateUid)
+            k = self._botStateHistoryKey(userId, channel, instanceId, botStateUid)
         jsonObject = self.kvStore.get_json(k)
         if not jsonObject:
             assert not botStateUid, "Could not get botStateUid: %s (key: %s)" % (
@@ -117,18 +117,20 @@ class BaseBot(object):
             return self.botStateClass()
         return self.botStateClass.fromJSONObject(jsonObject)
 
-    def putBotState(self, userId, channel, botState, botStateUid):
+    def putBotState(self, userId, channel, instanceId, botState, botStateUid):
         #log.debug("putBotState(%s)", locals())
-        k = self._botStateKey(userId, channel)
+        k = self._botStateKey(userId, channel, instanceId)
         botState.setWriteTime(time.time())
         botStateJson = botState.toJSONObject()
         self.kvStore.put_json(k, botState.toJSONObject())
         # For now, disable history until we need it.
         if botStateUid: #  and False:
-            self.putBotStateHistory(userId, channel, botState, botStateUid)
+            self.putBotStateHistory(
+                userId, channel, instanceId, botState, botStateUid)
 
-    def putBotStateHistory(self, userId, channel, botState, botStateUid):
-        k = self._botStateHistoryKey(userId, channel, botStateUid)
+    def putBotStateHistory(self, userId, channel,
+                           instanceId, botState, botStateUid):
+        k = self._botStateHistoryKey(userId, channel, instanceId, botStateUid)
         expiry_time = int(time.time()) + self.config.BOTSTATE_HISTORY_TTL_SECONDS
         self.kvStore.put_json(k, botState.toJSONObject(),
                               expiry_time=expiry_time)
@@ -223,6 +225,7 @@ class BaseBot(object):
         botState = self.getBotState(
             userId=canonicalMsg.userId,
             channel=canonicalMsg.channel,
+            instanceId=canonicalMsg.instanceId,
             botStateUid=canonicalMsg.botStateUid)
 
         if canonicalMsg.msgType == messages.CanonicalMsg.MSG_TYPE_EVENT:
@@ -315,7 +318,8 @@ class BaseBot(object):
         if msg.find("show state") > -1:
             botState = self.getBotState(
                 userId=canonicalMsg.userId,
-                channel=canonicalMsg.channel)
+                channel=canonicalMsg.channel,
+                instanceId=canonicalMsg.instanceId)
             respText = json.dumps(botState.toJSONObject())
 
         if msg.find("clear state") > -1:
@@ -324,6 +328,7 @@ class BaseBot(object):
             self.putBotState(
                 userId=canonicalMsg.userId,
                 channel=canonicalMsg.channel,
+                instanceId=canonicalMsg.instanceId,
                 #botState=self.botStateClass(),
                 botState=botState,
                 botStateUid=botState.getUid()
@@ -517,6 +522,7 @@ class BaseBot(object):
             self.putBotState(
                 userId=canonicalMsg.userId,
                 channel=canonicalMsg.channel,
+                instanceId=canonicalMsg.instanceId,
                 botState=botState,
                 botStateUid=botState.getUid()
             )

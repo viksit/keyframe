@@ -29,18 +29,19 @@ class GenericBot(keyframe.base.BaseBot):
         #log.debug("self.specJson: %s", self.specJson)
         self.configFromJson()
 
-    def _botStateKey(self, userId, channel):
+    def _botStateKey(self, userId, channel, instanceId):
         """
         A generic bot has an account Id and an agentId associated with it.
         """
 
-        k = "botstate.{classname}.{botname}.{accountId}.{agentId}.{userId}.{channel}".format(**{
+        k = "botstate.{classname}.{botname}.{accountId}.{agentId}.{userId}.{channel}.{instanceId}".format(**{
             "classname": self.__class__.__name__,
             "botname": self.name,
             "accountId": self.accountId,
             "agentId": self.agentId,
             "userId": userId,
-            "channel": channel
+            "channel": channel,
+            "instanceId":instanceId
         })
         log.debug("GenericBot: returning botstate key: %s", k)
         return k
