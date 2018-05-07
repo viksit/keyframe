@@ -214,6 +214,10 @@ class ChannelClientRESTAPI(ChannelClient):
                 "event_type": eventType,
                 "target_href": channelMsg.body.get("target_href"),
                 "target_title": channelMsg.body.get("target_title")}
+        elif eventType == "support_click":
+            return {
+                "event_type": eventType,
+                "target_href": channelMsg.body.get("target_href")}
         else:
             raise Exception("Unknown eventType: %s", eventType)
 
