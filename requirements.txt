@@ -40,7 +40,8 @@ troposphere==1.9.0
 Unidecode==0.4.19
 Werkzeug==0.11.11
 wsgi-request-logger==0.4.6
-zappa==0.31.0
+zappa==0.45.1
 slackclient
 zdesk
 lxml==4.0.0
+flask_cors
