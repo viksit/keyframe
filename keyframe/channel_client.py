@@ -10,6 +10,7 @@ import json
 import messages
 import fb
 from slackclient import SlackClient
+from intercom_client import IntercomClient
 
 log = logging.getLogger(__name__)
 
@@ -160,10 +161,6 @@ class ChannelClientSlack(ChannelClient):
 
     def sendResponse(self, canonicalResponse):
         slackClient = SlackClient(self.botToken)
-        #new_dm = slackClient.api_call(
-        #    "im.open",
-        #    user=self.userId)
-        #dm_id = new_dm["channel"]["id"]
         for e in canonicalResponse.responseElements:
             slackClient.api_call("chat.postMessage",
                                  channel=self.msgChannel,
@@ -272,12 +269,64 @@ class ChannelClientScript(ChannelClientRESTAPI):
         return ret
 
 
+class ChannelClientIntercom(ChannelClient):
+    def __init__(self, config=None):
+        log.info("Init ChannelClientSlack.__init__(%s)", locals())
+        self.config = config
+        self.responses = collections.deque()
+        # TODO(viksit): add user/team ids
+        self.userId = config.CHANNEL_META.get("user_id")
+        self.conversationId = config.CHANNEL_META.get("conversation_id")
+
+    def extract(self, channelMsg):
+        log.info("extract(%s)", channelMsg)
+        text = channelMsg.body.get("data").get("item").get("conversation_message").get("body")
+        convParts = channelMsg.body.get("data").get("item").get("conversation_parts")
+        if len(convParts) > 0:
+            text = convParts.get("conversation_parts")[0].get("body")
+        text = text.replace("<p>","").replace("</p>","")
+        conversationId = channelMsg.body.get("data").get("item").get("id")
+        log.debug("text: %s", text)
+        return messages.CanonicalMsg(
+            channel=channelMsg.channel,
+            httpType=channelMsg.httpType,
+            userId=self.userId,
+            text=text,
+            # TODO(nishant): why no rid here?
+            rid=channelMsg.body.get("rid")
+        )
+
+    def sendResponse(self, canonicalResponse):
+        intercomClient = IntercomClient()
+        for e in canonicalResponse.responseElements:
+            conversationId = self.conversationId
+            intercomClient.sendResponse(text=e.text, conversationId=conversationId)
+            log.info("sendResponse(%s)", canonicalResponse)
+            self.responses.append(canonicalResponse)
+
+    def getResponses(self):
+        ret = [r.toJSON() for r in self.responses]
+        log.info("getResponses called, returning: %s", ret)
+        return ret
+
+    def popResponses(self):
+        ret = self.getResponses()
+        self.clearResponses()
+        return ret
+
+    def clearResponses(self):
+        self.responses.clear()
+
+
+
+
 channelClientMap = {
     messages.CHANNEL_CMDLINE: ChannelClientCmdline,
     messages.CHANNEL_HTTP_REQUEST_RESPONSE: ChannelClientRESTAPI,
     messages.CHANNEL_FB: ChannelClientFacebook,
     messages.CHANNEL_SLACK: ChannelClientSlack,
-    messages.CHANNEL_SCRIPT: ChannelClientScript
+    messages.CHANNEL_SCRIPT: ChannelClientScript,
+    messages.CHANNEL_INTERCOM: ChannelClientIntercom
 }
 
 def getChannelClient(channel, requestType, config=None):

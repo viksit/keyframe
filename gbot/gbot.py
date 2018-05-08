@@ -158,7 +158,7 @@ class GenericBotHTTPAPI(generic_bot_api.GenericBotAPI):
                 if "cmd_mode" in current_app.config and \
                    current_app.config["cmd_mode"] == "http":
                     log.info("Running in flask deployment mode")
-                    
+
                     GenericBotHTTPAPI.agentId = agentId
                     GenericBotHTTPAPI.accountId = accountId
                     #GenericBotHTTPAPI.accountSecret = accountSecret
@@ -236,7 +236,7 @@ def run_agent2():
 
     # Seems like can't have multiple domains. Here is the browser error message:
     # The 'Access-Control-Allow-Origin' header contains multiple values 'http://localhost:8080, http://demos.myralabs.com', but only one is allowed. Origin 'http://localhost:8080' is therefore not allowed access.
-    
+
     #allowOrigins = ["http://localhost:8080",
     #                "http://demos.myralabs.com"]
     #h.extend([("Access-Control-Allow-Origin", orig) for orig in allowOrigins])
@@ -472,7 +472,64 @@ def _run_agent_slack():
 
 # End slack code
 
-# TODO: Remove this 
+## Start intercom code
+@app.route("/listener/intercom", methods=["GET", "POST"])
+def run_agent_intercom():
+    log.info("/listener/intercom: %s", request.url)
+    # Always make a response. If response is not going to be 200,
+    # then add the no-retry header so slack doesn't keep trying.
+    try:
+        return _run_agent_intercom()
+    except:
+        traceback.print_exc()
+        return make_response("Unexpected Error!", 500, {"X-No-Retry": 1})
+
+def _run_agent_intercom():
+    intercomEvent = request.json
+
+    # TODO(nishant): how to disable intercom from sending same message multiple times
+
+    if not intercomEvent:
+        return make_response("invalid payload", 400, {"X-No-Retry": 1})
+
+    log.info("request.json: %s", intercomEvent)
+
+    # Get intercom conversation ID and pass it on
+    conversationId = intercomEvent.get("data").get("item").get("id")
+
+    # Myra concierge information
+    # Get this from the database which stores <intercom accountid> -> <agentid map>
+
+    userId = "test1"
+    accountId = "3oPxV9oFXxzHYxuvpy56a9"
+    agentId = "f111cef48e1548be8d121f9649b368eb"
+
+    GenericBotHTTPAPI.fetchBotJsonSpec(
+        accountId=accountId,
+        agentId=agentId
+    )
+
+    event = {
+        "channel": messages.CHANNEL_INTERCOM,
+        "request-type": request.method,
+        "body": request.json,
+        "channel-meta": {
+            "user_id": userId,
+            "rid": request.args.get("rid"),
+            "conversation_id": conversationId
+        }
+    }
+    r = GenericBotHTTPAPI.requestHandler(
+        event=event,
+        context={})
+    log.debug("going to return a 200 status after request is handled")
+    return make_response("NOOP", 200, {"X-No-Retry": 1})
+
+## End intercom code
+
+
+
+# TODO: Remove this
 @app.route("/anxoivch8wxoiu8dvhwnwo93", methods=['GET', 'POST'])
 def debug_obfuscated():
     log.info(request.url)
@@ -491,6 +548,8 @@ def ping():
         "env.STAGE":os.environ.get("STAGE")
     })
     return Response(resp), 200
+
+
 
 
 if __name__ == "__main__":

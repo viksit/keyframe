@@ -9,6 +9,7 @@ CHANNEL_SLACK = "channel-slack"
 CHANNEL_CMDLINE = "channel-cmdline"
 CHANNEL_HTTP_REQUEST_RESPONSE = "channel-http-request-response"
 CHANNEL_SCRIPT = "channel-script"
+CHANNEL_INTERCOM = "channel-intercom"
 
 class ChannelMsg(object):
     def __init__(self, channel, httpType, body):
@@ -312,7 +313,7 @@ def createOptionsResponse(canonicalMsg, text, optionsList, responseType=None,
         responseElements=[responseElement],
         botStateUid=botStateUid)
 
-        
+
 def createAttachmentsResponse(canonicalMsg, text, responseType=None,
                               responseMeta=None, botStateUid=None):
     responseElement = ResponseElement(
