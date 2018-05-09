@@ -1,3 +1,6 @@
+#!/usr/bin/python
+# -*- coding: utf-8 -*-
+
 from __future__ import print_function
 import sys, os
 from os.path import expanduser, join
@@ -484,6 +487,12 @@ def run_agent_intercom():
         traceback.print_exc()
         return make_response("Unexpected Error!", 500, {"X-No-Retry": 1})
 
+######
+from intercom.client import Client
+ACCESS_TOKEN="" # need from intercom
+APP_ID = "cp6b0zl8"
+intercom = Client(personal_access_token=ACCESS_TOKEN)
+
 def _run_agent_intercom():
     intercomEvent = request.json
 
@@ -492,11 +501,11 @@ def _run_agent_intercom():
     if not intercomEvent:
         return make_response("invalid payload", 400, {"X-No-Retry": 1})
 
-    log.info("request.json: %s", intercomEvent)
+    log.info("request.json: %s", json.dumps(intercomEvent, indent=2))
 
     # Get intercom conversation ID and pass it on
     conversationId = intercomEvent.get("data").get("item").get("id")
-
+    print("conversationId:", conversationId)
     # Myra concierge information
     # Get this from the database which stores <intercom accountid> -> <agentid map>
 
@@ -504,26 +513,37 @@ def _run_agent_intercom():
     accountId = "3oPxV9oFXxzHYxuvpy56a9"
     agentId = "f111cef48e1548be8d121f9649b368eb"
 
-    GenericBotHTTPAPI.fetchBotJsonSpec(
-        accountId=accountId,
-        agentId=agentId
-    )
+    conversation = intercom.conversations.find(id=conversationId)
+    res = intercom.conversations.reply(
+        id=conversation.id,
+        type=conversation.assignee.resource_type,
+        admin_id=conversation.assignee.id,
+        message_type='comment',
+        body="This is a test response for your message")
 
-    event = {
-        "channel": messages.CHANNEL_INTERCOM,
-        "request-type": request.method,
-        "body": request.json,
-        "channel-meta": {
-            "user_id": userId,
-            "rid": request.args.get("rid"),
-            "conversation_id": conversationId
-        }
-    }
-    r = GenericBotHTTPAPI.requestHandler(
-        event=event,
-        context={})
-    log.debug("going to return a 200 status after request is handled")
-    return make_response("NOOP", 200, {"X-No-Retry": 1})
+    # GenericBotHTTPAPI.fetchBotJsonSpec(
+    #     accountId=accountId,
+    #     agentId=agentId
+    # )
+
+    # event = {
+    #     "channel": messages.CHANNEL_INTERCOM,
+    #     "request-type": request.method,
+    #     "body": request.json,
+    #     "channel-meta": {
+    #         "user_id": userId,
+    #         "rid": request.args.get("rid"),
+    #         "conversation_id": conversationId
+    #     }
+    # }
+
+    # r = GenericBotHTTPAPI.requestHandler(
+    #     event=event,
+    #     context={})
+    # log.debug("going to return a 200 status after request is handled")
+    # return make_response("NOOP", 200, {"X-No-Retry": 1})
+    res = json.dumps({})
+    return Response(res), 200
 
 ## End intercom code
 
@@ -550,7 +570,241 @@ def ping():
     return Response(resp), 200
 
 
+#### ------- Intercom messenger app ----------------
 
+"""
+CONFIGURE URL
+https://myra-dev.ngrok.io/v2/intercom/configure
+
+SUBMIT URL
+https://myra-dev.ngrok.io/v2/intercom/submit
+
+INITIALIZE URL
+https://myra-dev.ngrok.io/v2/intercom/initialize
+
+SUBMIT SHEET URL
+https://myra-dev.ngrok.io/v2/intercom/submit_sheet
+
+"""
+
+def _pprint(data):
+    print(json.dumps(data, indent=2))
+
+def getSampleInput():
+    res = {
+        "type": "input",
+        "id": "user_myra_config",
+        "label": "Enter your myra configuration ID",
+        "placeholder": "abc13fsdfff",
+        "value": "",
+        "action": {
+            "type": "submit"
+        }
+    }
+    return res
+
+def getSampleApp():
+    res = {
+        "type": "input",
+        "id": "user_question",
+        "label": "Whats your question?",
+        "placeholder": "I cant configure my DNS what should I do?",
+        "value": "",
+        "action": {
+            "type": "submit"
+        }
+    }
+    return res
+
+def getSampleListResponse():
+    res = {
+        "type": "list",
+        "items": [
+            {
+                "type": "item",
+                "id": "article-123",
+                "title": "How to install the messenger",
+                "subtitle": "An article explaining how to integrate Intercom",
+                "action": {
+                    "type": "submit"
+                }
+            },
+            {
+                "type": "item",
+                "id": "article-123",
+                "title": "How to install the messenger",
+                "subtitle": "An article explaining how to integrate Intercom",
+                "action": {
+                    "type": "submit"
+                }
+            },
+            {
+                "type": "item",
+                "id": "article-123",
+                "title": "How to install the messenger",
+                "subtitle": "An article explaining how to integrate Intercom",
+                "action": {
+                    "type": "submit"
+                }
+            },
+            {
+                "type": "item",
+                "id": "article-123",
+                "title": "How to install the messenger",
+                "subtitle": "An article explaining how to integrate Intercom",
+                "action": {
+                    "type": "submit"
+                }
+            }
+        ]
+    }
+    return res
+
+
+@app.route("/v2/intercom/configure", methods=['GET', 'POST'])
+def v2_intercom_configure():
+    print("## configure ##")
+    res = None
+    _pprint(request.json)
+    if (request.json.get("input_values")):
+        print("here", request.json.get("input_values"))
+        # This is the second configure call
+        # Send back a result to deploy this application
+        r = request.json.get("input_values")
+        res = json.dumps({
+            "results": r
+        })
+    else:
+        canvas = {
+            "canvas": {
+                "content": {
+                    "version": "0.1",
+                    "components": [
+                        getSampleInput()
+                    ]
+                },
+                "stored_data": {} # optional
+            }
+        }
+        res = json.dumps(canvas)
+    # Return
+    # change this
+    assert res is not None
+    return Response(res), 200
+
+
+@app.route("/v2/intercom/submit", methods=['GET', 'POST'])
+def v2_intercom_submit():
+    print("## submit ##")
+    _pprint(request.json)
+    component_id = request.json.get("component_id", None)
+    if (component_id == "button-123"):
+        # Return the original canvas
+        canvas = {
+            "canvas": {
+                "content": {
+                    "version": "0.1",
+                    "components": [
+                        getSampleApp()
+                    ]
+                },
+                "stored_data": {} # optional
+            }
+        }
+    else:
+        canvas = {
+            "new_canvas": {
+                "content": {
+                    "version": "0.1",
+                    "components": [
+                        getSampleListResponse(),
+                        {
+                            "type": "divider"
+                        },
+                        {
+                            "type":"button",
+                            "id":"button-123",
+                            "label":"back",
+                            "style":"secondary",
+                            "action": {
+                                "type": "submit"
+                            }
+                        },
+                        {
+                            "type":"button",
+                            "id":"button-456",
+                            "label":"Open link",
+                            "style":"primary",
+                            "action":{"type":"url","url":"https://www.intercom.com/"}
+                        }
+                    ]
+                },
+                "stored_data": {} # optional
+            }
+        }
+    nc = canvas
+    res = json.dumps(nc)
+    print("-- response --")
+    _pprint(nc)
+    return Response(res), 200
+
+
+@app.route("/v2/intercom/initialize", methods=['GET', 'POST'])
+def v2_intercom_initialize():
+    """
+    When a card is being added, Intercom POSTs a request to the Messenger App’s initialize_url with the card creation parameters gathered from the teammate. The payload is in the following form:
+    {
+      card_creation_options: {
+       <set of key-value pairs>
+    },
+      app_id: <string id_code of the app using the card>
+    }
+
+    The developer returns a response in the following format
+
+    {
+      canvas: <Canvas object>
+    }
+
+    """
+    print("## initialize ##")
+    _pprint(request.json)
+    canvas = {
+        "canvas": {
+            "content": {
+                "version": "0.1",
+                "components": [
+                    getSampleApp()
+                ]
+            },
+            "stored_data": {} # optional
+        }
+    }
+
+    res = json.dumps(canvas)
+    return Response(res), 200
+
+@app.route("/v2/intercom/submit_sheet", methods=['GET', 'POST'])
+def v2_intercom_submit_sheet():
+    print("## submit_sheet ##")
+    _pprint(request.json)
+    res = json.dumps({})
+    return Response(res), 200
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+########### ---- end intercom configuration ------ #############3
 
 if __name__ == "__main__":
     usage = "gbot.py [cmd/http] [file/db] <accountId> <agentId> [file: <path to json spec>]"

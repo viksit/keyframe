@@ -281,9 +281,9 @@ class ChannelClientIntercom(ChannelClient):
     def extract(self, channelMsg):
         log.info("extract(%s)", channelMsg)
         text = channelMsg.body.get("data").get("item").get("conversation_message").get("body")
-        convParts = channelMsg.body.get("data").get("item").get("conversation_parts")
+        convParts = channelMsg.body.get("data").get("item").get("conversation_parts").get("conversation_parts")
         if len(convParts) > 0:
-            text = convParts.get("conversation_parts")[0].get("body")
+            text = convParts[0].get("body")
         text = text.replace("<p>","").replace("</p>","")
         conversationId = channelMsg.body.get("data").get("item").get("id")
         log.debug("text: %s", text)
