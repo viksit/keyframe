@@ -489,15 +489,15 @@ def run_agent_intercom():
 
 ######
 from intercom.client import Client
-ACCESS_TOKEN="" # need from intercom
-APP_ID = "cp6b0zl8"
+ACCESS_TOKEN="dG9rOjY2M2NjM2FjXzM5NTVfNGMzN19iMjdjX2UzYTI5YTBhMmYwOToxOjA=" # need from intercom
+APP_ID = "iv6ijpl5" # "cp6b0zl8" for messenger
 intercom = Client(personal_access_token=ACCESS_TOKEN)
 
 def _run_agent_intercom():
     intercomEvent = request.json
 
     # TODO(nishant): how to disable intercom from sending same message multiple times
-
+    print(intercomEvent)
     if not intercomEvent:
         return make_response("invalid payload", 400, {"X-No-Retry": 1})
 
@@ -514,8 +514,13 @@ def _run_agent_intercom():
     agentId = "f111cef48e1548be8d121f9649b368eb"
 
     conversation = intercom.conversations.find(id=conversationId)
+    print("conversation: ", conversation.__dict__)
+    print(conversation.assignee)
+    print(conversation.assignee.__dict__)
+
+
     res = intercom.conversations.reply(
-        id=conversation.id,
+        id=conversationId,
         type=conversation.assignee.resource_type,
         admin_id=conversation.assignee.id,
         message_type='comment',
