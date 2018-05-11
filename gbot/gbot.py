@@ -505,7 +505,7 @@ def _run_agent_intercom():
 
     # Get intercom conversation ID and pass it on
     conversationId = intercomEvent.get("data").get("item").get("id")
-    print("conversationId:", conversationId)
+    log.info("conversationId:", conversationId)
     # Myra concierge information
     # Get this from the database which stores <intercom accountid> -> <agentid map>
 
