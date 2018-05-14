@@ -7,6 +7,7 @@ from os.path import expanduser, join
 from flask import Flask, request, Response
 from flask import Flask, current_app, jsonify, make_response
 from flask_cors import CORS, cross_origin
+import datetime
 
 from functools import wraps
 import yaml
@@ -505,7 +506,7 @@ def _run_agent_intercom():
 
     # Get intercom conversation ID and pass it on
     conversationId = intercomEvent.get("data").get("item").get("id")
-    log.info("conversationId:", conversationId)
+    log.info("conversationId: %s", conversationId)
     # Myra concierge information
     # Get this from the database which stores <intercom accountid> -> <agentid map>
 
@@ -514,17 +515,19 @@ def _run_agent_intercom():
     agentId = "f111cef48e1548be8d121f9649b368eb"
 
     conversation = intercom.conversations.find(id=conversationId)
-    print("conversation: ", conversation.__dict__)
+    print("CONV DICT: ", conversation.__dict__)
     print(conversation.assignee)
     print(conversation.assignee.__dict__)
 
-
-    res = intercom.conversations.reply(
-        id=conversationId,
-        type=conversation.assignee.resource_type,
-        admin_id=conversation.assignee.id,
-        message_type='comment',
-        body="This is a test response for your message")
+    if intercomEvent.get("topic") in ("conversation.user.created", "conversation.user.replied"):
+        log.info("This is a topic to reply to (%s)", intercomEvent.get("topic"))
+        resBody = "This is a test response for your message at %s" % (datetime.datetime.now(),)
+        res = intercom.conversations.reply(
+            id=conversationId,
+            type=conversation.assignee.resource_type,
+            admin_id=conversation.assignee.id,
+            message_type='comment',
+            body=resBody)
 
     # GenericBotHTTPAPI.fetchBotJsonSpec(
     #     accountId=accountId,
