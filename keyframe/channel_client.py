@@ -271,34 +271,39 @@ class ChannelClientScript(ChannelClientRESTAPI):
 
 class ChannelClientIntercom(ChannelClient):
     def __init__(self, config=None):
-        log.info("Init ChannelClientSlack.__init__(%s)", locals())
+        log.info("Init ChannelClientIntercom__init__(%s)", locals())
         self.config = config
         self.responses = collections.deque()
         # TODO(viksit): add user/team ids
         self.userId = config.CHANNEL_META.get("user_id")
         self.conversationId = config.CHANNEL_META.get("conversation_id")
+        # userAccessToken enables responses to a particular clients conversion.
+        # I.e. it is the intercom token allowing api access for the client the bot is responding on behalf of.
+        self.userAccessToken = config.CHANNEL_META.get("access_token")
 
     def extract(self, channelMsg):
         log.info("extract(%s)", channelMsg)
         text = channelMsg.body.get("data").get("item").get("conversation_message").get("body")
         convParts = channelMsg.body.get("data").get("item").get("conversation_parts").get("conversation_parts")
-        if len(convParts) > 0:
+        if len(convParts) > 0 and convParts[0].get("body"):
             text = convParts[0].get("body")
         text = text.replace("<p>","").replace("</p>","")
-        conversationId = channelMsg.body.get("data").get("item").get("id")
-        log.debug("text: %s", text)
+        conversationId = channelMsg.body.get("data", {}).get("item", {}).get("id")
+        log.info("intercom extracted text: %s", text)
         return messages.CanonicalMsg(
             channel=channelMsg.channel,
             httpType=channelMsg.httpType,
             userId=self.userId,
             text=text,
-            # TODO(nishant): why no rid here?
-            rid=channelMsg.body.get("rid")
+            rid=channelMsg.body.get("id")
         )
 
     def sendResponse(self, canonicalResponse):
-        intercomClient = IntercomClient()
+        intercomClient = IntercomClient(accessToken=self.userAccessToken)
         for e in canonicalResponse.responseElements:
+            if e.type == messages.ResponseElement.TYPE_NEW_TOPIC:
+                log.info("no new topic response for intercom channel")
+                continue
             conversationId = self.conversationId
             intercomClient.sendResponse(text=e.text, conversationId=conversationId)
             log.info("sendResponse(%s)", canonicalResponse)

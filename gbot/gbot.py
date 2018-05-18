@@ -490,19 +490,18 @@ def run_agent_intercom():
 
 ######
 from intercom.client import Client
-ACCESS_TOKEN="dG9rOjY2M2NjM2FjXzM5NTVfNGMzN19iMjdjX2UzYTI5YTBhMmYwOToxOjA=" # need from intercom
-APP_ID = "iv6ijpl5" # "cp6b0zl8" for messenger
-intercom = Client(personal_access_token=ACCESS_TOKEN)
+#ACCESS_TOKEN="dG9rOjY2M2NjM2FjXzM5NTVfNGMzN19iMjdjX2UzYTI5YTBhMmYwOToxOjA=" # need from intercom
+#APP_ID = "iv6ijpl5" # "cp6b0zl8" for messenger
+#intercom = Client(personal_access_token=ACCESS_TOKEN)
 
 def _run_agent_intercom():
     intercomEvent = request.json
 
     # TODO(nishant): how to disable intercom from sending same message multiple times
-    print(intercomEvent)
     if not intercomEvent:
         return make_response("invalid payload", 400, {"X-No-Retry": 1})
 
-    log.info("request.json: %s", json.dumps(intercomEvent, indent=2))
+    log.info("_run_agent_intercom: request.json: %s", json.dumps(intercomEvent, indent=2))
 
     # Get intercom conversation ID and pass it on
     conversationId = intercomEvent.get("data").get("item").get("id")
@@ -510,44 +509,26 @@ def _run_agent_intercom():
     # Myra concierge information
     # Get this from the database which stores <intercom accountid> -> <agentid map>
 
-    userId = "test1"
-    accountId = "3oPxV9oFXxzHYxuvpy56a9"
-    agentId = "f111cef48e1548be8d121f9649b368eb"
+    #userId = "test1"
+    #accountId = "3oPxV9oFXxzHYxuvpy56a9"
+    #agentId = "f111cef48e1548be8d121f9649b368eb"
 
-    conversation = intercom.conversations.find(id=conversationId)
-    print("CONV DICT: ", conversation.__dict__)
-    print(conversation.assignee)
-    print(conversation.assignee.__dict__)
+    #conversation = intercom.conversations.find(id=conversationId)
+    #print("CONV DICT: ", conversation.__dict__)
+    #print(conversation.assignee)
+    #print(conversation.assignee.__dict__)
 
-    if intercomEvent.get("topic") in ("conversation.user.created", "conversation.user.replied"):
+    if intercomEvent.get("topic") in ("conversation.user.created", "conversation.user.replied") \
+       and intercomEvent.get("data", {}).get("item", {}).get("assignee", {}).get("email") == "viksit@myralabs.com":
+        # TODO: replace viksit@myralabs.com with the right email or use the right user_id
         log.info("This is a topic to reply to (%s)", intercomEvent.get("topic"))
-        resBody = "This is a test response for your message at %s" % (datetime.datetime.now(),)
-        res = intercom.conversations.reply(
-            id=conversationId,
-            type=conversation.assignee.resource_type,
-            admin_id=conversation.assignee.id,
-            message_type='comment',
-            body=resBody)
+        appId = intercomEvent.get("app_id")
+        agentDeploymentMeta = ads.getJsonSpec(appId, "intercom")
+        if agentDeploymentMeta:
+            _intercom_agent_handler(agentDeploymentMeta, intercomEvent, appId)
+        else:
+            log.info("No agent for app_id: %s. Dropping this event.", appId)
 
-    # GenericBotHTTPAPI.fetchBotJsonSpec(
-    #     accountId=accountId,
-    #     agentId=agentId
-    # )
-
-    # event = {
-    #     "channel": messages.CHANNEL_INTERCOM,
-    #     "request-type": request.method,
-    #     "body": request.json,
-    #     "channel-meta": {
-    #         "user_id": userId,
-    #         "rid": request.args.get("rid"),
-    #         "conversation_id": conversationId
-    #     }
-    # }
-
-    # r = GenericBotHTTPAPI.requestHandler(
-    #     event=event,
-    #     context={})
     # log.debug("going to return a 200 status after request is handled")
     # return make_response("NOOP", 200, {"X-No-Retry": 1})
     res = json.dumps({})
@@ -555,7 +536,41 @@ def _run_agent_intercom():
 
 ## End intercom code
 
+def _intercom_agent_handler(agentDeploymentMeta, intercomEvent, appId):
+    accessToken = agentDeploymentMeta.get("access_token")
+    accountId = agentDeploymentMeta.get("concierge_meta", {}).get("account_id")
+    agentId = agentDeploymentMeta.get("concierge_meta", {}).get("agent_id")
+    assert accessToken and accountId and agentId, "Did not find required information from agentDeploymentMeta (%s)" % (agentDeploymentMeta,)
 
+    GenericBotHTTPAPI.fetchBotJsonSpec(
+        accountId=accountId,
+        agentId=agentId
+    )
+
+    event = {
+        "channel": messages.CHANNEL_INTERCOM,
+        "request-type": None,
+        "body": intercomEvent,
+        "channel-meta": {
+            "user_id": intercomEvent.get("data", {}).get("item", {}).get("user", {}).get("user_id"),
+            "rid": intercomEvent.get("id"),
+            #"conversation_id": intercomEvent.get("data", {}).get("item", {}).get("conversation_message", {}).get("id"),
+            "conversation_id": intercomEvent.get("data", {}).get("item", {}).get("id"),
+            "access_token": accessToken
+        }
+    }
+
+    r = GenericBotHTTPAPI.requestHandler(
+        event=event,
+        context={})
+
+    # resBody = "This is a test response for your message at %s" % (datetime.datetime.now(),)
+    # res = intercom.conversations.reply(
+    #     id=conversationId,
+    #     type=conversation.assignee.resource_type,
+    #     admin_id=conversation.assignee.id,
+    #     message_type='comment',
+    #     body=resBody)
 
 # TODO: Remove this
 @app.route("/anxoivch8wxoiu8dvhwnwo93", methods=['GET', 'POST'])
