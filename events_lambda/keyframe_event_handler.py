@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 import base64
 import json
 import sys, os
@@ -7,6 +8,7 @@ from flask import Flask, Response  # , request, session, render_template, jsonif
 
 import s3_writer
 import config
+import six
 
 logging.basicConfig()
 log = logging.getLogger("lambda_event_handler")
@@ -65,7 +67,7 @@ def handle_records(records):
     #cfg = config.getConfig()
     s3Writer = s3_writer.S3Writer(cfg.KF_EVENTS_S3_BUCKET)
     log.info("created s3Writer for bucket: %s", cfg.KF_EVENTS_S3_BUCKET)
-    for (k,v) in accountEvents.iteritems():
+    for (k,v) in six.iteritems(accountEvents):
         s3Prefix = "accounts/%s" % (k,)
         log.info("writing data at s3Prefix: %s", s3Prefix)
         log.debug("data: %s", v)

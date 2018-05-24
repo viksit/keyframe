@@ -1,3 +1,5 @@
+from __future__ import absolute_import
+from __future__ import print_function
 import os, sys
 import datetime
 import logging
@@ -6,6 +8,7 @@ import json
 import boto3
 
 import keyframe.config
+from six.moves import range
 
 log = logging.getLogger(__name__)
 #log.setLevel(10)
@@ -128,7 +131,7 @@ def main():
     assert len(sys.argv) > 1
     streamName = sys.argv[1]
     w = getWriter(streamName=streamName)
-    print "got writer: %s" % (w,)
+    print("got writer: %s" % (w,))
     numEvents = 1
     if len(sys.argv) > 2:
         numEvents = int(sys.argv[2])
@@ -137,6 +140,6 @@ def main():
             "event_id":"testing123",
             "time":datetime.datetime.now().strftime("%Y%m%d_%H%M%S")})
         w.write(e, "partitionKey-test")
-        print "wrote event: %s" % (e,)
+        print("wrote event: %s" % (e,))
 if __name__ == "__main__":
     main()

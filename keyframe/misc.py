@@ -1,4 +1,5 @@
 from __future__ import print_function
+from __future__ import absolute_import
 from six import iteritems, add_metaclass
 import re
 
@@ -37,7 +38,7 @@ class AttrList(object):
         self._l_[k] = value
 
     def __iter__(self):
-        return map(lambda i: _wrap(i, self._obj_wrapper), self._l_)
+        return [_wrap(i, self._obj_wrapper) for i in self._l_]
 
     def __len__(self):
         return len(self._l_)

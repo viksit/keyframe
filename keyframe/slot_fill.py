@@ -1,12 +1,14 @@
+from __future__ import absolute_import
 import sys
 import logging
 import inspect
-import messages
-import misc
+from . import messages
+from . import misc
 from six import add_metaclass
 import re
-from dsl import BaseEntity
+from .dsl import BaseEntity
 import json
+import six
 
 log = logging.getLogger(__name__)
 
@@ -98,7 +100,7 @@ class Slot(object):
 
     def addCustomFieldsToSession(self, botState):
         if self.customFields:
-            for (k,v) in self.customFields.iteritems():
+            for (k,v) in six.iteritems(self.customFields):
                 botState.addToSessionData(k, v, self.entityType)
 
     def fillWrapper(self, canonicalMsg, apiResult, channelClient, botState):

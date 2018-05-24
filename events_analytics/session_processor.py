@@ -1,3 +1,5 @@
+from __future__ import absolute_import
+from __future__ import print_function
 import sys
 import json
 import copy
@@ -201,13 +203,13 @@ def processSession2(session):
 
 def test():
     if not len(sys.argv) > 1:
-        print >> sys.stderr, "Need a session file"
+        print("Need a session file", file=sys.stderr)
     session = []
     with open(sys.argv[1]) as f:
         for l in f:
             session.append(json.loads(l.strip()))
     r = processSession(session)
-    print json.dumps(r)
+    print(json.dumps(r))
 
 if __name__ == "__main__":
     logging.basicConfig()

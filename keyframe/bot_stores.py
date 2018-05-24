@@ -1,7 +1,8 @@
+from __future__ import absolute_import
 import json
 import logging
 
-import store_api
+from . import store_api
 
 log = logging.getLogger(__name__)
 

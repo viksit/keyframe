@@ -1,8 +1,10 @@
+from __future__ import absolute_import
 import sys, os
 import psycopg2
 import json
 import config
 import logging
+import six
 
 log = logging.getLogger("keyframe.db_api")
 
@@ -90,7 +92,7 @@ class DBApi(object):
                       s.get("num_user_responses")))
 
     def writeAll(self, sessions_summaries):
-        for (session_id, session_summary) in sessions_summaries.iteritems():
+        for (session_id, session_summary) in six.iteritems(sessions_summaries):
             log.info("writing session_id: %s", session_id)
             if not session_summary:
                 log.warn("DBApi.writeAll session_summary: %s", session_summary)
@@ -101,13 +103,13 @@ class DBApi(object):
 def test_sessions(f):
     sessions = json.loads(open(f).read())
     dbApi = DBApi()
-    for (session_id, session_summary) in sessions.iteritems():
+    for (session_id, session_summary) in six.iteritems(sessions):
         dbApi.writeSession(session_summary)
 
 def test_sessions_queries(f):
     session_summaries = json.loads(open(f).read())
     dbApi = DBApi()
-    for (session_id, session_summary) in session_summaries.iteritems():
+    for (session_id, session_summary) in six.iteritems(session_summaries):
         dbApi.writeSessionQueries(session_summary.get("kb_info",[]))
 
 

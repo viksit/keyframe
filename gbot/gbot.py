@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from __future__ import print_function
+from __future__ import absolute_import
 import sys, os
 from os.path import expanduser, join
 from flask import Flask, request, Response
@@ -15,6 +16,7 @@ import json
 import traceback
 import base64
 import logging
+from six.moves import range
 
 logging.basicConfig()
 

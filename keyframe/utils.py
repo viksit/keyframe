@@ -1,5 +1,6 @@
 from __future__ import print_function
 
+from __future__ import absolute_import
 import traceback
 import os
 import logging
@@ -9,7 +10,8 @@ import uuid
 import tempfile
 import requests
 
-from store_api import KVStore, KVStoreError
+from .store_api import KVStore, KVStoreError
+import six
 
 def getLogLevel(envVar, defaultLogLevel=logging.INFO):
     l = os.getenv(envVar, defaultLogLevel)
@@ -34,7 +36,7 @@ class PersistentDict(object):
         return d.get(key)
 
     def add(self, key, value):
-        if not isinstance(key, basestring):
+        if not isinstance(key, six.string_types):
             raise KVStoreError("key must be of type basestring")
         d = self._getDict()
         d[key] = value

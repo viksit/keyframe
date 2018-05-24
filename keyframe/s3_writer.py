@@ -4,6 +4,7 @@ Do not add any dependencies in here except those required to write to s3.
 This module is used in lambda functions, and it is better without many dependencies.
 """
 
+from __future__ import absolute_import
 import json
 import logging
 import os.path

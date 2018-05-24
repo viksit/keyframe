@@ -1,4 +1,5 @@
 from __future__ import print_function
+from __future__ import absolute_import
 import sys, os
 from os.path import expanduser, join
 from flask import Flask, request, Response
@@ -10,12 +11,12 @@ import logging
 
 #from pymyra.api import client
 
-from keyframe.cmdline import BotCmdLineHandler
-from keyframe import channel_client
-from keyframe import messages
-from keyframe import config
-import generic_bot
-from keyframe import bot_stores
+from .keyframe.cmdline import BotCmdLineHandler
+from .keyframe import channel_client
+from .keyframe import messages
+from .keyframe import config
+from . import generic_bot
+from .keyframe import bot_stores
 
 import pymyra.api.inference_proxy_client as inference_proxy_client
 import pymyra.api.inference_proxy_api as inference_proxy_api
@@ -48,7 +49,7 @@ class GenericCmdlineHandler(BotCmdLineHandler):
 
         log.debug("configJson: %s", configJson)
         bms = bot_stores.BotMetaStore(kvStore=self.kvStore)
-        if not len(configJson.keys()):
+        if not len(list(configJson.keys())):
             log.debug("going to get json spec")
             agentId = self.kwargs.get("agentId")
             configJson = bms.getJsonSpec(accountId, agentId)
