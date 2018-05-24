@@ -496,7 +496,7 @@ from intercom.client import Client
 
 def _run_agent_intercom():
     intercomEvent = request.json
-
+    log.info("request.args: %s", request.args)
     # TODO(nishant): how to disable intercom from sending same message multiple times
     if not intercomEvent:
         return make_response("invalid payload", 400, {"X-No-Retry": 1})
@@ -518,17 +518,24 @@ def _run_agent_intercom():
     #print(conversation.assignee)
     #print(conversation.assignee.__dict__)
 
-    if intercomEvent.get("topic") in ("conversation.user.created", "conversation.user.replied") \
-       and intercomEvent.get("data", {}).get("item", {}).get("assignee", {}).get("email") == "viksit@myralabs.com":
-        # TODO: replace viksit@myralabs.com with the right email or use the right user_id
-        log.info("This is a topic to reply to (%s)", intercomEvent.get("topic"))
+    if intercomEvent.get("topic") in ("conversation.user.created", "conversation.user.replied"):
+        assignedUserEmail = intercomEvent.get("data", {}).get("item", {}).get("assignee", {}).get("email")
+        assignedUserId = intercomEvent.get("data", {}).get("item", {}).get("assignee", {}).get("id")
         appId = intercomEvent.get("app_id")
         agentDeploymentMeta = ads.getJsonSpec(appId, "intercom")
+        log.info("agentDeploymentMeta: %s", agentDeploymentMeta)
         if agentDeploymentMeta:
-            _intercom_agent_handler(agentDeploymentMeta, intercomEvent, appId)
+            proxyUserId = agentDeploymentMeta.get("config", {}).get("intercom_proxy_agent_id")
+            if assignedUserId == proxyUserId:
+                log.info("This is a topic to reply to (%s)", intercomEvent.get("topic"))
+                _intercom_agent_handler(agentDeploymentMeta, intercomEvent, appId)
+            else:
+                log.info("event for user: %s does not match proxy user: %s. dropping it.", assignedUserId, proxyUserId)
         else:
             log.info("No agent for app_id: %s. Dropping this event.", appId)
 
+    else:
+        log.info("Received event is not a target for response from this bot. Dropping it.")
     # log.debug("going to return a 200 status after request is handled")
     # return make_response("NOOP", 200, {"X-No-Retry": 1})
     res = json.dumps({})
@@ -537,6 +544,7 @@ def _run_agent_intercom():
 ## End intercom code
 
 def _intercom_agent_handler(agentDeploymentMeta, intercomEvent, appId):
+    log.info("agentDeploymentMeta: %s, appId: %s", agentDeploymentMeta, appId)
     accessToken = agentDeploymentMeta.get("access_token")
     accountId = agentDeploymentMeta.get("concierge_meta", {}).get("account_id")
     agentId = agentDeploymentMeta.get("concierge_meta", {}).get("agent_id")

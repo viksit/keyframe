@@ -40,7 +40,10 @@ class AgentDeploymentStore(object):
         Should return a python dict
         """
         k = self._getKey(teamId, channel)
-        return json.loads(self.kvStore.get_json(k))
+        s = self.kvStore.get_json(k)
+        if not s:
+            return None
+        return json.loads(s)
 
     def putJsonSpec(self, teamId, channel, jsonSpec):
         """
