@@ -1,3 +1,5 @@
+from __future__ import absolute_import
+from __future__ import print_function
 import sys
 import json
 import plac
@@ -17,6 +19,7 @@ from pyspark.sql import SparkSession
 import session_processor
 import db_api
 import config
+import six
 
 log = logging.getLogger(__name__)
 log = logging.getLogger("keyframe.event_analytics.spark_event_processor")
@@ -169,11 +172,11 @@ def main(action, eventsPath=None, accountId=None, dates=None):
     session_summaries = process_sessions(
         cfg=cfg, eventsPathList=eventsPathList, dates=eventDatesList)
     if action == "write-to-stdout":
-        print json.dumps(session_summaries, indent=True, separators=(',', ': '))
+        print(json.dumps(session_summaries, indent=True, separators=(',', ': ')))
     elif action == "write-to-db":
         dbApi = db_api.DBApi()
         dbApi.writeAll(session_summaries)
-        for (session_id, session_summary) in session_summaries.iteritems():
+        for (session_id, session_summary) in six.iteritems(session_summaries):
             writeSessionToS3(cfg, session_summary)
     log.info("spark_event_processor DONE")
 

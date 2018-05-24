@@ -1,7 +1,8 @@
+from __future__ import absolute_import
 import json
 import logging
-import urlparse
-import urllib
+import six.moves.urllib.parse
+import six.moves.urllib.request, six.moves.urllib.parse, six.moves.urllib.error
 import copy
 import uuid
 from collections import defaultdict
@@ -11,18 +12,19 @@ import requests
 import json
 from six import iteritems, add_metaclass
 import traceback
-import integrations.zendesk.zendesk as zendesk
+from . import integrations.zendesk.zendesk as zendesk
 import re
 import random
 import lxml.html
 
 import logging
 
-import keyframe.slot_fill
-import keyframe.dsl
-import keyframe.messages
-import keyframe.utils
-import keyframe.constants as constants
+from . import keyframe.slot_fill
+from . import keyframe.dsl
+from . import keyframe.messages
+from . import keyframe.utils
+from . import keyframe.constants as constants
+import six
 
 log = logging.getLogger(__name__)
 
@@ -194,8 +196,8 @@ class GenericIntentModelSlot(GenericSlot):
         for d in regexMatcherJson:
             log.info("d: %s (%s)", d, type(d))
             assert len(d) == 1
-            intentStr = d.keys()[0]
-            regexStrList = d.values()[0]
+            intentStr = list(d.keys())[0]
+            regexStrList = list(d.values())[0]
             for regexStr in regexStrList:
                 log.debug("comparing text (%s) with regexStr (%s)",
                           text, regexStr)
@@ -358,7 +360,7 @@ class GenericActionSlot(GenericSlot):
         """Return the right apiUrl for search.
         """
         log.info("_addSearchDefaults(%s)", apiUrl)
-        x = urlparse.urlparse(apiUrl)
+        x = six.moves.urllib.parse.urlparse(apiUrl)
         if x.scheme and x.netloc and x.path and x.query:
             return apiUrl
 
@@ -368,16 +370,16 @@ class GenericActionSlot(GenericSlot):
         # Assume anything specified in the webhook url are url parameters
         params = {}
         if apiUrl:
-            params = dict(urlparse.parse_qsl(apiUrl))
+            params = dict(six.moves.urllib.parse.parse_qsl(apiUrl))
         # Need to add two parameters for search if they are not explicitly specified.
         if "idx" not in params:
             params["idx"] = self.searchIndex
         if "agentid" not in params:
             params["agentid"] = self.agentId
-        queryStr = urllib.urlencode([(k,v) for (k,v) in params.iteritems()])
-        queryStr = urllib.unquote(queryStr)  # for the {{xxx}} placeholders
+        queryStr = six.moves.urllib.parse.urlencode([(k,v) for (k,v) in six.iteritems(params)])
+        queryStr = six.moves.urllib.parse.unquote(queryStr)  # for the {{xxx}} placeholders
         urlTuple[4] = queryStr
-        newUrl = urlparse.urlunparse(urlTuple)
+        newUrl = six.moves.urllib.parse.urlunparse(urlTuple)
         log.info("_addSearchDefaults returning new url: %s", newUrl)
         return newUrl
 
@@ -421,7 +423,7 @@ class GenericActionSlot(GenericSlot):
             #log.debug("templatedRequestBody (%s): %s", type(templatedRequestBody), templatedRequestBody)
             requestBodyJsonObject = json.loads(templatedRequestBody)
 
-        urlPieces = urlparse.urlparse(templatedURL)
+        urlPieces = six.moves.urllib.parse.urlparse(templatedURL)
         log.debug("urlPieces: %s" % (urlPieces,))
         response = {}
         if not (len(urlPieces.scheme) > 0 and len(urlPieces.netloc) > 0):
@@ -468,7 +470,7 @@ class GenericActionSlot(GenericSlot):
     def getAttachmentUrls(self, botState):
         urls = []
         sessionData = botState.getSessionData()
-        for (k,v) in botState.getSessionDataType().iteritems():
+        for (k,v) in six.iteritems(botState.getSessionDataType()):
             if v == "ATTACHMENTS":
                 url = sessionData.get(k)
                 if url.lower() in ("no","none","no attachment"):
@@ -481,7 +483,7 @@ class GenericActionSlot(GenericSlot):
         zendeskConfig = self.actionSpec.get("zendesk")
         zc = copy.deepcopy(zendeskConfig.get("request"))
         _ed = self._entitiesDict(botState)
-        for (k,v) in zendeskConfig.get("request").iteritems():
+        for (k,v) in six.iteritems(zendeskConfig.get("request")):
             log.debug("k: %s, v: %s", k, v)
             zc[k] = Template(v).render(_ed)
         if zc.get("attachments"):

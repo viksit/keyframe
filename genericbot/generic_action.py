@@ -1,6 +1,7 @@
 from __future__ import print_function
+from __future__ import absolute_import
 import logging
-import urlparse
+import six.moves.urllib.parse
 import copy
 import uuid
 from collections import defaultdict
@@ -10,18 +11,19 @@ import requests
 import json
 from six import iteritems, add_metaclass
 import traceback
-import keyframe.email
+from . import keyframe.email
 
-import keyframe.constants as constants
-import keyframe.actions
-import keyframe.dsl as dsl
-import keyframe.slot_fill as slot_fill
-import generic_slot
-import keyframe.messages as messages
-import keyframe.utils
-import integrations.zendesk.zendesk as zendesk
-import keyframe.event_writer as event_writer
-import keyframe.event
+from . import keyframe.constants as constants
+from . import keyframe.actions
+from . import keyframe.dsl as dsl
+from . import keyframe.slot_fill as slot_fill
+from . import generic_slot
+from . import keyframe.messages as messages
+from . import keyframe.utils
+from . import integrations.zendesk.zendesk as zendesk
+from . import keyframe.event_writer as event_writer
+from . import keyframe.event
+import six
 
 log = logging.getLogger(__name__)
 #log.setLevel(10)
@@ -329,7 +331,7 @@ class GenericActionObject(keyframe.actions.ActionObject):
                 if not optionsList:
                     raise Exception("must have options_list for slot %s in action object for topic %s" % (gc.name, topicId))
                 # From the current UI, the list is specified as a string, but from a newer UI it is a list.
-                if isinstance(optionsList, basestring):
+                if isinstance(optionsList, six.string_types):
                     gc.optionsList = [e.strip() for e in optionsList.strip().split(",") if e.strip()]
                 elif isinstance(optionsList, list):
                     gc.optionsList = optionsList
@@ -347,7 +349,7 @@ class GenericActionObject(keyframe.actions.ActionObject):
                 if gc.slotTransitions:
                     # make all keys lowercase.
                     gc.slotTransitions = dict(
-                        (k.lower(),v) for (k,v) in gc.slotTransitions.iteritems())
+                        (k.lower(),v) for (k,v) in six.iteritems(gc.slotTransitions))
                 log.debug("got slot transitions for slot (%s): %s",
                           gc.name, gc.slotTransitions)
             log.debug("created slot: %s", gc)

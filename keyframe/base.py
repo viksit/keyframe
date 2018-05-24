@@ -1,23 +1,24 @@
 from __future__ import print_function
+from __future__ import absolute_import
 import logging
 import json
 import re
 import copy
 import time
 
-import messages
-import slot_fill
-import dsl
-import config
-import misc
+from . import messages
+from . import slot_fill
+from . import dsl
+from . import config
+from . import misc
 from collections import defaultdict
 import sys
-import utils
-from bot_state import BotState
-import actions
-import constants
-import event
-import event_writer
+from . import utils
+from .bot_state import BotState
+from . import actions
+from . import constants
+from . import event
+from . import event_writer
 
 from six import iteritems, add_metaclass
 
@@ -25,6 +26,7 @@ from six import iteritems, add_metaclass
 # from orderedset import OrderedSet
 # alternative
 from ordered_set import OrderedSet
+import six
 
 
 # TODO: move logging out into a nicer function/module
@@ -347,7 +349,7 @@ class BaseBot(object):
         log.debug("BaseBot._addCustomPropsToSession: customProps: %s", customProps)
         if not customProps:
             return
-        for (k,v) in customProps.iteritems():
+        for (k,v) in six.iteritems(customProps):
             log.debug("addToSessionData(%s, %s)", k, v)
             botState.addToSessionData(k, v)
             botState.addToSessionData("custom_props.%s" % (k,), v)

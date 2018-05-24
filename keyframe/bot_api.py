@@ -1,12 +1,13 @@
 from __future__ import print_function
+from __future__ import absolute_import
 import inspect
 import logging
 
-import messages
-import channel_client
-import fb
-import config
-import slot_fill
+from . import messages
+from . import channel_client
+from . import fb
+from . import config
+from . import slot_fill
 import copy
 
 import uuid

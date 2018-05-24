@@ -1,3 +1,5 @@
+from __future__ import absolute_import
+from __future__ import print_function
 import os, sys
 import traceback
 
@@ -17,10 +19,10 @@ if _keyframe_log_level:
     try:
         kll = int(_keyframe_log_level)
         logging.getLogger(__name__).setLevel(kll)
-        print >> sys.stderr, "setting keyframe loglevel for %s to %s" % (
-            __name__, kll)
+        print("setting keyframe loglevel for %s to %s" % (
+            __name__, kll), file=sys.stderr)
     except:
-        print >> sys.stderr, "exception setting up logging"
+        print("exception setting up logging", file=sys.stderr)
         traceback.print_exc()
         pass
 # ----------

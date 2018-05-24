@@ -1,4 +1,5 @@
 
+from __future__ import absolute_import
 import sys, os
 from os.path import expanduser, join
 from flask import Flask, request, Response

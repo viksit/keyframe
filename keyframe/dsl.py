@@ -1,3 +1,4 @@
+from __future__ import absolute_import
 import logging
 import re
 import sys
@@ -272,7 +273,7 @@ class PhoneRegexEntity(BaseEntity):
         text = kwargs.get("text")
         groups = re.findall(self.regex, " " + text + " ")
         if len(groups):
-            groups = filter(lambda x: len(x), groups[0])
+            groups = [x for x in groups[0] if len(x)]
             # We should now have a phone number in here.
             # join it.
             res = "-".join(groups)
