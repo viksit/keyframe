@@ -1,5 +1,6 @@
+from __future__ import absolute_import
 import requests
-import config
+from . import config
 import traceback
 import logging
 

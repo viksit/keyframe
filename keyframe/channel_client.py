@@ -1,14 +1,15 @@
 #!/usr/local/bin/python
 # -*- coding: utf-8 -*-
 from __future__ import print_function
+from __future__ import absolute_import
 import sys
 import collections
 import logging
 import codecs
 import json
 
-import messages
-import fb
+from . import messages
+from . import fb
 from slackclient import SlackClient
 
 log = logging.getLogger(__name__)

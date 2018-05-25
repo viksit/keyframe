@@ -4,6 +4,7 @@ To run:
 (keyframe1) ~/work/keyframe/tutorial/genericbot $ env REALM=prod rlwrap python test_gbot.py testscripts/prod
 """
 
+from __future__ import absolute_import
 import sys, os
 import logging
 import json

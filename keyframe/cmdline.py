@@ -1,20 +1,22 @@
 from __future__ import print_function
 
 #import readline
+from __future__ import absolute_import
 import inspect
 import logging
-import urlparse
+import six.moves.urllib.parse
 
-import messages
-import channel_client
-import fb
-import config
-import slot_fill
+from . import messages
+from . import channel_client
+from . import fb
+from . import config
+from . import slot_fill
 import copy
 
 import uuid
 from collections import defaultdict
 import sys
+from six.moves import input
 
 log = logging.getLogger(__name__)
 #log.setLevel(10)
@@ -35,7 +37,7 @@ class CmdLineHandler(object):
     def begin(self):
         while True:
             try:
-                userInput = raw_input("> ")
+                userInput = input("> ")
                 if not userInput:
                     continue
                 isCmd = self.checkCmds(userInput)
@@ -72,7 +74,7 @@ class BotCmdLineHandler(CmdLineHandler):
         botStateUid = None
         if userInput.strip().startswith(">"):
             # Treat at url parameters
-            x = urlparse.parse_qs(userInput[1:].strip())
+            x = six.moves.urllib.parse.parse_qs(userInput[1:].strip())
             text = x.get("text",[None])[0]
             botStateUid = x.get("bot_state_uid",[None])[0]
             log.debug("extracted url params: text=%s, botStateUid=%s",

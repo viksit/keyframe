@@ -1,5 +1,6 @@
-import event
-import event_writer
+from __future__ import absolute_import
+from . import event
+from . import event_writer
 
 
 def handleEvent(e, config):

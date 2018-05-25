@@ -1,16 +1,18 @@
+from __future__ import absolute_import
 import time
 import random
 import logging
 
-import messages
-import channel_client
-import fb
-import config
-import slot_fill
+from . import messages
+from . import channel_client
+from . import fb
+from . import config
+from . import slot_fill
 import copy
-import bot_api
-import store_api
+from . import bot_api
+from . import store_api
 from pymyra.api.messages import InferenceResult
+import six
 
 log = logging.getLogger(__name__)
 
@@ -214,7 +216,7 @@ class BotState(object):
         data required to reconstruct this instance.
         """
         sessionApiResultsJson = {}
-        for (k, v) in self._sessionApiResults.iteritems():
+        for (k, v) in six.iteritems(self._sessionApiResults):
             if v:
                 sessionApiResultsJson[k] = v.toJSON()
         return {
@@ -262,7 +264,7 @@ class BotState(object):
             botState._sessionUtterancesPrompt = {}
         botState._sessionApiResults = {}
         _d = jsonObject.get("session_api_results", {})
-        for (k,v) in _d.iteritems():
+        for (k,v) in six.iteritems(_d):
             botState._sessionApiResults[k] = InferenceResult.fromJSON(v)
             
         botState.writeTime = jsonObject.get("write_time")

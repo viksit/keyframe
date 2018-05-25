@@ -1,5 +1,6 @@
 from __future__ import print_function
 
+from __future__ import absolute_import
 import copy
 from collections import defaultdict
 import sys
@@ -7,10 +8,10 @@ import re
 
 import logging
 
-import keyframe.base
-import keyframe.dsl
-import keyframe.actions
-import generic_action
+from . import keyframe.base
+from . import keyframe.dsl
+from . import keyframe.actions
+from . import generic_action
 
 log = logging.getLogger(__name__)
 

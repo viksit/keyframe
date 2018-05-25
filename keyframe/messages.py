@@ -1,5 +1,7 @@
-import utils
+from __future__ import absolute_import
+from . import utils
 import logging
+import six
 
 log = logging.getLogger(__name__)
 #log.setLevel(10)
@@ -83,7 +85,7 @@ class CanonicalMsg(object):
         # So this is required.
         customProps = self.customProps
         if customProps:
-            customProps = "".join("%s:%s"%(k,v) for (k,v) in customProps.iteritems())
+            customProps = "".join("%s:%s"%(k,v) for (k,v) in six.iteritems(customProps))
         return ("CanonicalMsg(channel=%s, httpType=%s, userId=%s, "
                 "text=%s, rid=%s, botStateUid=%s, customProps=%s, "
                 "locationHref=%s, userInfo=%s, eventInfo=%s, instanceId=%s)") % \
@@ -130,7 +132,7 @@ class CanonicalResponse(object):
         return {
             "channel": self.channel,
             "userId": self.userId,
-            "responseElements": map(lambda x: x.toJSON(), self.responseElements),
+            "responseElements": [x.toJSON() for x in self.responseElements],
             "botStateUid": self.botStateUid
         }
 

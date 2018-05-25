@@ -17,6 +17,7 @@ Assumption: Set up is already done and now we're just processing.
 
 """
 
+from __future__ import absolute_import
 import os
 import message
 

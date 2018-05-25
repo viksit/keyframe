@@ -1,18 +1,20 @@
 from __future__ import print_function
+from __future__ import absolute_import
 import logging
 
-import messages
-import slot_fill
-import config
+from . import messages
+from . import slot_fill
+from . import config
 import copy
-import misc
+from . import misc
 from collections import defaultdict
 import sys
-import constants
-import slot_fill
-import utils
+from . import constants
+from . import slot_fill
+from . import utils
 
 from six import iteritems, add_metaclass
+from six.moves import zip
 
 
 log = logging.getLogger(__name__)

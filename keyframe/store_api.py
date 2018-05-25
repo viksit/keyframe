@@ -1,3 +1,5 @@
+from __future__ import absolute_import
+from __future__ import print_function
 import os, sys
 import json
 import time
@@ -262,10 +264,10 @@ def test1():
     v = {"created_at":time.time()}
     cacheKv.put_json(k, v, 10)
     v1 = cacheKv.get(k)
-    print v1
+    print(v1)
     time.sleep(4)
     v2 = cacheKv.get(k)
-    print v2
+    print(v2)
     assert v1 == v2
 
 def test2():
@@ -273,8 +275,8 @@ def test2():
     cacheKv = MemoryCacheKVStore(kv, 3)
     k = "key1"
     v3 = cacheKv.get(k)
-    print v3
+    print(v3)
     v4 = cacheKv.get(k)
-    print v4
+    print(v4)
     assert v3 == v4
 

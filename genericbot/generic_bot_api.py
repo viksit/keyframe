@@ -1,4 +1,5 @@
 from __future__ import print_function
+from __future__ import absolute_import
 import inspect
 import copy
 import uuid
@@ -7,12 +8,12 @@ import sys
 
 import logging
 
-import keyframe.messages
-import keyframe.channel_client
-import keyframe.fb
-import keyframe.config
+from . import keyframe.messages
+from . import keyframe.channel_client
+from . import keyframe.fb
+from . import keyframe.config
 #import keyframe.slot_fill
-import keyframe.bot_api
+from . import keyframe.bot_api
 
 log = logging.getLogger(__name__)
 # If want extra logging for this specific module, set it explicitly here.
