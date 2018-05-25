@@ -200,8 +200,12 @@ class OptionsEntity(BaseEntity):
         if not text:
             log.info("no text - cannot extract entity")
             return None
-        if text not in self.optionsList:
-            log.info("text (%s) not in optionsList (%s)", text, self.optionsList)
+        if not self.optionsList:
+            return None
+        ol = [o.lower() for o in self.optionsList]
+        if text.lower() not in ol:
+            log.info("text (%s) not in optionsList (%s)",
+                     text.lower(), ol)
             return None
         return text
 

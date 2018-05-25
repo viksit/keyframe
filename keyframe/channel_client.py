@@ -295,7 +295,11 @@ class ChannelClientIntercom(ChannelClient):
             httpType=channelMsg.httpType,
             userId=self.userId,
             text=text,
-            rid=channelMsg.body.get("id")
+            rid=channelMsg.body.get("id"),
+            # For intercom, there aren't separate instances of the widget.
+            # But there are different conversation ids.
+            # Overload instanceId with conversationId.
+            instanceId=channelMsg.body.get("data", {}).get("item", {}).get("id")
         )
 
     def sendResponse(self, canonicalResponse):
