@@ -23,6 +23,8 @@ import keyframe.dsl
 import keyframe.messages
 import keyframe.utils
 import keyframe.constants as constants
+import keyframe.intercom_client as intercom_client
+import keyframe.channel_client as channel_client
 
 log = logging.getLogger(__name__)
 
@@ -346,8 +348,24 @@ class GenericActionSlot(GenericSlot):
                 self.name, _d.get("text"), self.entityType)
             botState.addToSessionUtterances(
                 self.name, None, _d.get("text"), self.entityType)
+        elif actionType == "transfer_cnv":
+            if isinstance(channelClient, channel_client.ChannelClientIntercom):
+                assigneeId = channelClient.supportAdminId
+                adminId = channelClient.proxyAdminId
+                assert assigneeId and adminId, "Must have assigneeId and adminId"
+                log.info("TRANSFER_CONVERSATION: %s", channelClient.conversationId)
+                intercomClient = intercom_client.IntercomClient(
+                    accessToken=self.channelClient.userAccessToken)
+                intercomClient.reassignConversation(
+                    conversationId=channelClient.conversationId,
+                    assigneeId=assigneeId,
+                    adminId=adminId)
+                text = ""
+            else:
+                text = "Simulating Intercom message transfer...... beep beep beep beep....... Done."
         else:
             raise Exception("Unknown actionType (%s)" % (actionType,))
+
         canonicalResponse = self.respond(
             contentType,
             text, canonicalMsg, botStateUid=botState.getUid(),

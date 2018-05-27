@@ -496,12 +496,12 @@ from intercom.client import Client
 
 def _run_agent_intercom():
     intercomEvent = request.json
-    log.info("request.args: %s", request.args)
+    log.debug("request.args: %s", request.args)
     # TODO(nishant): how to disable intercom from sending same message multiple times
     if not intercomEvent:
         return make_response("invalid payload", 400, {"X-No-Retry": 1})
 
-    log.info("_run_agent_intercom: request.json: %s", json.dumps(intercomEvent, indent=2))
+    log.debug("_run_agent_intercom: request.json: %s", json.dumps(intercomEvent, indent=2))
 
     # Get intercom conversation ID and pass it on
     conversationId = intercomEvent.get("data").get("item").get("id")
@@ -564,7 +564,9 @@ def _intercom_agent_handler(agentDeploymentMeta, intercomEvent, appId):
             "rid": intercomEvent.get("id"),
             #"conversation_id": intercomEvent.get("data", {}).get("item", {}).get("conversation_message", {}).get("id"),
             "conversation_id": intercomEvent.get("data", {}).get("item", {}).get("id"),
-            "access_token": accessToken
+            "access_token": accessToken,
+            "proxy_admin_id": agentDeploymentMeta.get("config", {}).get("intercom_proxy_agent_id"),
+            "support_admin_id": agentDeploymentMeta.get("config", {}).get("intercom_support_agent_id")
         }
     }
 

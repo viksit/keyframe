@@ -20,6 +20,7 @@ class ChannelClientError(Exception):
 class ChannelClient(object):
     def __init__(self, config=None):
         self.config = config
+        #self.channelMeta = {}
 
     def extract(self, channelMsg):
         raise NotImplementedError()
@@ -274,12 +275,15 @@ class ChannelClientIntercom(ChannelClient):
         log.info("Init ChannelClientIntercom__init__(%s)", locals())
         self.config = config
         self.responses = collections.deque()
+        #self.channelMeta = config.CHANNEL_META
         # TODO(viksit): add user/team ids
         self.userId = config.CHANNEL_META.get("user_id")
         self.conversationId = config.CHANNEL_META.get("conversation_id")
         # userAccessToken enables responses to a particular clients conversion.
         # I.e. it is the intercom token allowing api access for the client the bot is responding on behalf of.
         self.userAccessToken = config.CHANNEL_META.get("access_token")
+        self.supportAdminId = config.CHANNEL_META.get("support_admin_id")
+        self.proxyAdminId = config.CHANNEL_META.get("proxy_admin_id")
 
     def extract(self, channelMsg):
         log.info("extract(%s)", channelMsg)
@@ -288,7 +292,7 @@ class ChannelClientIntercom(ChannelClient):
         if len(convParts) > 0 and convParts[0].get("body"):
             text = convParts[0].get("body")
         text = text.replace("<p>","").replace("</p>","")
-        conversationId = channelMsg.body.get("data", {}).get("item", {}).get("id")
+        #conversationId = channelMsg.body.get("data", {}).get("item", {}).get("id")
         log.info("intercom extracted text: %s", text)
         return messages.CanonicalMsg(
             channel=channelMsg.channel,
@@ -299,14 +303,17 @@ class ChannelClientIntercom(ChannelClient):
             # For intercom, there aren't separate instances of the widget.
             # But there are different conversation ids.
             # Overload instanceId with conversationId.
-            instanceId=channelMsg.body.get("data", {}).get("item", {}).get("id")
+            instanceId=self.conversationId
         )
 
     def sendResponse(self, canonicalResponse):
-        intercomClient = IntercomClient(accessToken=self.userAccessToken)
+        intercomClient = IntercomClient(
+            accessToken=self.userAccessToken)
         for e in canonicalResponse.responseElements:
             if e.type == messages.ResponseElement.TYPE_NEW_TOPIC:
                 log.info("no new topic response for intercom channel")
+                continue
+            if not e.text:
                 continue
             conversationId = self.conversationId
             intercomClient.sendResponse(text=e.text, conversationId=conversationId)

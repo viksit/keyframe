@@ -23,3 +23,8 @@ class IntercomClient(object):
             message_type='comment',
             body=text)
         return res
+
+    def reassignConversation(self, conversationId, assigneeId, adminId):
+        intercom = Client(personal_access_token=self.accessToken)
+        intercom.conversations.assign(
+            id=conversationId, admin_id=adminId, assignee_id=assigneeId)
