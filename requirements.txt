@@ -46,3 +46,4 @@ slackclient
 zdesk
 lxml==4.0.0
 flask_cors
+simple-salesforce
