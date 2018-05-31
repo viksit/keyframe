@@ -9,7 +9,6 @@ from simple_salesforce import Salesforce
 from simple_salesforce import SalesforceResourceNotFound
 
 import keyframe.config
-import keyframe.integrations.salesforce.salesforce as sf
 
 log = logging.getLogger(__name__)
 #log.setLevel(10)
@@ -57,7 +56,7 @@ class SalesforceClient(object):
                      requesterFirstName=None,
                      attachments=None):
         """
-        Return id and url of the ticket.
+        Return ticket struct and url of the ticket.
         """
         log.debug("createTicket(%s)", locals())
         contact = self.getContact(requesterEmail)
@@ -80,5 +79,38 @@ class SalesforceClient(object):
         log.info("c: %s", c)
         case = self.sf.Case.get_by_custom_id('id', c.get("id"))
         return case
-        
 
+
+def _nameParts(name):
+    # TODO: improve this.
+    s = name.split()
+    if len(s) > 1:
+        return (s[0], s[-1])
+    return (None, name)
+
+def createTicket(jsonObject):
+    """Take a jsonObject that specifies everything about the ticket
+    that needs to be logged, and returns a url for the ticket.
+    jsonObject: (object) dict as jsonObjectFormatExample
+    Returns: {"ticket":{"url":URL}}
+    """
+    log.info("jsonObject: %s", jsonObject)
+    j = jsonObject
+    # Must have the fields to create a client. Only thing to do would be
+    # to check and throw back a specific exception.
+    s = SalesforceClient(
+        username=j["username"],
+        password=j["password"],
+        orgId=j["org_id"],
+        securityToken=j["security_token"],
+        instance=j["instance"])
+    if not j.get("subject") or not j.get("body"):
+        return None
+    (firstName, lastName) = _nameParts(j.get("requester_name"))
+    (t, url) = s.createTicket(
+        subject=j.get("subject"),
+        body=j.get("body"),
+        requesterLastName=lastName,
+        requesterEmail=j.get("requester_email"),
+        requesterFirstName=firstName)
+    return {"ticket":{"url":url}}

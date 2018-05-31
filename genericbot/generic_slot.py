@@ -12,6 +12,8 @@ import json
 from six import iteritems, add_metaclass
 import traceback
 import integrations.zendesk.zendesk as zendesk
+import integrations.salesforce.salesforce as salesforce
+
 import re
 import random
 import lxml.html
@@ -323,6 +325,11 @@ class GenericActionSlot(GenericSlot):
             log.debug("ZENDESK returns: %s", _d)
             text = _d.get("text")
             ticket_url = _d.get("ticket_url")
+        elif actionType == "salesforce":
+            _d = self.processSalesforce(botState)
+            log.debug("SALESFORCE returns: %s", _d)
+            text = _d.get("text")
+            ticket_url = _d.get("ticket_url")
         elif actionType == "email":
             text = self.doEmail(
                 self.actionSpec.get("email"), botState)
@@ -524,5 +531,26 @@ class GenericActionSlot(GenericSlot):
         return {
             "text": resp,
             "ticket_url": zr.get("ticket",{}).get("agenturl")
+            }
+        #return resp
+
+    def processSalesforce(self, botState):
+        salesforceConfig = self.actionSpec.get("salesforce")
+        zc = copy.deepcopy(salesforceConfig.get("request"))
+        _ed = self._entitiesDict(botState)
+        for (k,v) in salesforceConfig.get("request").iteritems():
+            log.debug("k: %s, v: %s", k, v)
+            zc[k] = Template(v).render(_ed)
+        zr = salesforce.createTicket(zc)
+        log.debug("zr: %s", zr)
+        respTemplate = "A ticket has been filed: {{ticket.url}}"
+        respTemplate = salesforceConfig.get("response_text", respTemplate)
+        log.debug("respTemplate: %s", respTemplate)
+        _t = Template(respTemplate)
+        resp = _t.render(zr)
+        log.debug("after processing zendesk, resp: %s", resp)
+        return {
+            "text": resp,
+            "ticket_url": zr.get("ticket",{}).get("url")
             }
         #return resp
