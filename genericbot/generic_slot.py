@@ -430,6 +430,7 @@ class GenericActionSlot(GenericSlot):
         entities = botState.getSessionData()
         requestBody = webhook.get("api_body")
         requestAuth = webhook.get("api_auth")  # Assume basic auth for now.
+        timeoutSeconds = webhook.get("timeout_seconds", 15)
         log.debug("fetchWebhook entities: %s", entities)
         # Response
         urlTemplate = Template(url)
@@ -461,11 +462,11 @@ class GenericActionSlot(GenericSlot):
             log.info("making POST request: url: %s, json: %s, auth: %s",
                       templatedURL, requestBodyJsonObject, requestAuthTuple)
             response = requests.post(
-                templatedURL, json=requestBodyJsonObject, auth=requestAuthTuple)
+                templatedURL, json=requestBodyJsonObject, auth=requestAuthTuple, timeout=timeoutSeconds)
         else:
             log.info("making GET request: url: %s, auth: %s",
                      templatedURL, requestAuthTuple)
-            response = requests.get(templatedURL, auth=requestAuthTuple)
+            response = requests.get(templatedURL, auth=requestAuthTuple, timeout=timeoutSeconds)
         if response.status_code not in (200, 201, 202):
             log.exception("webhook call failed. status_code: %s", response.status_code)
             raise Exception("webhook call failed. status_code: %s" % (response.status_code,))
