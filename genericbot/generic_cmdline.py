@@ -11,12 +11,12 @@ import logging
 
 #from pymyra.api import client
 
-from .keyframe.cmdline import BotCmdLineHandler
-from .keyframe import channel_client
-from .keyframe import messages
-from .keyframe import config
+from keyframe.cmdline import BotCmdLineHandler
+from keyframe import channel_client
+from keyframe import messages
+from keyframe import config
 from . import generic_bot
-from .keyframe import bot_stores
+from keyframe import bot_stores
 
 import pymyra.api.inference_proxy_client as inference_proxy_client
 import pymyra.api.inference_proxy_api as inference_proxy_api

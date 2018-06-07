@@ -8,12 +8,12 @@ import sys
 
 import logging
 
-from . import keyframe.messages
-from . import keyframe.channel_client
-from . import keyframe.fb
-from . import keyframe.config
+import keyframe.messages
+import keyframe.channel_client
+import keyframe.fb
+import keyframe.config
 #import keyframe.slot_fill
-from . import keyframe.bot_api
+import keyframe.bot_api
 
 log = logging.getLogger(__name__)
 # If want extra logging for this specific module, set it explicitly here.

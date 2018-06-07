@@ -13,12 +13,11 @@ import json
 from six import iteritems, add_metaclass
 import traceback
 
-import integrations.zendesk.zendesk as zendesk
-import integrations.salesforce.salesforce as salesforce
-
 import re
 import random
 import lxml.html
+
+import six
 
 import logging
 
@@ -27,10 +26,12 @@ import keyframe.dsl
 import keyframe.messages
 import keyframe.utils
 import keyframe.constants as constants
+
 import keyframe.intercom_client as intercom_client
 import keyframe.channel_client as channel_client
 
-import six
+import integrations.zendesk.zendesk as zendesk
+import integrations.salesforce.salesforce as salesforce
 
 
 log = logging.getLogger(__name__)

@@ -8,9 +8,9 @@ import re
 
 import logging
 
-from . import keyframe.base
-from . import keyframe.dsl
-from . import keyframe.actions
+import keyframe.base
+import keyframe.dsl
+import keyframe.actions
 from . import generic_action
 
 log = logging.getLogger(__name__)
