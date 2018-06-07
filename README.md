@@ -1,12 +1,22 @@
 # Keyframe
 
+## After changes on 07 June 2018, run like this:
+```
+(keyframe1) ~/work/keyframe-2/keyframe $ #env MYRA_SEARCH_SERVER="localhost:7096" KEYFRAME_EVENT_WRITER_TYPE=file MYRA_ENV=dev MYRA_INFERENCE_PROXY_LB="localhost" MYRA_INFERENCE_PROXY_LB_PORT=7096 MYRA_LOG=info rlwrap python -m gbot.gbot http db  2>&1 | tee /tmp/gbot.log.$(date +%s)
+```
+
 magic.
 
 ## Running generic bot locally (to receive requests from local myra api server most probably).
 Make sure the userId and userSecret correspond to the agents that you will be accessing.
 
 ```
+# http for local widget
 env GBOT_LOG_LEVEL=20 rlwrap python gbot.py  http db 3rxCO9rydbBIf3DOMb9lFh 4b94f2de6d6554a006099c963e586d47485f9b4d
+
+# cmd
+env GBOT_LOG_LEVEL=20 rlwrap python gbot.py  cmd db 3oPxV9oFXxzHYxuvpy56a9 f111cef48e1548be8d121f9649b368ebvio
+
 ```
 
 You can also point gbot to call the local api server which can also point to a local inference proxy to debug.

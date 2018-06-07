@@ -12,19 +12,20 @@ import requests
 import json
 from six import iteritems, add_metaclass
 import traceback
-from . import integrations.zendesk.zendesk as zendesk
 import re
 import random
 import lxml.html
 
+import six
+
 import logging
 
-from . import keyframe.slot_fill
-from . import keyframe.dsl
-from . import keyframe.messages
-from . import keyframe.utils
-from . import keyframe.constants as constants
-import six
+import integrations.zendesk.zendesk as zendesk
+import keyframe.slot_fill
+import keyframe.dsl
+import keyframe.messages
+import keyframe.utils
+import keyframe.constants as constants
 
 log = logging.getLogger(__name__)
 
