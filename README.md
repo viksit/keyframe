@@ -1,5 +1,10 @@
 # Keyframe
 
+## After changes on 07 June 2018, run like this:
+```
+(keyframe1) ~/work/keyframe-2/keyframe $ #env MYRA_SEARCH_SERVER="localhost:7096" KEYFRAME_EVENT_WRITER_TYPE=file MYRA_ENV=dev MYRA_INFERENCE_PROXY_LB="localhost" MYRA_INFERENCE_PROXY_LB_PORT=7096 MYRA_LOG=info rlwrap python -m gbot.gbot http db  2>&1 | tee /tmp/gbot.log.$(date +%s)
+```
+
 magic.
 
 ## Running generic bot locally (to receive requests from local myra api server most probably).
