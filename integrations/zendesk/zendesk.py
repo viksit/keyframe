@@ -200,7 +200,7 @@ def test():
     ticketJsonObject = json.loads(open(zendeskJsonFile).read())
     ticketResponse = createTicket(ticketJsonObject)
     #print "ticketResponse: %s" % (ticketResponse,)
-    print "ticket.url: %s" % (ticketResponse.get("ticket", {}).get("url"),)
+    print("ticket.url: %s" % (ticketResponse.get("ticket", {}).get("url"),))
 
 if __name__ == "__main__":
     logging.basicConfig()
