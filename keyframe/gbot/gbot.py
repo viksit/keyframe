@@ -1,0 +1,897 @@
+#!/usr/bin/python
+# -*- coding: utf-8 -*-
+
+from __future__ import print_function
+from __future__ import absolute_import
+import sys, os
+from os.path import expanduser, join
+from flask import Flask, request, Response
+from flask import Flask, current_app, jsonify, make_response
+from flask_cors import CORS, cross_origin
+import datetime
+
+from functools import wraps
+import yaml
+import json
+import traceback
+import base64
+import logging
+from six.moves import range
+
+logging.basicConfig()
+
+#from pymyra.api import client
+import pymyra.api.inference_proxy_client as inference_proxy_client
+import pymyra.api.inference_proxy_api as inference_proxy_api
+
+
+from keyframe.cmdline import BotCmdLineHandler
+from keyframe.base import BaseBot
+from keyframe.actions import ActionObject
+from keyframe.slot_fill import Slot
+from keyframe.bot_api import BotAPI
+from keyframe import channel_client
+from keyframe import messages
+from keyframe import config
+from keyframe import store_api
+from keyframe import bot_stores
+import keyframe.utils
+import keyframe.event_api as event_api
+
+from keyframe.genericbot import generic_bot
+from keyframe.genericbot import generic_bot_api
+from keyframe.genericbot import generic_cmdline
+
+#log = logging.getLogger(__name__)
+# Make the logger used by keyframe and genericbot, but not the root logger.
+# If you want to set keyframe / pymyra to a different log level, comment out
+# the setLevel below or set explicity or use the env var for that library.
+logLevel = int(keyframe.utils.getLogLevel("GBOT_LOG_LEVEL", logging.INFO))
+log = logging.getLogger("genericbot")
+log.setLevel(logLevel)
+log_keyframe = logging.getLogger("keyframe")
+log_keyframe.setLevel(logLevel)
+log_pymyra = logging.getLogger("pymyra")
+pymyra_loglevel = int(keyframe.utils.getLogLevel("PYMYRA_LOG_LEVEL", logLevel))
+log_pymyra.setLevel(pymyra_loglevel)
+
+
+# TODO:
+# Initialize via a configuration file
+kvStore = store_api.get_kv_store(
+    # store_api.TYPE_LOCALFILE,
+    os.getenv("KEYFRAME_KV_STORE_TYPE", store_api.TYPE_DYNAMODB),
+    # store_api.TYPE_INMEMORY,
+    config.getConfig())
+
+cachedKvStore = kvStore
+KVSTORE_CACHE_SECONDS = int(os.getenv("KVSTORE_CACHE_SECONDS", 0))
+if KVSTORE_CACHE_SECONDS:
+    cachedKvStore = store_api.MemoryCacheKVStore(
+        kvStore=kvStore, cacheExpirySeconds=KVSTORE_CACHE_SECONDS)
+# Deployment for lambda
+
+def wrap_exceptions(func):
+    """Make sure exceptions are logged.
+    """
+    @wraps(func)
+    def decorated_function(*args, **kwargs):
+        try:
+            return func(*args, **kwargs)
+        except Exception as e:
+            log.exception("GOT EXCEPTION")
+            r = Response(response="%s"%(e,), status=500)
+            return r
+    return decorated_function
+
+app = Flask(__name__)
+CORS(app, supports_credentials=True)
+
+app.config['DEBUG'] = True
+
+@app.route("/agent_pin_config", methods=["GET","POST"])
+@wrap_exceptions
+def agent_pin_config():
+    if request.method == 'POST':
+        accountId = request.json.get("account_id", None)
+        agentId = request.json.get("agent_id", None)
+    else:
+        accountId = request.args.get("account_id", None)
+        agentId = request.args.get("agent_id", None)
+    log.info("agent_pin_config(account_id=%s, agent_id=%s)",
+             accountId, agentId)
+    GenericBotHTTPAPI.fetchBotJsonSpec(
+        accountId=accountId,
+        agentId=agentId)
+    jsonSpec = GenericBotHTTPAPI.configJson.get("config_json")
+    pinConfig = jsonSpec.get("params", {}).get("pin_json", [])
+    log.info("agent_pin_config returning: %s" % (pinConfig,))
+    return jsonify({
+        "pinconfig": pinConfig
+    })
+
+
+@app.route("/agent_event", methods=["POST"])
+@wrap_exceptions
+def agent_event():
+    r, text = _run_agent()
+    return jsonify(r)
+
+@app.route("/event", methods=["POST"])
+@wrap_exceptions
+def handle_event():
+    r = _handle_event()
+    return jsonify(r)
+
+def _handle_event():
+    requestData = request.json
+    log.info("requestData: %s", requestData)
+    event_api.handleEvent(requestData, cfg)
+    return {"status":"OK"}
+
+class GenericBotHTTPAPI(generic_bot_api.GenericBotAPI):
+
+    """
+    When a request comes in, we'll have to take the user_id
+    and agent_id to make a query into the database.
+    This retrieves a json, which is what we use to run the bot for the given
+    request.
+    """
+    agentId = None
+    accountId = None
+    #accountSecret = None
+
+    @classmethod
+    def fetchBotJsonSpec(cls, **kwargs):
+        """
+        Given a key to db, fetch json from there
+        """
+        agentId = kwargs.get("agentId")
+        accountId = kwargs.get("accountId")
+        #accountSecret = kwargs.get("accountSecret")
+        # We can have a cachedKvStore to get the bot spec
+        # since it doesn't change much.
+        #if os.getenv
+        bms = bot_stores.BotMetaStore(cachedKvStore)
+        with app.app_context():
+
+            if "run_mode" in current_app.config and \
+               current_app.config["run_mode"] == "file":
+                log.info("(++) Running in file mode")
+                GenericBotHTTPAPI.configJson = current_app.config.get("config_json")
+                assert GenericBotHTTPAPI.configJson
+
+                if "cmd_mode" in current_app.config and \
+                   current_app.config["cmd_mode"] == "http":
+                    log.info("Running in flask deployment mode")
+
+                    GenericBotHTTPAPI.agentId = agentId
+                    GenericBotHTTPAPI.accountId = accountId
+                    #GenericBotHTTPAPI.accountSecret = accountSecret
+
+            # We're in Flask deployment mode (run_mode is "DB")
+            else:
+                log.info("Running in flask deployment mode")
+                agentId = kwargs.get("agentId")
+                accountId = kwargs.get("accountId")
+                #accountSecret = kwargs.get("accountSecret")
+
+                GenericBotHTTPAPI.agentId = agentId
+                GenericBotHTTPAPI.accountId = accountId
+                #GenericBotHTTPAPI.accountSecret = accountSecret
+                js = bms.getJsonSpec(accountId, agentId)
+                GenericBotHTTPAPI.configJson = js
+                log.info("(::) json config spec: %s", GenericBotHTTPAPI.configJson)
+                if not js:
+                    raise Exception("Json spec not found for %s", kwargs)
+
+    def getBot(self):
+        accountId = GenericBotHTTPAPI.accountId
+        #accountSecret = GenericBotHTTPAPI.accountSecret
+        agentId = GenericBotHTTPAPI.agentId
+        configJson = GenericBotHTTPAPI.configJson
+        log.info("(::) agentId: %s, accountId: %s",
+                 agentId, accountId)
+        log.debug("configJson: %s", configJson)
+
+        #intentModelId = configJson.get("config_json").get("intent_model_id")
+        #modelParams = configJson.get("config_json").get("intent_model_params")
+
+        api = None
+        #log.debug("modelParams: %s",
+        #          modelParams)
+        #if modelParams:
+        #    assert accountId and cfg.MYRA_INFERENCE_PROXY_LB, \
+        #        "gbot has modelParams but cannot create api because no api params"
+        if accountId and cfg.MYRA_INFERENCE_PROXY_LB:
+            log.info("creating api")
+            ipc = inference_proxy_client.InferenceProxyClient(
+                host=cfg.MYRA_INFERENCE_PROXY_LB,
+                port=cfg.MYRA_INFERENCE_PROXY_LB_PORT)
+            api = inference_proxy_api.InferenceProxyAPI(
+                inference_proxy_client=ipc)
+            #api = client.connect(apicfg)
+            #api.set_intent_model(intentModelId)
+            #api.set_params(modelParams)
+
+        self.bot = generic_bot.GenericBot(
+            kvStore=kvStore,
+            configJson=configJson.get("config_json"),
+            api=api,
+            accountId=accountId,
+            agentId=agentId)
+        return self.bot
+
+@app.route("/run_agent1", methods=["GET", "POST"])
+@wrap_exceptions
+def run_agent1():
+    r, text = _run_agent()
+    return jsonify(r)
+
+@app.route("/run_agent2", methods=["GET", "POST"])
+@wrap_exceptions
+def run_agent2():
+    r, text = _run_agent()
+    r2 = {
+        "text": text,
+        "message": "Agent responsded successfully",
+        "result": r
+    }
+    resp = jsonify(r2)
+    h = resp.headers
+
+    # Seems like can't have multiple domains. Here is the browser error message:
+    # The 'Access-Control-Allow-Origin' header contains multiple values 'http://localhost:8080, http://demos.myralabs.com', but only one is allowed. Origin 'http://localhost:8080' is therefore not allowed access.
+
+    #allowOrigins = ["http://localhost:8080",
+    #                "http://demos.myralabs.com"]
+    #h.extend([("Access-Control-Allow-Origin", orig) for orig in allowOrigins])
+    # In any case, seems like the data goes back, just the browser respects CORS.
+    # But this is not a security solution.
+
+    h['Access-Control-Allow-Origin'] = "*"
+    log.info("resp.headers: %s", h)
+    return resp
+
+def _run_agent():
+    log.info("HEADERS: %s", request.headers)
+    log.info("DATA: %s", request.data)
+    log.info("COOKIES: %s", request.cookies)
+    requestData = None
+    text = None
+    accountId = None
+    agentId = None
+    if request.method == 'POST':
+        requestData = request.json
+        text = request.json.get("text")
+        accountId = request.json.get("account_id", None)
+        agentId = request.json.get("agent_id", None)
+
+    else:
+        accountId = request.args.get("account_id", None)
+        agentId = request.args.get("agent_id", None)
+        requestData = {
+            "user_id": request.args.get("user_id"),
+            "text": request.args.get("text"),
+            "rid": request.args.get("rid"),
+            "bot_state_uid": request.args.get("bot_state_uid")
+            }
+        text = request.args.get("text")
+        customProps = request.args.get("custom_props")
+        if customProps:
+            try:
+                customProps = base64.b64decode(customProps)
+                customProps = json.loads(customProps)
+                requestData["custom_props"] = customProps
+            except:
+                log.error("Could not load custom_props (%s)", customProps)
+
+    GenericBotHTTPAPI.fetchBotJsonSpec(
+        accountId=accountId,
+        agentId=agentId
+    )
+    # The bot should be created in the getBot() function
+    # Thus we need the db call to happen before this
+    event = {
+        "channel": messages.CHANNEL_HTTP_REQUEST_RESPONSE,
+        "request-type": request.method,
+        "body": requestData
+    }
+    r = GenericBotHTTPAPI.requestHandler(
+        event=event,
+        context={})
+    return r, text
+
+
+
+# Slack
+
+class Message(object):
+    """
+    Instanciates a Message object to create and manage
+    Slack onboarding messages.
+    """
+    def __init__(self):
+        super(Message, self).__init__()
+        self.channel = ""
+        self.timestamp = ""
+        self.text = ("Welcome to Slack! We're so glad you're here. "
+                     "\nGet started by completing the steps below.")
+        self.emoji_attachment = {}
+        self.pin_attachment = {}
+        self.share_attachment = {}
+        self.attachments = [self.emoji_attachment,
+                            self.pin_attachment,
+                            self.share_attachment]
+
+    def create_attachments(self):
+        """
+        Open JSON message attachments file and create attachments for
+        onboarding message. Saves a dictionary of formatted attachments on
+        the bot object.
+        """
+        with open('welcome.json') as json_file:
+            json_dict = yaml.safe_load(json_file)
+            json_attachments = json_dict["attachments"]
+            [self.attachments[i].update(json_attachments[i]) for i
+             in range(len(json_attachments))]
+
+
+# Mapping of team -> {teamid, bottoken}
+# We'll map accountId and secret/agent to the team id/bot token in dynamodb
+# 3oPxV9oFXxzHYxuvpy56a9 c504f1c49182b50abb14ee4cb2a75e83bfe81149 70aab44c87e84dd1843c8f15436616e1
+# botmetalocal = {
+#     "slack.T06SXL7GV": {
+#         "team_id": "T06SXL7GV",
+#         "bot_token": "xoxb-121415322561-hkR3eLghiCpVlgMZ5DrxExNh",
+#         "concierge_meta": {
+#             "account_id": "BIRsNx4aBt9nNG6TmXudl",
+#             "account_secret": "f947dee60657b7df99cceaecc80dd4d644a5e3bd",
+#             "agent_id": "a7e4b5d749c74a8bb15e35a12a1bc5c6"
+#         }
+#     },
+#     # "T06SXL7GV": {
+#     #     "team_id": "T06SXL7GV",
+#     #     "bot_token": "xoxb-121415322561-hkR3eLghiCpVlgMZ5DrxExNh",
+#     #     "concierge_meta": {
+#     #         "account_id": "3oPxV9oFXxzHYxuvpy56a9",
+#     #         "account_secret": "c504f1c49182b50abb14ee4cb2a75e83bfe81149",
+#     #         "agent_id": "70aab44c87e84dd1843c8f15436616e1"
+#     #     }
+#     # }
+# }
+ads = bot_stores.AgentDeploymentStore(kvStore=kvStore)
+cfg = config.getConfig()
+
+# By default get dev settings.
+SLACK_BOT_ID = cfg.SLACK_BOT_ID
+slack_bot_msg_ref = "<@%s>" % (SLACK_BOT_ID,)
+SLACK_VERIFICATION_TOKEN = cfg.SLACK_VERIFICATION_TOKEN
+
+# TODO(viksit): rename this to something better.
+@app.route("/listening", methods=["GET", "POST"])
+def run_agent_slack():
+    log.info("/listening %s", request.url)
+    # Always make a response. If response is not going to be 200,
+    # then add the no-retry header so slack doesn't keep trying.
+    try:
+        return _run_agent_slack()
+    except:
+        traceback.print_exc()
+        return make_response("Unexpected Error!", 500, {"X-Slack-No-Retry": 1})
+
+def _run_agent_slack():
+    # TODO(viksit): see notes for refactor
+    slackEvent = request.json
+    if not slackEvent:
+        return make_response("invalid payload", 400, {"X-Slack-No-Retry": 1})
+
+    log.debug("request.json: %s", slackEvent)
+    if "challenge" in slackEvent:
+        return make_response(slackEvent["challenge"], 200, {
+            "content_type": "application/json"
+        })
+
+    if SLACK_VERIFICATION_TOKEN != slackEvent.get("token"):
+        log.warn("Invalid slack verification token: %s", slackEvent.get("token"))
+        # By adding "X-Slack-No-Retry" : 1 to our response headers, we turn off
+        # Slack's automatic retries during development.
+        return make_response("Invalid verification token", 403, {"X-Slack-No-Retry": 1})
+
+    if "event" not in slackEvent:
+        return make_response("[NO EVENT IN SLACK REQUEST]", 404, {"X-Slack-No-Retry": 1})
+
+    event = slackEvent["event"]
+    # ignore bot message notification
+    if "subtype" in event:
+        if event["subtype"] == "bot_message":
+            log.debug("ignoring event with subtype: bot_message")
+            message = "Ignoring the bot message notification"
+            # Return a helpful error message
+            return make_response(message, 200, {"X-Slack-No-Retry": 1})
+
+    eventType = slackEvent["event"]["type"]
+    if eventType != "message":
+        return make_response("Ignore event that is not of type 'message'", 200, {"X-Slack-No-Retry": 1})
+
+    messageText = slackEvent.get("event", {}).get("text", None)
+    if not messageText:
+        return make_response("[NO MESSAGE IN SLACK REQUEST]",
+                             404,
+                             {"X-Slack-No-Retry": 1})
+
+    # We only want to process direct messages or messages addressed to this
+    # bot in a channel.
+    channel = event.get("channel")
+    processMsg = channel.startswith("D")  # This may mean direct msg - use for now.
+    msg = event.get("text", "")
+    hasBotId = msg.find(slack_bot_msg_ref)
+    log.debug("hasBotId: %s", hasBotId)
+    processMsg |= (channel.startswith("C") and hasBotId > -1)
+    log.debug("processMsg: %s", processMsg)
+    if not processMsg:
+        return make_response("Ignore event - not DM or addressed to bot", 200, {"X-Slack-No-Retry": 1})
+
+    # Process this message from slack
+    userId = slackEvent["event"].get("user")
+    teamId = slackEvent["team_id"]
+    msgChannel = event["channel"]
+    botToken = None
+
+    agentDeploymentMeta = ads.getJsonSpec(teamId, "slack")
+    botToken = agentDeploymentMeta.get("bot_token")
+
+    if not botToken:
+        raise Exception("This team is not registered with Concierge")
+
+    # Myra concierge information
+    conciergeMeta = agentDeploymentMeta.get("concierge_meta")
+    accountId = conciergeMeta.get("account_id")
+    #accountSecret = conciergeMeta.get("account_secret")
+    agentId = conciergeMeta.get("agent_id")
+
+    GenericBotHTTPAPI.fetchBotJsonSpec(
+        accountId=accountId,
+        agentId=agentId
+        #accountSecret=accountSecret
+    )
+
+    # The bot should be created in the getBot() function
+    # Thus we need the db call to happen before this
+
+    event = {
+        "channel": messages.CHANNEL_SLACK,
+        "request-type": request.method,
+        "body": request.json,
+        "channel-meta": {
+            "user_id": userId,
+            "team_id": teamId,
+            "bot_token": botToken,
+            "msg_channel": msgChannel
+        }
+    }
+    r = GenericBotHTTPAPI.requestHandler(
+        event=event,
+        context={})
+    log.debug("going to return a 200 status after request is handled")
+    return make_response("NOOP", 200, {"X-Slack-No-Retry": 1})
+
+# End slack code
+
+## Start intercom code
+@app.route("/listener/intercom", methods=["GET", "POST"])
+def run_agent_intercom():
+    log.info("/listener/intercom: %s", request.url)
+    # Always make a response. If response is not going to be 200,
+    # then add the no-retry header so slack doesn't keep trying.
+    try:
+        return _run_agent_intercom()
+    except:
+        traceback.print_exc()
+        return make_response("Unexpected Error!", 500, {"X-No-Retry": 1})
+
+######
+from intercom.client import Client
+#ACCESS_TOKEN="dG9rOjY2M2NjM2FjXzM5NTVfNGMzN19iMjdjX2UzYTI5YTBhMmYwOToxOjA=" # need from intercom
+#APP_ID = "iv6ijpl5" # "cp6b0zl8" for messenger
+#intercom = Client(personal_access_token=ACCESS_TOKEN)
+
+def _run_agent_intercom():
+    intercomEvent = request.json
+    log.debug("request.args: %s", request.args)
+    # TODO(nishant): how to disable intercom from sending same message multiple times
+    if not intercomEvent:
+        return make_response("invalid payload", 400, {"X-No-Retry": 1})
+
+    log.debug("_run_agent_intercom: request.json: %s", json.dumps(intercomEvent, indent=2))
+
+    # Get intercom conversation ID and pass it on
+    conversationId = intercomEvent.get("data").get("item").get("id")
+    log.info("conversationId: %s", conversationId)
+    # Myra concierge information
+    # Get this from the database which stores <intercom accountid> -> <agentid map>
+
+    #userId = "test1"
+    #accountId = "3oPxV9oFXxzHYxuvpy56a9"
+    #agentId = "f111cef48e1548be8d121f9649b368eb"
+
+    #conversation = intercom.conversations.find(id=conversationId)
+    #print("CONV DICT: ", conversation.__dict__)
+    #print(conversation.assignee)
+    #print(conversation.assignee.__dict__)
+
+    if intercomEvent.get("topic") in ("conversation.user.created", "conversation.user.replied"):
+        assignedUserEmail = intercomEvent.get("data", {}).get("item", {}).get("assignee", {}).get("email")
+        assignedUserId = intercomEvent.get("data", {}).get("item", {}).get("assignee", {}).get("id")
+        appId = intercomEvent.get("app_id")
+        agentDeploymentMeta = ads.getJsonSpec(appId, "intercom")
+        log.info("agentDeploymentMeta: %s", agentDeploymentMeta)
+        if agentDeploymentMeta:
+            proxyUserId = agentDeploymentMeta.get("config", {}).get("intercom_proxy_agent_id")
+            if assignedUserId == proxyUserId:
+                log.info("This is a topic to reply to (%s)", intercomEvent.get("topic"))
+                _intercom_agent_handler(agentDeploymentMeta, intercomEvent, appId)
+            else:
+                log.info("event for user: %s does not match proxy user: %s. dropping it.", assignedUserId, proxyUserId)
+        else:
+            log.info("No agent for app_id: %s. Dropping this event.", appId)
+
+    else:
+        log.info("Received event is not a target for response from this bot. Dropping it.")
+    # log.debug("going to return a 200 status after request is handled")
+    # return make_response("NOOP", 200, {"X-No-Retry": 1})
+    res = json.dumps({})
+    return Response(res), 200
+
+## End intercom code
+
+def _intercom_agent_handler(agentDeploymentMeta, intercomEvent, appId):
+    log.info("agentDeploymentMeta: %s, appId: %s", agentDeploymentMeta, appId)
+    accessToken = agentDeploymentMeta.get("access_token")
+    accountId = agentDeploymentMeta.get("concierge_meta", {}).get("account_id")
+    agentId = agentDeploymentMeta.get("concierge_meta", {}).get("agent_id")
+    assert accessToken and accountId and agentId, "Did not find required information from agentDeploymentMeta (%s)" % (agentDeploymentMeta,)
+
+    GenericBotHTTPAPI.fetchBotJsonSpec(
+        accountId=accountId,
+        agentId=agentId
+    )
+
+    event = {
+        "channel": messages.CHANNEL_INTERCOM,
+        "request-type": None,
+        "body": intercomEvent,
+        "channel-meta": {
+            "user_id": intercomEvent.get("data", {}).get("item", {}).get("user", {}).get("user_id"),
+            "rid": intercomEvent.get("id"),
+            #"conversation_id": intercomEvent.get("data", {}).get("item", {}).get("conversation_message", {}).get("id"),
+            "conversation_id": intercomEvent.get("data", {}).get("item", {}).get("id"),
+            "access_token": accessToken,
+            "proxy_admin_id": agentDeploymentMeta.get("config", {}).get("intercom_proxy_agent_id"),
+            "support_admin_id": agentDeploymentMeta.get("config", {}).get("intercom_support_agent_id")
+        }
+    }
+
+    r = GenericBotHTTPAPI.requestHandler(
+        event=event,
+        context={})
+
+    # resBody = "This is a test response for your message at %s" % (datetime.datetime.now(),)
+    # res = intercom.conversations.reply(
+    #     id=conversationId,
+    #     type=conversation.assignee.resource_type,
+    #     admin_id=conversation.assignee.id,
+    #     message_type='comment',
+    #     body=resBody)
+
+# TODO: Remove this
+@app.route("/anxoivch8wxoiu8dvhwnwo93", methods=['GET', 'POST'])
+def debug_obfuscated():
+    log.info(request.url)
+    resp = json.dumps({
+        "SLACK_BOT_ID":SLACK_BOT_ID,
+        "SLACK_VERIFICATION_TOKEN":SLACK_VERIFICATION_TOKEN,
+        "env.STAGE":os.environ.get("STAGE")
+    })
+    return Response(resp), 200
+
+@app.route("/ping", methods=['GET', 'POST'])
+def ping():
+    print("Received ping")
+    resp = json.dumps({
+        "status": "OK",
+        "env.STAGE":os.environ.get("STAGE")
+    })
+    return Response(resp), 200
+
+
+#### ------- Intercom messenger app ----------------
+
+"""
+CONFIGURE URL
+https://myra-dev.ngrok.io/v2/intercom/configure
+
+SUBMIT URL
+https://myra-dev.ngrok.io/v2/intercom/submit
+
+INITIALIZE URL
+https://myra-dev.ngrok.io/v2/intercom/initialize
+
+SUBMIT SHEET URL
+https://myra-dev.ngrok.io/v2/intercom/submit_sheet
+
+"""
+
+def _pprint(data):
+    print(json.dumps(data, indent=2))
+
+def getSampleInput():
+    res = {
+        "type": "input",
+        "id": "user_myra_config",
+        "label": "Enter your myra configuration ID",
+        "placeholder": "abc13fsdfff",
+        "value": "",
+        "action": {
+            "type": "submit"
+        }
+    }
+    return res
+
+def getSampleApp():
+    res = {
+        "type": "input",
+        "id": "user_question",
+        "label": "Whats your question?",
+        "placeholder": "I cant configure my DNS what should I do?",
+        "value": "",
+        "action": {
+            "type": "submit"
+        }
+    }
+    return res
+
+def getSampleListResponse():
+    res = {
+        "type": "list",
+        "items": [
+            {
+                "type": "item",
+                "id": "article-123",
+                "title": "How to install the messenger",
+                "subtitle": "An article explaining how to integrate Intercom",
+                "action": {
+                    "type": "submit"
+                }
+            },
+            {
+                "type": "item",
+                "id": "article-123",
+                "title": "How to install the messenger",
+                "subtitle": "An article explaining how to integrate Intercom",
+                "action": {
+                    "type": "submit"
+                }
+            },
+            {
+                "type": "item",
+                "id": "article-123",
+                "title": "How to install the messenger",
+                "subtitle": "An article explaining how to integrate Intercom",
+                "action": {
+                    "type": "submit"
+                }
+            },
+            {
+                "type": "item",
+                "id": "article-123",
+                "title": "How to install the messenger",
+                "subtitle": "An article explaining how to integrate Intercom",
+                "action": {
+                    "type": "submit"
+                }
+            }
+        ]
+    }
+    return res
+
+
+@app.route("/v2/intercom/configure", methods=['GET', 'POST'])
+def v2_intercom_configure():
+    print("## configure ##")
+    res = None
+    _pprint(request.json)
+    if (request.json.get("input_values")):
+        print("here", request.json.get("input_values"))
+        # This is the second configure call
+        # Send back a result to deploy this application
+        r = request.json.get("input_values")
+        res = json.dumps({
+            "results": r
+        })
+    else:
+        canvas = {
+            "canvas": {
+                "content": {
+                    "version": "0.1",
+                    "components": [
+                        getSampleInput()
+                    ]
+                },
+                "stored_data": {} # optional
+            }
+        }
+        res = json.dumps(canvas)
+    # Return
+    # change this
+    assert res is not None
+    return Response(res), 200
+
+
+@app.route("/v2/intercom/submit", methods=['GET', 'POST'])
+def v2_intercom_submit():
+    print("## submit ##")
+    _pprint(request.json)
+    component_id = request.json.get("component_id", None)
+    if (component_id == "button-123"):
+        # Return the original canvas
+        canvas = {
+            "canvas": {
+                "content": {
+                    "version": "0.1",
+                    "components": [
+                        getSampleApp()
+                    ]
+                },
+                "stored_data": {} # optional
+            }
+        }
+    else:
+        canvas = {
+            "new_canvas": {
+                "content": {
+                    "version": "0.1",
+                    "components": [
+                        getSampleListResponse(),
+                        {
+                            "type": "divider"
+                        },
+                        {
+                            "type":"button",
+                            "id":"button-123",
+                            "label":"back",
+                            "style":"secondary",
+                            "action": {
+                                "type": "submit"
+                            }
+                        },
+                        {
+                            "type":"button",
+                            "id":"button-456",
+                            "label":"Open link",
+                            "style":"primary",
+                            "action":{"type":"url","url":"https://www.intercom.com/"}
+                        }
+                    ]
+                },
+                "stored_data": {} # optional
+            }
+        }
+    nc = canvas
+    res = json.dumps(nc)
+    print("-- response --")
+    _pprint(nc)
+    return Response(res), 200
+
+
+@app.route("/v2/intercom/initialize", methods=['GET', 'POST'])
+def v2_intercom_initialize():
+    """
+    When a card is being added, Intercom POSTs a request to the Messenger App’s initialize_url with the card creation parameters gathered from the teammate. The payload is in the following form:
+    {
+      card_creation_options: {
+       <set of key-value pairs>
+    },
+      app_id: <string id_code of the app using the card>
+    }
+
+    The developer returns a response in the following format
+
+    {
+      canvas: <Canvas object>
+    }
+
+    """
+    print("## initialize ##")
+    _pprint(request.json)
+    canvas = {
+        "canvas": {
+            "content": {
+                "version": "0.1",
+                "components": [
+                    getSampleApp()
+                ]
+            },
+            "stored_data": {} # optional
+        }
+    }
+
+    res = json.dumps(canvas)
+    return Response(res), 200
+
+@app.route("/v2/intercom/submit_sheet", methods=['GET', 'POST'])
+def v2_intercom_submit_sheet():
+    print("## submit_sheet ##")
+    _pprint(request.json)
+    res = json.dumps({})
+    return Response(res), 200
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+########### ---- end intercom configuration ------ #############3
+
+if __name__ == "__main__":
+    usage = "gbot.py [cmd/http] [file/db] <accountId> <agentId> [file: <path to json spec>]"
+    assert len(sys.argv) > 2, usage
+
+    #logging.basicConfig()
+    #log.setLevel(int(os.getenv("GENERICBOT_LOGLEVEL", 20)))
+    #log.debug("debug log")
+    #log.info("info log")
+
+    d = {}
+    cmd = sys.argv[1] # cmd/http/script
+    runtype = sys.argv[2] # file/db
+
+    log.info("(++) cmd: %s, runtime: %s", cmd, runtype)
+    jsonFile = None
+    agentId = None
+    accountId = None
+    #accountSecret = None
+
+    if len(sys.argv) > 3:
+        accountId = sys.argv[3]
+    if len(sys.argv) > 4:
+        agentId = sys.argv[4]
+
+    if runtype == "file":
+        jsonFile = sys.argv[5]
+        if os.path.isfile(jsonFile):
+            configJson = json.loads(open(jsonFile).read())
+            #d['config_json'] = configJson
+            d = configJson
+        else:
+            print("%s is not a valid json bot configuration file" %
+                  jsonFile, file=sys.stderr)
+            sys.exit(1)
+        log.debug("config_json: %s", d)
+
+    if cmd == "cmd":
+        c = generic_cmdline.GenericCmdlineHandler(config_json=d, accountId=accountId, agentId=agentId, kvStore=kvStore, cfg=cfg)
+        c.begin()
+
+    elif cmd == "script":
+        scriptFile = sys.argv[6]
+        c = generic_cmdline.ScriptHandler(config_json=d, accountId=accountId, agentId=agentId, kvStore=kvStore, cfg=cfg)
+        c.scriptFile(scriptFile=scriptFile)
+        num_errors = c.executeScript()
+        if num_errors > 0:
+            log.error("num_errors: %s", num_errors)
+            sys.exit(1)
+
+    elif cmd == "http":
+        app.config["cmd_mode"] = cmd
+        app.config["run_mode"] = runtype
+        app.config["config_json"] = d
+        app.run(debug=True)  # default port is 5000

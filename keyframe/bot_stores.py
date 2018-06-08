@@ -82,14 +82,14 @@ class BotMetaStore(object):
 
     def _botMetaKey(self, accountId, agentId):
         k = "botmeta.%s.%s" % (accountId, agentId)
-        log.debug("k: %s", k)
+        log.info("BotMetaStore._botMetaKey k: %s", k)
         return k
 
     def getJsonSpec(self, accountId, agentId):
         """
         Should return a python dict
         """
-        log.debug("BotMetaStore.getJsonSpec(%s)", locals())
+        log.info("BotMetaStore.getJsonSpec(%s)", locals())
         k = self._botMetaKey(accountId, agentId)
         js = self.kvStore.get_json(k)
         if not js:

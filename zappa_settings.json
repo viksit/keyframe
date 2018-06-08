@@ -1,0 +1,36 @@
+{
+  "dev": {
+    "s3_bucket": "ml-lambda-dev-1",
+    "app_function": "gbot.app",
+    "environment_variables": {
+      "REALM":"dev",
+      "KVSTORE_CACHE_SECONDS":"0"
+    },
+    "keep_warm": false,
+  }
+  "prod": {
+    "s3_bucket": "ml-lambda-prod-1",
+    "app_function": "gbot.app",
+    "environment_variables": {
+      "REALM":"prod",
+      "KVSTORE_CACHE_SECONDS":"0"
+    },
+    "keep_warm": false,
+  }
+  "test": {
+    "s3_bucket": "ml-lamdba-test-1",
+    "app_function": "gbot.gbot.app",
+    "project_name": "keyframe_py3_test",
+    "environment_variables": {
+      "REALM":"dev"
+    },
+  }
+  "testpy3": {
+    "s3_bucket": "ml-lamdba-test-1",
+    "app_function": "gbot.gbot.app",
+    "project_name": "keyframe_py3",
+    "environment_variables": {
+      "REALM":"dev"
+    },
+  }
+}

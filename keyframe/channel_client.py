@@ -11,7 +11,7 @@ import json
 from . import messages
 from . import fb
 from slackclient import SlackClient
-from intercom_client import IntercomClient
+from .intercom_client import IntercomClient
 
 log = logging.getLogger(__name__)
 

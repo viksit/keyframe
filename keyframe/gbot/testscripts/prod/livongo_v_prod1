@@ -1,0 +1,16 @@
+@ {"account_id":"7BbmKJgxsMKRuAcBjNA1Zo", "account_secret":"e7c64d12098a9b12ca0e8e56de1c28d1a8b03003", "agent_id":"e66064220772468c944cebb5cd493eb7"}
+< botcmd clear state
+> {}
+< I'd like to add livongo to my employees
+> {"intentStr":"add_livongo", "responseType":"transitionmsg"}
+> {"intentStr":"add_livongo", "responseType":"slotfill", "text":"Are you an individual or an organization?"}
+< organization
+> {"intentStr":"add_livongo", "responseType":"slotfill", "text":"Whats your name?"}
+< Nishant Deshpande
+> {"intentStr":"add_livongo", "responseType":"slotfill", "text":"What's your email?"}
+< nishant@myralabs.com
+> {"intentStr":"add_livongo", "responseType":"slotfill", "text":"Is there anything else you'd like to tell us?"}
+< Not really.
+> {"intentStr":"add_livongo", "responseType":"response", "text":"Thank you, Nishant Deshpande! We'll get back to you at nishant@myralabs.com shortly."}
+< ok thanks
+> {"intentStr":"concierge.prebuilt.greeting.thanks", "responseType":"response"}
