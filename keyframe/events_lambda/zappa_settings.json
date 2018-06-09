@@ -1,14 +1,17 @@
 {
   "dev": {
     "s3_bucket": "ml-lambda-dev-1",
-    "app_function": "keyframe_event_handler.app"
+    "app_function": "keyframe_event_handler.app",
+    "keep_warm": false
   }
   "prod": {
     "s3_bucket": "ml-lambda-prod-1",
-    "app_function": "keyframe_event_handler.app"
+    "app_function": "keyframe_event_handler.app",
+    "keep_warm": false
   }
   "test": {
     "s3_bucket": "ml-lamdba-test-1",
-    "app_function": "keyframe_event_handler.app"
+    "app_function": "keyframe_event_handler.app",
+    "keep_warm": false
   }
 }
