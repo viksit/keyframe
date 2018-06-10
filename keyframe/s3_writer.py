@@ -10,7 +10,11 @@ import logging
 import os.path
 import uuid
 import datetime
-import StringIO
+try:
+    from StringIO import StringIO
+except ImportError:
+    from io import StringIO
+
 import time
 
 import boto
@@ -71,7 +75,7 @@ class S3Writer(object):
         """Write j to s3.
         j: a sequence of json-compatible objects.
         """
-        s = StringIO.StringIO()
+        s = StringIO()
         for e in j:
             s.write("%s\n" % (json.dumps(e),))
         self.writeTs(s3Prefix, s.getvalue())
@@ -80,7 +84,7 @@ class S3Writer(object):
         """Write j to s3.
         j: a sequence of json-compatible objects.
         """
-        s = StringIO.StringIO()
+        s = StringIO()
         for e in data:
             s.write("%s\n" % (e,))
         self.writeTs(s3Prefix, s.getvalue())
