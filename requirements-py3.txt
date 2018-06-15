@@ -11,6 +11,7 @@ cryptography
 docutils
 enum34
 Flask
+Flask-Cors
 #Flask-Ask
 futures
 hjson
@@ -20,7 +21,6 @@ itsdangerous
 Jinja2
 jmespath
 kappa
-lambda-packages
 MarkupSafe
 ordered_set
 placebo
@@ -41,9 +41,15 @@ Unidecode
 Werkzeug
 wsgi-request-logger
 zappa
+#lambda-packages==0.20.0
+#git+https://github.com/Miserlou/lambda-packages@master
+#git+https://github.com/Miserlou/lambda-packages@0.20.0
+#lambda-packages
 slackclient
 zdesk
 lxml
 python-intercom
 simple-salesforce
+# See https://github.com/Miserlou/Zappa/issues/1455
+cryptography==2.1.4
 

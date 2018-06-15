@@ -55,6 +55,7 @@ log_pymyra = logging.getLogger("pymyra")
 pymyra_loglevel = int(keyframe.utils.getLogLevel("PYMYRA_LOG_LEVEL", logLevel))
 log_pymyra.setLevel(pymyra_loglevel)
 
+VERSION = "3.0.0"
 
 # TODO:
 # Initialize via a configuration file
@@ -88,6 +89,10 @@ app = Flask(__name__)
 CORS(app, supports_credentials=True)
 
 app.config['DEBUG'] = True
+
+@app.route("/version", methods=["GET"])
+def version():
+    return VERSION
 
 @app.route("/agent_pin_config", methods=["GET","POST"])
 @wrap_exceptions

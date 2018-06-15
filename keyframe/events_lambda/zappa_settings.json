@@ -2,12 +2,31 @@
   "dev": {
     "s3_bucket": "ml-lambda-dev-1",
     "app_function": "keyframe_event_handler.app",
-    "keep_warm": false
+    "keep_warm": false,
+    "project_name": "keyframe-event-handler",
+    "events": [
+      {
+        "function": "keyframe_event_handler.lambda_handler",
+        "event_source": {
+          "arn": "arn:aws:kinesis:us-west-2:521358388612:stream/kf-events-dev",
+          "starting_position": "LATEST", // Supported values: TRIM_HORIZON, LATEST
+          "batch_size": 50, // Max: 1000
+          "enabled": true // Default is false
+        }
+      }
+    ]
   }
   "prod": {
     "s3_bucket": "ml-lambda-prod-1",
     "app_function": "keyframe_event_handler.app",
-    "keep_warm": false
+    "keep_warm": false,
+    "project_name": "keyframe-event-handler"
+    "event_source": {
+      "arn": "arn:aws:kinesis:us-west-2:521358388612:stream/kf-events-prod",
+      "starting_position": "LATEST", // Supported values: TRIM_HORIZON, LATEST
+      "batch_size": 50, // Max: 1000
+      "enabled": true // Default is false
+    }
   }
   "test": {
     "s3_bucket": "ml-lamdba-test-1",

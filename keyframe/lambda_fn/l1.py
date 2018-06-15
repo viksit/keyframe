@@ -9,6 +9,12 @@ from flask_cors import CORS, cross_origin
 app = Flask(__name__)
 CORS(app, supports_credentials=True)
 
+VERSION = "3.0.0"
+
+@app.route("/version", methods=["GET"])
+def version():
+    return VERSION
+
 @app.route("/ping", methods=["GET"])
 def ping():
     return 'ok'
