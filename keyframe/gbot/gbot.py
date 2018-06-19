@@ -94,6 +94,26 @@ app.config['DEBUG'] = True
 def version():
     return VERSION
 
+@app.route("/internal/intercom_utils", methods=["GET"])
+def internal_intercom_utils():
+    log.info(request.url)
+    r = _internal_intercom_utils()
+    return jsonify(r)
+
+def _internal_intercom_utils():
+    action = request.args.get("action", None)
+    if not action or action not in ("app_info"):
+        return {"msg":"no action specified"}
+    if action == "app_info":
+        appId = request.args.get("app_id", None)
+        if not appId:
+            return {"msg":"specify app_id to get info"}
+        agentDeploymentMeta = ads.getJsonSpec(appId, "intercom")
+        return agentDeploymentMeta
+    raise Exception("Something that should be impossible has happened. Thats all I can say.")
+
+
+
 @app.route("/agent_pin_config", methods=["GET","POST"])
 @wrap_exceptions
 def agent_pin_config():
