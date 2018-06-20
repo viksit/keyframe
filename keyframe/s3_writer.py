@@ -86,5 +86,8 @@ class S3Writer(object):
         """
         s = StringIO()
         for e in data:
-            s.write("%s\n" % (e,))
+            #log.info("writeData e (%s): %s", type(e), e)
+            _tmp = json.dumps(e)
+            #log.info("type(_tmp): %s", type(_tmp))
+            s.write("%s\n" % (_tmp,))
         self.writeTs(s3Prefix, s.getvalue())

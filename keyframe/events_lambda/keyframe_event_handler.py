@@ -52,16 +52,24 @@ def handle_records(records):
     log.info("handle_records VERSION 1")
     accountEvents = {}
     for e in records:
+        #log.info("e (%s): %s", type(e), e)
         s3Prefix = "unknown"
+        j = None
         try:
-            j = json.loads(e)
+            if isinstance(e, bytes):
+                j = json.loads(e.decode('utf-8'))
+            elif isinstance(e, str):
+                j = json.loads(e)
+            else:
+                raise Exception("unexpected type for record")
             if "account_id" in j:
                 s3Prefix = j.get("account_id")
         except Exception as e:
             log.error("could not decode event as json: %s", e)
             s3Prefix = "error"
+        #log.info("event with s3Prefix: %s", s3Prefix)
         events = accountEvents.setdefault(s3Prefix, [])
-        events.append(e)
+        events.append(j)
 
     # Now write all events to s3
     #cfg = config.getConfig()
