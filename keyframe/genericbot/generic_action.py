@@ -283,6 +283,7 @@ class GenericActionObject(keyframe.actions.ActionObject):
 
             gc.slotType = slotType
             gc.promptMsg = slotSpec.get("prompt")
+            gc.canonicalId = slotSpec.get("canonical_id")
             #assert gc.promptMsg, "slot %s must have a prompt" % (slotSpec,)
 
             gc.name = slotSpec.get("name")

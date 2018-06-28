@@ -34,6 +34,7 @@ class Slot(object):
         # If there are multiple slots with the same class, the slot definition
         # will have to override this and give some names.
         self.name = re.sub(r"(.)([A-Z])", r"\1_\2", self.__class__.__name__).lower()
+        self.canonicalId = None # = self.name  # may be overridden if separately specified.
         self.tags = tags
         self.config = config
         self.entityName = self.name
@@ -175,6 +176,11 @@ class Slot(object):
                     self.value = fillResult
                     botState.addToSessionData(
                         self.name, self.value, self.entityType)
+                    if self.canonicalId:
+                        log.info("ADDING canonicalId %s = %s to session data",
+                                 self.canonicalId, self.value)
+                        botState.addToSessionData(
+                            self.canonicalId, self.value, self.entityType)
                     botState.addToSessionUtterances(
                         self.name,
                         canonicalMsg.text, self.prompt(botState), self.entityType)
@@ -203,6 +209,11 @@ class Slot(object):
                     self.value = fillResult
                     botState.addToSessionData(
                         self.name, self.value, self.entityType)
+                    if self.canonicalId:
+                        log.info("ADDING2 canonicalId %s = %s to session data",
+                                 self.canonicalId, self.value)
+                        botState.addToSessionData(
+                            self.canonicalId, self.value, self.entityType)
                     botState.addToSessionUtterances(
                         self.name,
                         canonicalMsg.text, self.prompt(botState), self.entityType)
