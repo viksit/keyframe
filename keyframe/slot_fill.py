@@ -35,6 +35,7 @@ class Slot(object):
         # will have to override this and give some names.
         self.name = re.sub(r"(.)([A-Z])", r"\1_\2", self.__class__.__name__).lower()
         self.canonicalId = None # = self.name  # may be overridden if separately specified.
+        self.errorMsg = None
         self.tags = tags
         self.config = config
         self.entityName = self.name
@@ -228,7 +229,9 @@ class Slot(object):
                     # currently this is an inifnite loop.
                     # TODO(viksit/nishant): add a nice way to control this.
                     log.warn("Incorrect value (%s) entered for slot %s.", fillResult, self.name)
-                    msg = "You entered an incorrect value. Please enter again."
+                    msg = self.errorMsg
+                    if not msg:
+                        msg = "You entered an incorrect value. Please enter again."
                     canonicalResponse = self._createAndSendResponse(
                         msg, channelClient,
                         responseType=messages.ResponseElement.RESPONSE_TYPE_SLOTFILL_RETRY,
