@@ -272,19 +272,21 @@ class GenericInfoSlot(GenericSlot):
         # We need to send inputExpected = False for this info slot,
         # so don't use self._createAndSendResponse.
         responseMsg = self.prompt(botState)
-        cr = keyframe.messages.createTextResponse(
-            self.canonicalMsg,
-            responseMsg,
-            keyframe.messages.ResponseElement.RESPONSE_TYPE_RESPONSE,
-            responseMeta=keyframe.messages.ResponseMeta(
-                apiResult=self.apiResult,
-                newTopic=self.newTopic,
-                topicId=self.topicId),
-            botStateUid=botState.getUid(),
-            inputExpected=False)
-        channelClient.sendResponse(cr)
-        botState.addToSessionUtterances(
-            self.name, None, responseMsg, self.entityType)
+        cr = None
+        if responseMsg:
+            cr = keyframe.messages.createTextResponse(
+                self.canonicalMsg,
+                responseMsg,
+                keyframe.messages.ResponseElement.RESPONSE_TYPE_RESPONSE,
+                responseMeta=keyframe.messages.ResponseMeta(
+                    apiResult=self.apiResult,
+                    newTopic=self.newTopic,
+                    topicId=self.topicId),
+                botStateUid=botState.getUid(),
+                inputExpected=False)
+            channelClient.sendResponse(cr)
+            botState.addToSessionUtterances(
+                self.name, None, responseMsg, self.entityType)
         self.filled = True
         return {"status":self.filled, "response":cr}
 
