@@ -244,6 +244,11 @@ class Slot(object):
                 fillResult = self.canonicalMsg.text
                 self.value = fillResult
                 botState.addToSessionData(self.name, self.value, self.entityType)
+                if self.canonicalId:
+                    log.info("ADDING2 canonicalId %s = %s to session data",
+                             self.canonicalId, self.value)
+                    botState.addToSessionData(
+                        self.canonicalId, self.value, self.entityType)
                 botState.addToSessionUtterances(
                     self.name,
                     canonicalMsg.text, self.prompt(botState), self.entityType)

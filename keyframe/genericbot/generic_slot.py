@@ -102,11 +102,19 @@ class GenericSlot(keyframe.slot_fill.Slot):
                 botStateUid=botStateUid)
         elif contentType == "search":
             searchResults = searchAPIResult.get("hits")
-            cr = keyframe.messages.createSearchResponse(
-                canonicalMsg=canonicalMsg, searchResults=searchResults,
-                responseType=responseType, 
-                responseMeta=responseMeta, botStateUid=botStateUid,
-                text=text)
+            if not searchResults:
+                cr = keyframe.messages.createTextResponse(
+                    canonicalMsg,
+                    text,
+                    responseType,
+                    responseMeta=responseMeta,
+                    botStateUid=botStateUid)
+            else:
+                cr = keyframe.messages.createSearchResponse(
+                    canonicalMsg=canonicalMsg, searchResults=searchResults,
+                    responseType=responseType, 
+                    responseMeta=responseMeta, botStateUid=botStateUid,
+                    text=text)
         else:
             raise Exception("unknown contentType (%s)" % (contentType,))
         self.channelClient.sendResponse(cr)
