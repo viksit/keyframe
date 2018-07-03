@@ -12,6 +12,7 @@ import requests
 import json
 from six import iteritems, add_metaclass
 import traceback
+import urllib
 
 import re
 import random
@@ -450,15 +451,22 @@ class GenericActionSlot(GenericSlot):
             custom = "{}"
         custom = json.loads(custom) # convert to dict
         entities = botState.getSessionData()
+        encodedEntities = copy.deepcopy(entities)
+        for k in encodedEntities:
+            v = encodedEntities[k]
+            log.info("k: %s, v: %s", k, v)
+            if v and isinstance(v, str):
+                encodedEntities[k] = urllib.parse.quote_plus(v)
+
         requestBody = webhook.get("api_body")
         requestAuth = webhook.get("api_auth")  # Assume basic auth for now.
         timeoutSeconds = webhook.get("timeout_seconds", 15)
-        log.debug("fetchWebhook entities: %s", entities)
+        log.debug("fetchWebhook entities: %s", encodedEntities)
         # Response
         log.info("fetchWebhook URL: %s", url)
         urlTemplate = Template(url)
         templatedURL = urlTemplate.render(
-            {"custom": custom, "entities": entities,
+            {"custom": custom, "entities": encodedEntities,
              "utterances":botState.getSessionUtterances()})
         log.debug("URL to fetch: %s" % (templatedURL,))
         requestBodyJsonObject = None
