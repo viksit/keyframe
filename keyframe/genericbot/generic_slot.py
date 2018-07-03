@@ -356,6 +356,9 @@ class GenericActionSlot(GenericSlot):
             searchAPIResult = _d.get("api_response")
             botState.addToSessionData(
                 self.name, _d.get("text"), self.entityType)
+            if self.canonicalId:
+                botState.addToSessionData(
+                    self.canonicalId, _d.get("text"), self.entityType)
             botState.addToSessionUtterances(
                 self.name, None, _d.get("text"), self.entityType)
         elif actionType == "search":
@@ -369,6 +372,9 @@ class GenericActionSlot(GenericSlot):
             contentType = "search"
             botState.addToSessionData(
                 self.name, _d.get("text"), self.entityType)
+            if self.canonicalId:
+                botState.addToSessionData(
+                    self.canonicalId, _d.get("text"), self.entityType)
             botState.addToSessionUtterances(
                 self.name, None, _d.get("text"), self.entityType)
         elif actionType == "transfer_cnv":
@@ -449,6 +455,7 @@ class GenericActionSlot(GenericSlot):
         timeoutSeconds = webhook.get("timeout_seconds", 15)
         log.debug("fetchWebhook entities: %s", entities)
         # Response
+        log.info("fetchWebhook URL: %s", url)
         urlTemplate = Template(url)
         templatedURL = urlTemplate.render(
             {"custom": custom, "entities": entities,
