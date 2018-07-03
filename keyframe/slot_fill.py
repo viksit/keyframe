@@ -144,7 +144,12 @@ class Slot(object):
             log.debug("(1) state: %s", self.state)
             log.debug("parseoriginal: %s", self.parseOriginal)
             # Check if this slots id is already in entities.
-            existingEntity = botState.getSessionData().get(self.entityName)
+            # First check the canonical.
+            existingEntity = None
+            if self.canonicalId:
+                existingEntity = botState.getSessionData().get(self.canonicalId)
+            if not existingEntity:
+                existingEntity = botState.getSessionData().get(self.entityName)
             if existingEntity and self.useStored:
                 log.info("This entityName (%s) is already present in botState.sessionData (%s) - I can just move on.", self.entityName, existingEntity)
                 self.value = existingEntity
@@ -162,7 +167,12 @@ class Slot(object):
                         parseTextList.append((pText, pApiResult))
                 fillResult = None
                 if canonicalMsg.text:
-                    parseTextList.insert(0, (canonicalMsg.text, self.apiResult))
+                    # For brunswick, the bot requires that the current msg is checked
+                    # after the slots in useSlotsForParse. But some other bot
+                    # may need this reversed. Unclear what to do in that case.
+                    # (Maybe yet another flag for the useSlotsForParse list?)
+                    #parseTextList.insert(0, (canonicalMsg.text, self.apiResult))
+                    parseTextList.append((canonicalMsg.text, self.apiResult))
                 fillText = None
                 fillApiResult = None
                 for (parseText, parseApiResult) in parseTextList:
