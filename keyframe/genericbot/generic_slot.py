@@ -12,6 +12,9 @@ import requests
 import json
 from six import iteritems, add_metaclass
 import traceback
+import flask
+import urllib
+from markupsafe import Markup
 
 import re
 import random
@@ -35,6 +38,16 @@ import keyframe.integrations.salesforce.salesforce as salesforce
 
 
 log = logging.getLogger(__name__)
+
+app = flask.Flask("myapp")
+
+@app.template_filter('urlencode')
+def urlencode_filter(s):
+    if type(s) == 'Markup':
+        s = s.unescape()
+    s = s.encode('utf8')
+    s = urllib.quote_plus(s)
+    return Markup(s)
 
 class GenericSlot(keyframe.slot_fill.Slot):
     def __init__(self, apiResult=None, newTopic=None,
