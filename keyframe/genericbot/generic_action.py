@@ -262,7 +262,8 @@ class GenericActionObject(keyframe.actions.ActionObject):
                     topicId=topicId, channelClient=channelClient,
                     config=config,
                     searchIndex=agentParams.get("search_index_for_workflows"),
-                    agentId=agentId, tags=slotSpec.get("tags"))
+                    agentId=agentId, tags=slotSpec.get("tags"),
+                    contactChannelsConfig=agentParams.get("contact_channels_config"))
                 gc.actionSpec = slotSpec.get("action_spec")
                 assert gc.actionSpec, "Action slot must have actionSpec"
             elif slotType == slot_fill.Slot.SLOT_TYPE_INPUT:

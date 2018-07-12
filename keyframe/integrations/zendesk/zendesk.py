@@ -55,6 +55,7 @@ class ZendeskClient(object):
         apiHost: (string) https://lyft1450739301.zendesk.com
         auth: (string) example: admin.lyft@myralabs.com/token:xlk93jducjduejd
         """
+        log.info("ZendeskClient.__init__(%s)", locals())
         self.apiHost = apiHost.rstrip("/")
         self.auth = auth
         self.authTuple = None
@@ -62,7 +63,7 @@ class ZendeskClient(object):
             self.authTuple = tuple(auth.split(":"))
             assert len(self.authTuple) == 2, \
                 "unexpected auth string (%s)" % (self.auth,)
-            self.attachmentsConfig = attachmentsConfig
+        self.attachmentsConfig = attachmentsConfig
         if not self.attachmentsConfig:
             self.attachmentsConfig = defaultAttachmentsConfig
         self.zdeskApi = zdesk.Zendesk(

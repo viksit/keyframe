@@ -302,7 +302,8 @@ class GenericInfoSlot(GenericSlot):
 class GenericActionSlot(GenericSlot):
     def __init__(self, apiResult=None, newTopic=None,
                  topicId=None, channelClient=None, config=None,
-                 searchIndex=None, agentId=None, tags=None):
+                 searchIndex=None, agentId=None, tags=None,
+                 contactChannelsConfig=None):
         log.info("GenericActionSlot.__init__(config=%s, searchIndex=%s, agentId=%s)",
                  config, searchIndex, agentId)
         super(GenericActionSlot, self).__init__(
@@ -312,6 +313,7 @@ class GenericActionSlot(GenericSlot):
         self.searchIndex = searchIndex
         self.agentId = agentId
         self.actionSpec = None
+        self.contactChannelsConfig = contactChannelsConfig
 
     def getActionType(self):
         if not self.actionSpec:
@@ -537,10 +539,14 @@ class GenericActionSlot(GenericSlot):
     def processZendesk(self, botState):
         zendeskConfig = self.actionSpec.get("zendesk")
         zc = copy.deepcopy(zendeskConfig.get("request"))
+        if not zc.get("api_host") and self.contactChannelsConfig.get("zendesk"):
+            zc.update(self.contactChannelsConfig["zendesk"])
+
         _ed = self._entitiesDict(botState)
         for (k,v) in six.iteritems(zendeskConfig.get("request")):
             log.debug("k: %s, v: %s", k, v)
-            zc[k] = Template(v).render(_ed)
+            if v:
+                zc[k] = Template(v).render(_ed)
         if zc.get("attachments"):
             if zc.get("attachments").lower() in (
                     "none", "no", "no attachments"):
@@ -569,10 +575,14 @@ class GenericActionSlot(GenericSlot):
     def processSalesforce(self, botState):
         salesforceConfig = self.actionSpec.get("salesforce")
         zc = copy.deepcopy(salesforceConfig.get("request"))
+        if not zc.get("username") and self.contactChannelsConfig.get("salesforce"):
+            zc.update(self.contactChannelsConfig["salesforce"])
+
         _ed = self._entitiesDict(botState)
         for (k,v) in six.iteritems(salesforceConfig.get("request")):
             log.info("k: %s, v: %s", k, v)
-            zc[k] = Template(v).render(_ed)
+            if v:
+                zc[k] = Template(v).render(_ed)
         log.info("calling salesforce.createTicket")
         zr = salesforce.createTicket(zc)
         log.info("zr: %s", zr)
