@@ -39,6 +39,7 @@ class BotState(object):
         self._sessionUtterancesType = {}
         self._sessionUtterancesPrompt = {}
         self._sessionApiResults = {}
+        self._sessionSearchApiResults = {}
         self.sessionIntent = None
         self.sessionStartTime = None
         self.sessionId = None
@@ -87,6 +88,9 @@ class BotState(object):
     def getSessionApiResults(self):
         return self._sessionApiResults
 
+    def getSessionSearchApiResults(self):
+        return self._sessionSearchApiResults
+
     def getSessionDataType(self):
         return self._sessionDataType
 
@@ -121,6 +125,9 @@ class BotState(object):
     def addToSessionApiResults(self, k, v):
         self._sessionApiResults[k] = v
 
+    def addToSessionSearchApiResults(self, k, v):
+        self._sessionSearchApiResults[k] = v
+
     def getSessionTranscript(self):
         t = []
         for (k,v) in self._sessionUtterancesOrdered:
@@ -145,6 +152,7 @@ class BotState(object):
         self._sessionUtterancesPrompt = {}
         self._sessionDataType = {}
         self._sessionUtterancesType = {}
+        self._sessionSearchApiResults = {}
         self.transferTopicInfo = None
         self.clearWaiting()
 
@@ -232,6 +240,7 @@ class BotState(object):
             "session_utterances_ordered":self._sessionUtterancesOrdered,
             "session_utterances_prompt": self._sessionUtterancesPrompt,
             "session_api_results": sessionApiResultsJson,
+            "session_search_api_results": self._sessionSearchApiResults,
             "write_time":self.writeTime,
             "session_intent":self.sessionIntent,
             "session_id":self.sessionId,
@@ -262,6 +271,7 @@ class BotState(object):
         if botState._sessionUtterancesPrompt is None:
             log.debug("botState._sessionUtterancesPrompt = {}")
             botState._sessionUtterancesPrompt = {}
+        botState._sessionSearchApiResults = jsonObject.get("session_search_api_results")
         botState._sessionApiResults = {}
         _d = jsonObject.get("session_api_results", {})
         for (k,v) in six.iteritems(_d):

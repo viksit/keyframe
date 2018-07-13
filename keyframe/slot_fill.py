@@ -9,6 +9,9 @@ import re
 from .dsl import BaseEntity
 import json
 import six
+import lxml.html
+
+from jinja2 import Environment, BaseLoader, Template
 
 log = logging.getLogger(__name__)
 
@@ -57,6 +60,7 @@ class Slot(object):
         self.slotType = None
         self.descName = None
         self.useStored = False
+        self.customExpr = None
 
     def __repr__(self):
         return "%s" % (json.dumps(self.toJSONObject()),)
@@ -77,7 +81,8 @@ class Slot(object):
             "optionsList":self.optionsList,
             "entityName":self.entityName,
             "slotType":self.slotType,
-            "useSlotsForParse":self.useSlotsForParse
+            "useSlotsForParse":self.useSlotsForParse,
+            "customExpr":self.customExpr
         }
 
     def fromJSONObject(self, j):
@@ -92,13 +97,36 @@ class Slot(object):
         self.parseResponse = j.get("parseResponse")
         self.entity = BaseEntity.fromJSON(j.get("entity"))
         self.required = j.get("required")
-        self.optionsList = j.get("optionsList"),
+        self.optionsList = j.get("optionsList"),  # TODO(nishant): [20180712] is this a bug?
         self.slotType = j.get("slotType")
         self.useSlotsForParse = j.get("useSlotsForParse", [])
+        self.customExpr = j.get("customExpr")
 
     def init(self, **kwargs):
         self.channelClient = kwargs.get("channelClient")
         self.state = "new" # or process_slot
+
+    def _entitiesDict(self, botState):
+        _t = botState.getSessionTranscript()
+        #log.debug("sessionTranscript: %s", _t)
+        tl = []
+        for d in _t:
+            if d.get("prompt"):
+                tl.append("bot> %s" % lxml.html.fromstring(
+                    d.get("prompt")).text_content())
+            if d.get("response"):
+                tl.append("user> %s" % d.get("response"))
+            tl.append("")
+        transcript = "\n".join(tl)
+        #transcript = "\n".join(
+        #    "%s => %s" % (d.get("prompt"), d.get("response")) for d in _t)
+        #transcript = "\n".join(
+        #    "%s => %s" % (k,v) for (k,v) in botState.getSessionUtterancesOrdered())
+        #log.debug("transcript: %s", transcript)
+        return {"entities":botState.getSessionData(),
+                "utterances":botState.getSessionUtterances(),
+                "transcript":transcript,
+                "searchapiresults":botState.getSessionSearchApiResults()}
 
     def addCustomFieldsToSession(self, botState):
         if self.customFields:
@@ -155,6 +183,26 @@ class Slot(object):
                 self.value = existingEntity
                 self.filled = True
                 return {"status":self.filled}
+
+            # now check if there is a custom_expr that can be evaluated.
+            if self.customExpr and self.customExpr.strip():
+                d = self._entitiesDict(botState)
+                rtemplate = Environment(loader=BaseLoader).from_string(
+                    self.customExpr.strip())
+                v = rtemplate.render(**d)
+                if v and v.strip():
+                    self.value = v.strip()
+                    botState.addToSessionData(
+                        self.name, self.value, self.entityType)
+                    if self.canonicalId:
+                        log.info("ADDING canonicalId %s: %s to session data",
+                                 self.canonicalId, self.value)
+                        botState.addToSessionData(
+                            self.canonicalId, self.value, self.entityType)
+                    log.info("Got value for slot from customExpr: %s => %s",
+                             self.customExpr.strip(), self.value)
+                    self.filled = True
+                    return {"status":self.filled}
 
             if self.parseOriginal is True:
                 parseTextList = []
