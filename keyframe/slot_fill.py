@@ -46,6 +46,8 @@ class Slot(object):
         self.value = None
         self.validated = False
         self.state = Slot.SLOT_STATE_NEW
+        self.numTries = 0
+        self.maxTries = None
         self.required = False
         self.parseOriginal = False
         self.useSlotsForParse = []
@@ -74,6 +76,8 @@ class Slot(object):
             "value": self.value,
             "validated": self.validated,
             "state": self.state,
+            "numTries": self.numTries,
+            "maxTries": self.maxTries,
             "parseOriginal": self.parseOriginal,
             "parseResponse": self.parseResponse,
             "entity": self.entity.toJSON(),
@@ -93,6 +97,7 @@ class Slot(object):
         self.value = j.get("value")
         self.validated = j.get("validated")
         self.state = j.get("state")
+        self.numTries = j.get("numTries")
         self.parseOriginal = j.get("parseOriginal")
         self.parseResponse = j.get("parseResponse")
         self.entity = BaseEntity.fromJSON(j.get("entity"))
@@ -258,7 +263,9 @@ class Slot(object):
 
         # Waiting for user response
         elif self.state == Slot.SLOT_STATE_WAITING_FILL:
-            log.debug("(2) state: %s", self.state)
+            self.numTries += 1
+            log.debug("(2) state: %s, numTries: %s", self.state, self.numTries)
+            log.info("numTries: %s", self.numTries)
             # If we want the incoming response to be put through an entity extractor
             if self.parseResponse is True:
                 log.debug("parse response is true")
@@ -287,6 +294,13 @@ class Slot(object):
                     # currently this is an inifnite loop.
                     # TODO(viksit/nishant): add a nice way to control this.
                     log.warn("Incorrect value (%s) entered for slot %s.", fillResult, self.name)
+                    log.info("maxTries: %s, numTries: %s", self.maxTries, self.numTries)
+                    if self.maxTries and self.maxTries < self.numTries:
+                        self.value = None
+                        self.filled = True
+                        self.state = Slot.SLOT_STATE_FILLED
+                        return {"status":self.filled}
+
                     msg = self.errorMsg
                     if not msg:
                         msg = "You entered an incorrect value. Please enter again."

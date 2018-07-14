@@ -271,6 +271,7 @@ class GenericActionObject(keyframe.actions.ActionObject):
                     apiResult=apiResult, newTopic=newTopic, topicId=topicId,
                     config=config, tags=slotSpec.get("tags"))
                 gc.useStored = slotSpec.get("use_stored", False)
+                gc.maxTries = slotSpec.get("max_tries", 2)  # TEMPORARY default
             elif slotType == slot_fill.Slot.SLOT_TYPE_TRANSFER:
                 gc = generic_slot.GenericTransferSlot(
                     apiResult=apiResult, newTopic=newTopic, topicId=topicId,
