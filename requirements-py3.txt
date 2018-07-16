@@ -7,7 +7,6 @@ botocore
 cffi
 click
 colorama
-cryptography
 docutils
 enum34
 Flask
@@ -20,7 +19,6 @@ ipaddress
 itsdangerous
 Jinja2
 jmespath
-kappa
 MarkupSafe
 ordered_set
 placebo
@@ -52,4 +50,4 @@ python-intercom
 simple-salesforce
 # See https://github.com/Miserlou/Zappa/issues/1455
 cryptography==2.1.4
-
+kappa
