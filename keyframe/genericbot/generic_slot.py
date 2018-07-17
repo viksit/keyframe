@@ -46,6 +46,7 @@ class GenericSlot(keyframe.slot_fill.Slot):
             config=config, tags=tags)
         self.promptMsg = promptMsg
         self.channelClient = channelClient
+        self.customFields = None
 
     # TODO(viksit): This should be defined via the JSON spec file.
     #entity = keyframe.dsl.FreeTextEntity(label="genericentity")
@@ -54,26 +55,6 @@ class GenericSlot(keyframe.slot_fill.Slot):
     #parseResponse = False
     #optionsList = None
 
-    def _entitiesDict(self, botState):
-        _t = botState.getSessionTranscript()
-        #log.debug("sessionTranscript: %s", _t)
-        tl = []
-        for d in _t:
-            if d.get("prompt"):
-                tl.append("bot> %s" % lxml.html.fromstring(
-                    d.get("prompt")).text_content())
-            if d.get("response"):
-                tl.append("user> %s" % d.get("response"))
-            tl.append("")
-        transcript = "\n".join(tl)
-        #transcript = "\n".join(
-        #    "%s => %s" % (d.get("prompt"), d.get("response")) for d in _t)
-        #transcript = "\n".join(
-        #    "%s => %s" % (k,v) for (k,v) in botState.getSessionUtterancesOrdered())
-        #log.debug("transcript: %s", transcript)
-        return {"entities":botState.getSessionData(),
-                "utterances":botState.getSessionUtterances(),
-                "transcript":transcript}
 
     def prompt(self, botState):
         #assert self.promptMsg
@@ -103,6 +84,7 @@ class GenericSlot(keyframe.slot_fill.Slot):
                 botStateUid=botStateUid)
         elif contentType == "search":
             searchResults = searchAPIResult.get("hits")
+            log.info("searchResults: %s", searchResults)
             if not searchResults:
                 cr = keyframe.messages.createTextResponse(
                     canonicalMsg,
@@ -274,7 +256,7 @@ class GenericInfoSlot(GenericSlot):
             config=config, tags=tags)
 
     def fill(self, canonicalMsg, apiResult, channelClient, botState):
-        log.info("fill called with txt: %s", canonicalMsg.text)
+        log.info("GenericInfoSlot.fill called with txt: %s", canonicalMsg.text)
         self.apiResult = apiResult
         self.channelClient = channelClient
         self.canonicalMsg = canonicalMsg
@@ -372,6 +354,7 @@ class GenericActionSlot(GenericSlot):
                 searchWebhook, botState)
             text = _d.get("text")
             searchAPIResult = _d.get("api_response")
+            searchAPIResult["num_results"] = len(searchAPIResult.get("hits", []))
             contentType = "search"
             botState.addToSessionData(
                 self.name, _d.get("text"), self.entityType)
@@ -380,6 +363,12 @@ class GenericActionSlot(GenericSlot):
                     self.canonicalId, _d.get("text"), self.entityType)
             botState.addToSessionUtterances(
                 self.name, None, _d.get("text"), self.entityType)
+            botState.addToSessionSearchApiResults(
+                self.name, searchAPIResult)
+            if self.canonicalId:
+                botState.addToSessionSearchApiResults(
+                    self.canonicalId, searchAPIResult)
+                
         elif actionType == "transfer_cnv":
             if isinstance(channelClient, channel_client.ChannelClientIntercom):
                 assigneeId = channelClient.supportAdminId

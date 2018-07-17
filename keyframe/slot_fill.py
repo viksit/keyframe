@@ -9,6 +9,9 @@ import re
 from .dsl import BaseEntity
 import json
 import six
+import lxml.html
+
+from jinja2 import Environment, BaseLoader, Template
 
 log = logging.getLogger(__name__)
 
@@ -43,6 +46,8 @@ class Slot(object):
         self.value = None
         self.validated = False
         self.state = Slot.SLOT_STATE_NEW
+        self.numTries = 0 # internal counter variable
+        self.maxTries = None # derived from ui -> slotSpec
         self.required = False
         self.parseOriginal = False
         self.useSlotsForParse = []
@@ -57,6 +62,7 @@ class Slot(object):
         self.slotType = None
         self.descName = None
         self.useStored = False
+        self.customExpr = None
 
     def __repr__(self):
         return "%s" % (json.dumps(self.toJSONObject()),)
@@ -70,6 +76,8 @@ class Slot(object):
             "value": self.value,
             "validated": self.validated,
             "state": self.state,
+            "numTries": self.numTries,
+            "maxTries": self.maxTries,
             "parseOriginal": self.parseOriginal,
             "parseResponse": self.parseResponse,
             "entity": self.entity.toJSON(),
@@ -77,7 +85,8 @@ class Slot(object):
             "optionsList":self.optionsList,
             "entityName":self.entityName,
             "slotType":self.slotType,
-            "useSlotsForParse":self.useSlotsForParse
+            "useSlotsForParse":self.useSlotsForParse,
+            "customExpr":self.customExpr
         }
 
     def fromJSONObject(self, j):
@@ -88,17 +97,41 @@ class Slot(object):
         self.value = j.get("value")
         self.validated = j.get("validated")
         self.state = j.get("state")
+        self.numTries = j.get("numTries")
         self.parseOriginal = j.get("parseOriginal")
         self.parseResponse = j.get("parseResponse")
         self.entity = BaseEntity.fromJSON(j.get("entity"))
         self.required = j.get("required")
-        self.optionsList = j.get("optionsList"),
+        self.optionsList = j.get("optionsList"),  # TODO(nishant): [20180712] is this a bug?
         self.slotType = j.get("slotType")
         self.useSlotsForParse = j.get("useSlotsForParse", [])
+        self.customExpr = j.get("customExpr")
 
     def init(self, **kwargs):
         self.channelClient = kwargs.get("channelClient")
         self.state = "new" # or process_slot
+
+    def _entitiesDict(self, botState):
+        _t = botState.getSessionTranscript()
+        #log.debug("sessionTranscript: %s", _t)
+        tl = []
+        for d in _t:
+            if d.get("prompt"):
+                tl.append("bot> %s" % lxml.html.fromstring(
+                    d.get("prompt")).text_content())
+            if d.get("response"):
+                tl.append("user> %s" % d.get("response"))
+            tl.append("")
+        transcript = "\n".join(tl)
+        #transcript = "\n".join(
+        #    "%s => %s" % (d.get("prompt"), d.get("response")) for d in _t)
+        #transcript = "\n".join(
+        #    "%s => %s" % (k,v) for (k,v) in botState.getSessionUtterancesOrdered())
+        #log.debug("transcript: %s", transcript)
+        return {"entities":botState.getSessionData(),
+                "utterances":botState.getSessionUtterances(),
+                "transcript":transcript,
+                "searchapiresults":botState.getSessionSearchApiResults()}
 
     def addCustomFieldsToSession(self, botState):
         if self.customFields:
@@ -156,6 +189,26 @@ class Slot(object):
                 self.filled = True
                 return {"status":self.filled}
 
+            # now check if there is a custom_expr that can be evaluated.
+            if self.customExpr and self.customExpr.strip():
+                d = self._entitiesDict(botState)
+                rtemplate = Environment(loader=BaseLoader).from_string(
+                    self.customExpr.strip())
+                v = rtemplate.render(**d)
+                if v and v.strip():
+                    self.value = v.strip()
+                    botState.addToSessionData(
+                        self.name, self.value, self.entityType)
+                    if self.canonicalId:
+                        log.info("ADDING canonicalId %s: %s to session data",
+                                 self.canonicalId, self.value)
+                        botState.addToSessionData(
+                            self.canonicalId, self.value, self.entityType)
+                    log.info("Got value for slot from customExpr: %s => %s",
+                             self.customExpr.strip(), self.value)
+                    self.filled = True
+                    return {"status":self.filled}
+
             if self.parseOriginal is True:
                 parseTextList = []
                 for parseSlotName in self.useSlotsForParse:
@@ -210,7 +263,9 @@ class Slot(object):
 
         # Waiting for user response
         elif self.state == Slot.SLOT_STATE_WAITING_FILL:
-            log.debug("(2) state: %s", self.state)
+            self.numTries += 1
+            log.debug("(2) state: %s, numTries: %s", self.state, self.numTries)
+            log.info("numTries: %s", self.numTries)
             # If we want the incoming response to be put through an entity extractor
             if self.parseResponse is True:
                 log.debug("parse response is true")
@@ -239,6 +294,13 @@ class Slot(object):
                     # currently this is an inifnite loop.
                     # TODO(viksit/nishant): add a nice way to control this.
                     log.warn("Incorrect value (%s) entered for slot %s.", fillResult, self.name)
+                    log.debug("maxTries: %s, numTries: %s", self.maxTries, self.numTries)
+                    if self.maxTries and self.maxTries < self.numTries:
+                        self.value = None
+                        self.filled = True
+                        self.state = Slot.SLOT_STATE_FILLED
+                        return {"status":self.filled}
+
                     msg = self.errorMsg
                     if not msg:
                         msg = "You entered an incorrect value. Please enter again."

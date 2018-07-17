@@ -174,6 +174,7 @@ class ActionObject(object):
             slotObject.value = slotData.get("value")
             slotObject.validated = slotData.get("validated")
             slotObject.state = slotData.get("state")
+            slotObject.numTries = slotData.get("numTries")
 
     def resetSlots(self):
         for slotObject in self.slotObjects:
