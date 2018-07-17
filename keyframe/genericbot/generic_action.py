@@ -297,6 +297,7 @@ class GenericActionObject(keyframe.actions.ActionObject):
             # Let all slots have customfields.
             gc.customFields = slotSpec.get("custom_fields")
             gc.customExpr = slotSpec.get("custom_expr")
+            gc.numTries = slotSpec.get("num_tries")
 
             required = slotSpec.get("required")
             if not required:
