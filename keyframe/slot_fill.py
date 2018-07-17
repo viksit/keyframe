@@ -46,8 +46,8 @@ class Slot(object):
         self.value = None
         self.validated = False
         self.state = Slot.SLOT_STATE_NEW
-        self.numTries = 0
-        self.maxTries = None
+        self.numTries = 0 # internal counter variable
+        self.maxTries = None # derived from ui -> slotSpec
         self.required = False
         self.parseOriginal = False
         self.useSlotsForParse = []
@@ -294,7 +294,7 @@ class Slot(object):
                     # currently this is an inifnite loop.
                     # TODO(viksit/nishant): add a nice way to control this.
                     log.warn("Incorrect value (%s) entered for slot %s.", fillResult, self.name)
-                    log.info("maxTries: %s, numTries: %s", self.maxTries, self.numTries)
+                    log.debug("maxTries: %s, numTries: %s", self.maxTries, self.numTries)
                     if self.maxTries and self.maxTries < self.numTries:
                         self.value = None
                         self.filled = True

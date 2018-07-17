@@ -271,7 +271,11 @@ class GenericActionObject(keyframe.actions.ActionObject):
                     apiResult=apiResult, newTopic=newTopic, topicId=topicId,
                     config=config, tags=slotSpec.get("tags"))
                 gc.useStored = slotSpec.get("use_stored", False)
-                gc.maxTries = slotSpec.get("max_tries", 2)  # TEMPORARY default
+                gc.maxTries = slotSpec.get("max_tries", None)
+                if gc.maxTries and type(gc.maxTries) == str:
+                    # This is a numerical value, via json
+                    # Assumed to be an int
+                    gc.maxTries = int(gc.maxTries)
             elif slotType == slot_fill.Slot.SLOT_TYPE_TRANSFER:
                 gc = generic_slot.GenericTransferSlot(
                     apiResult=apiResult, newTopic=newTopic, topicId=topicId,
@@ -288,7 +292,6 @@ class GenericActionObject(keyframe.actions.ActionObject):
             gc.canonicalId = slotSpec.get("canonical_id")
             gc.errorMsg = slotSpec.get("error_msg")
             #assert gc.promptMsg, "slot %s must have a prompt" % (slotSpec,)
-
             gc.name = slotSpec.get("name")
             gc.descName = slotSpec.get("desc_name")
             assert gc.name, "slot %s must have a name" % (slotSpec,)
@@ -297,7 +300,6 @@ class GenericActionObject(keyframe.actions.ActionObject):
             # Let all slots have customfields.
             gc.customFields = slotSpec.get("custom_fields")
             gc.customExpr = slotSpec.get("custom_expr")
-            gc.numTries = slotSpec.get("num_tries")
 
             required = slotSpec.get("required")
             if not required:
