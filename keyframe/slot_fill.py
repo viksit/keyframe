@@ -271,21 +271,24 @@ class Slot(object):
                 log.debug("parse response is true")
                 fillResult = self._extractSlotFromSentence(
                     canonicalMsg.text, self.apiResult)
+                # Even if fillResult is None, (over)write it to the entities.
+                # This removes any old value of this entity.
+                self.value = fillResult
+                botState.addToSessionData(
+                    self.name, fillResult, self.entityType)
+                if self.canonicalId:
+                    log.info("ADDING2 canonicalId %s = %s to session data",
+                             self.canonicalId, fillResult)
+                    botState.addToSessionData(
+                        self.canonicalId, fillResult, self.entityType)
+                botState.addToSessionUtterances(
+                    self.name,
+                    canonicalMsg.text, self.prompt(botState), self.entityType)
+                botState.addToSessionApiResults(
+                    self.name,
+                    self.apiResult)
                 if fillResult:
                     self.value = fillResult
-                    botState.addToSessionData(
-                        self.name, self.value, self.entityType)
-                    if self.canonicalId:
-                        log.info("ADDING2 canonicalId %s = %s to session data",
-                                 self.canonicalId, self.value)
-                        botState.addToSessionData(
-                            self.canonicalId, self.value, self.entityType)
-                    botState.addToSessionUtterances(
-                        self.name,
-                        canonicalMsg.text, self.prompt(botState), self.entityType)
-                    botState.addToSessionApiResults(
-                        self.name,
-                        self.apiResult)
                     self.filled = True
                     self.state = Slot.SLOT_STATE_FILLED
                 else:
@@ -296,7 +299,6 @@ class Slot(object):
                     log.warn("Incorrect value (%s) entered for slot %s.", fillResult, self.name)
                     log.debug("maxTries: %s, numTries: %s", self.maxTries, self.numTries)
                     if self.maxTries and self.maxTries < self.numTries:
-                        self.value = None
                         self.filled = True
                         self.state = Slot.SLOT_STATE_FILLED
                         return {"status":self.filled}
