@@ -41,7 +41,8 @@ pymyra_loglevel = int(_getLogLevel("PYMYRA_LOG_LEVEL", logLevel))
 log_pymyra.setLevel(pymyra_loglevel)
 log = logging.getLogger("keyframe.gbot.gbot")
 rootLog = logging.getLogger()
-rootLog.setLevel(logging.INFO)
+#rootLog.setLevel(logging.INFO)
+rootLog.setLevel(logging.DEBUG)
 
 #from pymyra.api import client
 import pymyra.api.inference_proxy_client as inference_proxy_client
@@ -61,6 +62,7 @@ from keyframe import store_api
 from keyframe import bot_stores
 import keyframe.event_api as event_api
 import keyframe.utils
+import keyframe.widget_target
 
 from keyframe.genericbot import generic_bot
 from keyframe.genericbot import generic_bot_api
@@ -109,6 +111,23 @@ app.config['DEBUG'] = True
 @app.route("/version", methods=["GET"])
 def version():
     return VERSION
+
+@app.route("/widget_target", methods=["GET"])
+@cross_origin(supports_credentials=True)
+def widget_target():
+    log.info("widget_target invoked")
+    agentId = request.args.get("agent_id")
+    if not agentId:
+        log.error("No agent_id given.")
+        return Response(response="Invalid request.", status=400)
+    log.info("agentId: %s", agentId)
+    url = request.args.get("url")
+    log.info("url: %s", url)
+    kvStore = getKVStore()
+    r = keyframe.widget_target.validateWidgetTarget(kvStore, agentId, url)
+    if r:
+        return "yes"
+    return "no"
 
 @app.route("/agent_pin_config", methods=["GET","POST"])
 @wrap_exceptions
