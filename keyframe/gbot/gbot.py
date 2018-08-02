@@ -19,6 +19,29 @@ import logging
 from six.moves import range
 
 logging.basicConfig()
+def _getLogLevel(envVar, defaultLogLevel=logging.INFO):
+    l = os.getenv(envVar, defaultLogLevel)
+    try:
+        ll = int(l)
+        return ll
+    except ValueError as ve:
+        traceback.print_exc()
+        return defaultLogLevel
+#log = logging.getLogger(__name__)
+# Make the logger used by keyframe and genericbot, but not the root logger.
+# If you want to set keyframe / pymyra to a different log level, comment out
+# the setLevel below or set explicity or use the env var for that library.
+logLevel = int(_getLogLevel("GBOT_LOG_LEVEL", logging.INFO))
+#log = logging.getLogger("genericbot")
+#log.setLevel(logLevel)
+log_keyframe = logging.getLogger("keyframe")
+log_keyframe.setLevel(logLevel)
+log_pymyra = logging.getLogger("pymyra")
+pymyra_loglevel = int(_getLogLevel("PYMYRA_LOG_LEVEL", logLevel))
+log_pymyra.setLevel(pymyra_loglevel)
+log = logging.getLogger("keyframe.gbot.gbot")
+rootLog = logging.getLogger()
+rootLog.setLevel(logging.INFO)
 
 #from pymyra.api import client
 import pymyra.api.inference_proxy_client as inference_proxy_client
@@ -31,45 +54,38 @@ from keyframe.actions import ActionObject
 from keyframe.slot_fill import Slot
 from keyframe.bot_api import BotAPI
 from keyframe import channel_client
+
 from keyframe import messages
 from keyframe import config
 from keyframe import store_api
 from keyframe import bot_stores
-import keyframe.utils
 import keyframe.event_api as event_api
+import keyframe.utils
 
 from keyframe.genericbot import generic_bot
 from keyframe.genericbot import generic_bot_api
 from keyframe.genericbot import generic_cmdline
 
-#log = logging.getLogger(__name__)
-# Make the logger used by keyframe and genericbot, but not the root logger.
-# If you want to set keyframe / pymyra to a different log level, comment out
-# the setLevel below or set explicity or use the env var for that library.
-logLevel = int(keyframe.utils.getLogLevel("GBOT_LOG_LEVEL", logging.INFO))
-log = logging.getLogger("genericbot")
-log.setLevel(logLevel)
-log_keyframe = logging.getLogger("keyframe")
-log_keyframe.setLevel(logLevel)
-log_pymyra = logging.getLogger("pymyra")
-pymyra_loglevel = int(keyframe.utils.getLogLevel("PYMYRA_LOG_LEVEL", logLevel))
-log_pymyra.setLevel(pymyra_loglevel)
 
 VERSION = "3.0.0"
 
-# TODO:
-# Initialize via a configuration file
-kvStore = store_api.get_kv_store(
-    # store_api.TYPE_LOCALFILE,
-    os.getenv("KEYFRAME_KV_STORE_TYPE", store_api.TYPE_DYNAMODB),
-    # store_api.TYPE_INMEMORY,
-    config.getConfig())
+cfg = config.getConfig()
+_kvStore = None
+def getKVStore():
+    global _kvStore
+    if not _kvStore:
+        _kvStore = store_api.get_kv_store(
+            # store_api.TYPE_LOCALFILE,
+            os.getenv("KEYFRAME_KV_STORE_TYPE", store_api.TYPE_DYNAMODB),
+            # store_api.TYPE_INMEMORY,
+            cfg)
+    return _kvStore
 
-cachedKvStore = kvStore
-KVSTORE_CACHE_SECONDS = int(os.getenv("KVSTORE_CACHE_SECONDS", 0))
-if KVSTORE_CACHE_SECONDS:
-    cachedKvStore = store_api.MemoryCacheKVStore(
-        kvStore=kvStore, cacheExpirySeconds=KVSTORE_CACHE_SECONDS)
+# cachedKvStore = kvStore
+# KVSTORE_CACHE_SECONDS = int(os.getenv("KVSTORE_CACHE_SECONDS", 0))
+# if KVSTORE_CACHE_SECONDS:
+#     cachedKvStore = store_api.MemoryCacheKVStore(
+#         kvStore=kvStore, cacheExpirySeconds=KVSTORE_CACHE_SECONDS)
 # Deployment for lambda
 
 def wrap_exceptions(func):
@@ -154,10 +170,7 @@ class GenericBotHTTPAPI(generic_bot_api.GenericBotAPI):
         agentId = kwargs.get("agentId")
         accountId = kwargs.get("accountId")
         #accountSecret = kwargs.get("accountSecret")
-        # We can have a cachedKvStore to get the bot spec
-        # since it doesn't change much.
-        #if os.getenv
-        bms = bot_stores.BotMetaStore(cachedKvStore)
+        bms = bot_stores.BotMetaStore(getKVStore())
         with app.app_context():
 
             if "run_mode" in current_app.config and \
@@ -220,7 +233,7 @@ class GenericBotHTTPAPI(generic_bot_api.GenericBotAPI):
             #api.set_params(modelParams)
 
         self.bot = generic_bot.GenericBot(
-            kvStore=kvStore,
+            kvStore=getKVStore(),
             configJson=configJson.get("config_json"),
             api=api,
             accountId=accountId,
@@ -365,8 +378,7 @@ class Message(object):
 #     #     }
 #     # }
 # }
-ads = bot_stores.AgentDeploymentStore(kvStore=kvStore)
-cfg = config.getConfig()
+#ads = bot_stores.AgentDeploymentStore(kvStore=kvStore)
 
 # By default get dev settings.
 SLACK_BOT_ID = cfg.SLACK_BOT_ID
@@ -442,7 +454,7 @@ def _run_agent_slack():
     teamId = slackEvent["team_id"]
     msgChannel = event["channel"]
     botToken = None
-
+    ads = bot_stores.AgentDeploymentStore(kvStore=getKVStore())
     agentDeploymentMeta = ads.getJsonSpec(teamId, "slack")
     botToken = agentDeploymentMeta.get("bot_token")
 
@@ -473,8 +485,8 @@ def _run_agent_slack():
             "team_id": teamId,
             "bot_token": botToken,
             "msg_channel": msgChannel
-        }
-    }
+        } 
+   }
     r = GenericBotHTTPAPI.requestHandler(
         event=event,
         context={})
@@ -529,6 +541,7 @@ def _run_agent_intercom():
         assignedUserEmail = intercomEvent.get("data", {}).get("item", {}).get("assignee", {}).get("email")
         assignedUserId = intercomEvent.get("data", {}).get("item", {}).get("assignee", {}).get("id")
         appId = intercomEvent.get("app_id")
+        ads = bot_stores.AgentDeploymentStore(kvStore=getKVStore())
         agentDeploymentMeta = ads.getJsonSpec(appId, "intercom")
         log.info("agentDeploymentMeta: %s", agentDeploymentMeta)
         if agentDeploymentMeta:
@@ -883,12 +896,12 @@ if __name__ == "__main__":
         log.debug("config_json: %s", d)
 
     if cmd == "cmd":
-        c = generic_cmdline.GenericCmdlineHandler(config_json=d, accountId=accountId, agentId=agentId, kvStore=kvStore, cfg=cfg)
+        c = generic_cmdline.GenericCmdlineHandler(config_json=d, accountId=accountId, agentId=agentId, kvStore=getKVStore(), cfg=cfg)
         c.begin()
 
     elif cmd == "script":
         scriptFile = sys.argv[6]
-        c = generic_cmdline.ScriptHandler(config_json=d, accountId=accountId, agentId=agentId, kvStore=kvStore, cfg=cfg)
+        c = generic_cmdline.ScriptHandler(config_json=d, accountId=accountId, agentId=agentId, kvStore=getKVStore(), cfg=cfg)
         c.scriptFile(scriptFile=scriptFile)
         num_errors = c.executeScript()
         if num_errors > 0:
