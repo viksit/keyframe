@@ -260,7 +260,7 @@ class BaseBot(object):
     def handleEvent(self, canonicalMsg, botState):
         log.debug("handleEvent(%s)", locals())
         e = canonicalMsg.eventInfo
-        clickEvent = event.createEvent(
+        aEvent = event.createEvent(
             accountId=self.accountId,
             agentId=self.agentId,
             userId=canonicalMsg.userId,
@@ -270,7 +270,7 @@ class BaseBot(object):
                      "target_title":e.get("target_title")})
         eventWriter = event_writer.getWriter(
             streamName=self.config.KINESIS_STREAM_NAME)
-        eventWriter.write(clickEvent.toJSONStr(), canonicalMsg.userId)
+        eventWriter.write(aEvent.toJSONStr(), canonicalMsg.userId)
         return constants.BOT_REQUEST_STATE_PROCESSED
 
 

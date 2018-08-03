@@ -217,8 +217,16 @@ class ChannelClientRESTAPI(ChannelClient):
             return {
                 "event_type": eventType,
                 "target_href": channelMsg.body.get("target_href")}
+        elif eventType == "widget_close_click":
+            return {
+                "event_type": eventType
+                }
+        elif eventType == "widget_cta_click":
+            return {
+                "event_type": eventType
+                }
         else:
-            raise Exception("Unknown eventType: %s", eventType)
+            raise Exception("Unknown eventType: %s" % (eventType,))
 
     def extract(self, channelMsg):
         log.debug("extract(%s)", channelMsg)
