@@ -41,8 +41,8 @@ pymyra_loglevel = int(_getLogLevel("PYMYRA_LOG_LEVEL", logLevel))
 log_pymyra.setLevel(pymyra_loglevel)
 log = logging.getLogger("keyframe.gbot.gbot")
 rootLog = logging.getLogger()
-#rootLog.setLevel(logging.INFO)
-rootLog.setLevel(logging.DEBUG)
+rootLog.setLevel(logging.INFO)
+#rootLog.setLevel(logging.DEBUG)
 
 #from pymyra.api import client
 import pymyra.api.inference_proxy_client as inference_proxy_client
@@ -69,7 +69,7 @@ from keyframe.genericbot import generic_bot_api
 from keyframe.genericbot import generic_cmdline
 
 
-VERSION = "3.0.0"
+VERSION = "3.0.1"
 
 cfg = config.getConfig()
 _kvStore = None
