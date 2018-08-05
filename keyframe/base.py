@@ -260,10 +260,18 @@ class BaseBot(object):
     def handleEvent(self, canonicalMsg, botState):
         log.debug("handleEvent(%s)", locals())
         e = canonicalMsg.eventInfo
+        sessionStatus = None
+        if not botState.getSessionId():
+            # There is no session. Create a new session.
+            botState.clear()
+            botState.startSession(canonicalMsg.userId)
+            botState.sessionStartLastEvent = True
+            sessionStatus = "start"
         aEvent = event.createEvent(
             accountId=self.accountId,
             agentId=self.agentId,
             userId=canonicalMsg.userId,
+            sessionStatus=sessionStatus,
             eventType=e.get("event_type"),
             sessionId=botState.getSessionId(),
             payload={"target_href":e.get("target_href"),
@@ -408,10 +416,15 @@ class BaseBot(object):
                 # If user wants to clear state, they can also do that manually.
                 #botState.clear()
                 if not xt:
-                    botState.startSession(canonicalMsg.userId)
-                    #self._addCustomPropsToSession(
-                    #    canonicalMsg.customProps, botState)
-                    newSession = True
+                    # Special case for not starting a new session.
+                    if not botState.sessionStartLastEvent:
+                        botState.startSession(canonicalMsg.userId)
+                        #self._addCustomPropsToSession(
+                        #    canonicalMsg.customProps, botState)
+                        newSession = True
+                    else:
+                        botState.sessionStartLastEvent = False
+                        # Any subsequent [topic=xxx] commands will start a new session.
                 canonicalMsg.text = canonicalMsg.text.replace(x.group(), "")
 
             if not topicId:

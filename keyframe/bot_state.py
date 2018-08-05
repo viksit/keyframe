@@ -47,6 +47,7 @@ class BotState(object):
         if not keepUid:
             self.uid = None
             self.previousUid = None
+        self.sessionStartLastEvent = False
 
     def _createSessionId(self, userId, ts):
         return "kf_ses_%i_%s" % (ts, random.randint(0,1000))
