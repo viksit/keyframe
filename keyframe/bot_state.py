@@ -245,7 +245,8 @@ class BotState(object):
             "write_time":self.writeTime,
             "session_intent":self.sessionIntent,
             "session_id":self.sessionId,
-            "session_start_time":self.sessionStartTime
+            "session_start_time":self.sessionStartTime,
+            "session_start_last_event":self.sessionStartLastEvent
         }
 
     @classmethod
@@ -282,4 +283,5 @@ class BotState(object):
         botState.sessionIntent = jsonObject.get("session_intent")
         botState.sessionId = jsonObject.get("session_id")
         botState.sessionStartTime = jsonObject.get("session_start_time")
+        botState.sessionStartLastEvent = jsonObject.get("session_start_last_event")
         return botState

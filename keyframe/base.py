@@ -258,7 +258,8 @@ class BaseBot(object):
         )
 
     def handleEvent(self, canonicalMsg, botState):
-        log.debug("handleEvent(%s)", locals())
+        log.info("handleEvent(%s)", locals())
+        #time.sleep(20)
         e = canonicalMsg.eventInfo
         sessionStatus = None
         if not botState.getSessionId():
@@ -267,6 +268,13 @@ class BaseBot(object):
             botState.startSession(canonicalMsg.userId)
             botState.sessionStartLastEvent = True
             sessionStatus = "start"
+            self.putBotState(
+                userId=canonicalMsg.userId,
+                channel=canonicalMsg.channel,
+                instanceId=canonicalMsg.instanceId,
+                botState=botState,
+                botStateUid=botState.getUid()
+            )
         aEvent = event.createEvent(
             accountId=self.accountId,
             agentId=self.agentId,
@@ -392,6 +400,7 @@ class BaseBot(object):
         wroteEvent = False
 
         while True:
+            log.info("botState.sessionStartLastEvent: %s", botState.sessionStartLastEvent)
             topicId = None
             topicNodeId = None
             actionStateJson = None
@@ -418,12 +427,15 @@ class BaseBot(object):
                 if not xt:
                     # Special case for not starting a new session.
                     if not botState.sessionStartLastEvent:
+                        log.info("starting new session")
                         botState.startSession(canonicalMsg.userId)
                         #self._addCustomPropsToSession(
                         #    canonicalMsg.customProps, botState)
                         newSession = True
                     else:
+                        log.info("NOT starting new session and setting sessionStartLastEvent to False")
                         botState.sessionStartLastEvent = False
+                        botState.changed = True
                         # Any subsequent [topic=xxx] commands will start a new session.
                 canonicalMsg.text = canonicalMsg.text.replace(x.group(), "")
 
