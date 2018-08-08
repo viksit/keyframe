@@ -259,7 +259,7 @@ class BaseBot(object):
 
     def handleEvent(self, canonicalMsg, botState):
         log.info("handleEvent(%s)", locals())
-        #time.sleep(20)
+        #time.sleep(20)  # For testing widget event generation async...
         e = canonicalMsg.eventInfo
         sessionStatus = None
         if not botState.getSessionId():
@@ -400,7 +400,7 @@ class BaseBot(object):
         wroteEvent = False
 
         while True:
-            log.info("botState.sessionStartLastEvent: %s", botState.sessionStartLastEvent)
+            log.debug("botState.sessionStartLastEvent: %s", botState.sessionStartLastEvent)
             topicId = None
             topicNodeId = None
             actionStateJson = None
@@ -426,17 +426,17 @@ class BaseBot(object):
                 #botState.clear()
                 if not xt:
                     # Special case for not starting a new session.
-                    if not botState.sessionStartLastEvent:
+                    if botState.sessionStartLastEvent:
+                        log.info("NOT starting new session and setting sessionStartLastEvent to False")
+                        botState.sessionStartLastEvent = False
+                        botState.changed = True
+                        # Any subsequent [topic=xxx] commands will start a new session.
+                    else:
                         log.info("starting new session")
                         botState.startSession(canonicalMsg.userId)
                         #self._addCustomPropsToSession(
                         #    canonicalMsg.customProps, botState)
                         newSession = True
-                    else:
-                        log.info("NOT starting new session and setting sessionStartLastEvent to False")
-                        botState.sessionStartLastEvent = False
-                        botState.changed = True
-                        # Any subsequent [topic=xxx] commands will start a new session.
                 canonicalMsg.text = canonicalMsg.text.replace(x.group(), "")
 
             if not topicId:

@@ -218,7 +218,7 @@ class GenericBotHTTPAPI(generic_bot_api.GenericBotAPI):
                 #GenericBotHTTPAPI.accountSecret = accountSecret
                 js = bms.getJsonSpec(accountId, agentId)
                 GenericBotHTTPAPI.configJson = js
-                log.info("(::) json config spec: %s", GenericBotHTTPAPI.configJson)
+                log.debug("(::) json config spec: %s", GenericBotHTTPAPI.configJson)
                 if not js:
                     raise Exception("Json spec not found for %s", kwargs)
 
