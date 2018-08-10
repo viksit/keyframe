@@ -69,7 +69,7 @@ from keyframe.genericbot import generic_bot_api
 from keyframe.genericbot import generic_cmdline
 
 
-VERSION = "3.0.1"
+VERSION = "3.0.2"
 
 cfg = config.getConfig()
 _kvStore = None
