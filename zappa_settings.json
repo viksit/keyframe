@@ -8,7 +8,7 @@
       "KVSTORE_CACHE_SECONDS":"0"
     },
     "keep_warm": false,
-  }
+  },
   "prod": {
     "s3_bucket": "ml-lambda-prod-1",
     "app_function": "keyframe.gbot.gbot.app",
@@ -18,17 +18,18 @@
       "KVSTORE_CACHE_SECONDS":"0"
     },
     "keep_warm": false,
-  }
-  "test": {
-    "s3_bucket": "ml-lamdba-test-1",
+  },
+  "test2": {
+    "s3_bucket": "ml-lambda-test-1",
     "app_function": "keyframe.gbot.gbot.app",
-    "project_name": "keyframe_py3_test",
+    "project_name": "keyframe_nishant_test",
     "environment_variables": {
-      "REALM":"dev"
+      "REALM":"dev",
+      "KVSTORE_CACHE_SECONDS":"0"
     },
-  }
+  },
   "testpy3": {
-    "s3_bucket": "ml-lamdba-test-1",
+    "s3_bucket": "ml-lambda-test-1",
     "app_function": "keyframe.gbot.gbot.app",
     "project_name": "keyframe_py3",
     "environment_variables": {
