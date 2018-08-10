@@ -69,7 +69,9 @@ from keyframe.genericbot import generic_bot_api
 from keyframe.genericbot import generic_cmdline
 
 
-VERSION = "3.0.2"
+#VERSION = "3.0.2"
+VERSION = keyframe.utils.getFromFileOrDefault(
+    "keyframe_version.txt", "default")
 
 cfg = config.getConfig()
 _kvStore = None

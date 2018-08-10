@@ -13,6 +13,15 @@ import requests
 from .store_api import KVStore, KVStoreError
 import six
 
+def getFromFileOrDefault(filePath, defaultValue):
+    v = defaultValue
+    if os.path.isfile(filePath):
+        v = open(filePath).readline()
+        if v:
+            v = v.strip()
+    #log.info("getFromFileOrDefault returns %s", v)
+    return v
+
 def getLogLevel(envVar, defaultLogLevel=logging.INFO):
     l = os.getenv(envVar, defaultLogLevel)
     try:
