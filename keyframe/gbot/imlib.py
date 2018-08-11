@@ -80,7 +80,10 @@ ListItemComponent = namedtuple("ListItemComponent", Component._fields +
 ListItemComponent.__new__.__defaults__ = ("item",) + (None,) * 4
 
 Content = namedtuple("Content", ("version", "components", "stored_data"))
+Content.__new__.__defaults__ = ("0.1", [], {})
+
 Canvas = namedtuple("Canvas", ("content"))
+Canvas.__new__.__defaults__ = (Content(),)
 
 ComponentList = namedtuple("ComponentList", ("elements"))
 ComponentList.__new__.__defaults__ = ([],)

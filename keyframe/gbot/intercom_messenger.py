@@ -67,88 +67,28 @@ https://myra-dev.ngrok.io/v2/intercom/submit_sheet
 def _pprint(data):
     print(json.dumps(data, indent=2))
 
-def getSampleInput():
-    res = {
-        "type": "input",
-        "id": "user_myra_config",
-        "label": "Enter your myra configuration ID",
-        "placeholder": "abc13fsdfff",
-        "value": "",
-        "action": {
-            "type": "submit"
-        }
-    }
-    return res
 
 
-def getSampleApp():
-    res = {
-        "type": "input",
-        "id": "user_question",
-        "label": "Whats your question?",
-        "placeholder": "I cant configure my DNS what should I do?",
-        "value": "",
-        "action": {
-            "type": "submit"
-        }
-    }
-    return res
+
+def _getSampleInputCanvas():
+    res = imlib.Canvas()
+def _getSampleInput():
+    res = imlib.InputComponent(
+        id="user_myra_config",
+        label="Enter your myra configuration ID",
+        placeholder="something ID",
+        value="",
+        action=imlib.SubmitAction())
 
 def _getSampleApp():
     res = imlib.InputComponent(
-        id = "user_question",
-        label = "Whats your question?",
-        placeholder = "I can't configure my dns ...",
-        value = "",
-        action = imlib.SubmitAction()
+        id="user_question",
+        label="Whats your question?",
+        placeholder="I can't configure my dns ...",
+        value="",
+        action=imlib.SubmitAction()
     )
     return imlib.asdict(res)
-
-
-
-def getSampleListResponse():
-    res = {
-        "type": "list",
-        "items": [
-            {
-                "type": "item",
-                "id": "article-123b",
-                "title": "How to install the messenger",
-                "subtitle": "An article explaining how to integrate Intercom",
-                "action": {
-                    "type": "submit"
-                }
-            },
-            {
-                "type": "item",
-                "id": "article-123a",
-                "title": "How to install the messenger",
-                "subtitle": "An article explaining how to integrate Intercom",
-                "action": {
-                    "type": "submit"
-                }
-            },
-            {
-                "type": "item",
-                "id": "article-123c",
-                "title": "How to install the messenger",
-                "subtitle": "An article explaining how to integrate Intercom",
-                "action": {
-                    "type": "submit"
-                }
-            },
-            {
-                "type": "item",
-                "id": "article-123d",
-                "title": "How to install the messenger",
-                "subtitle": "An article explaining how to integrate Intercom",
-                "action": {
-                    "type": "submit"
-                }
-            }
-        ]
-    }
-    return res
 
 def _getSampleListResponse():
     res = imlib.ListComponent(items=[])

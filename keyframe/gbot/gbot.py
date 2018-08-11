@@ -679,7 +679,7 @@ def v2_intercom_configure():
                 "content": {
                     "version": "0.1",
                     "components": [
-                        im_utils.getSampleInput()
+                        im_utils._getSampleInput()
                     ]
                 },
                 "stored_data": {} # optional
