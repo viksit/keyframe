@@ -18,6 +18,7 @@ import base64
 import logging
 from six.moves import range
 
+
 logging.basicConfig()
 def _getLogLevel(envVar, defaultLogLevel=logging.INFO):
     l = os.getenv(envVar, defaultLogLevel)
@@ -27,6 +28,7 @@ def _getLogLevel(envVar, defaultLogLevel=logging.INFO):
     except ValueError as ve:
         traceback.print_exc()
         return defaultLogLevel
+
 #log = logging.getLogger(__name__)
 # Make the logger used by keyframe and genericbot, but not the root logger.
 # If you want to set keyframe / pymyra to a different log level, comment out
@@ -68,6 +70,14 @@ from keyframe.genericbot import generic_bot
 from keyframe.genericbot import generic_bot_api
 from keyframe.genericbot import generic_cmdline
 
+import keyframe.gbot.intercom_messenger as im_utils
+from keyframe.gbot.intercom_messenger import _pprint
+
+
+app = Flask(__name__)
+CORS(app, supports_credentials=True)
+
+app.config['DEBUG'] = True
 
 #VERSION = "3.0.2"
 VERSION = keyframe.utils.getFromFileOrDefault(
@@ -105,10 +115,6 @@ def wrap_exceptions(func):
             return r
     return decorated_function
 
-app = Flask(__name__)
-CORS(app, supports_credentials=True)
-
-app.config['DEBUG'] = True
 
 @app.route("/version", methods=["GET"])
 def version():
@@ -282,9 +288,9 @@ def run_agent2():
     # Seems like can't have multiple domains. Here is the browser error message:
     # The 'Access-Control-Allow-Origin' header contains multiple values 'http://localhost:8080, http://demos.myralabs.com', but only one is allowed. Origin 'http://localhost:8080' is therefore not allowed access.
 
-    #allowOrigins = ["http://localhost:8080",
+    # allowOrigins = ["http://localhost:8080",
     #                "http://demos.myralabs.com"]
-    #h.extend([("Access-Control-Allow-Origin", orig) for orig in allowOrigins])
+    # h.extend([("Access-Control-Allow-Origin", orig) for orig in allowOrigins])
     # In any case, seems like the data goes back, just the browser respects CORS.
     # But this is not a security solution.
 
@@ -340,7 +346,6 @@ def _run_agent():
         event=event,
         context={})
     return r, text
-
 
 
 # Slack
@@ -506,7 +511,7 @@ def _run_agent_slack():
             "team_id": teamId,
             "bot_token": botToken,
             "msg_channel": msgChannel
-        } 
+        }
    }
     r = GenericBotHTTPAPI.requestHandler(
         event=event,
@@ -646,95 +651,6 @@ def ping():
 
 #### ------- Intercom messenger app ----------------
 
-"""
-CONFIGURE URL
-https://myra-dev.ngrok.io/v2/intercom/configure
-
-SUBMIT URL
-https://myra-dev.ngrok.io/v2/intercom/submit
-
-INITIALIZE URL
-https://myra-dev.ngrok.io/v2/intercom/initialize
-
-SUBMIT SHEET URL
-https://myra-dev.ngrok.io/v2/intercom/submit_sheet
-
-"""
-
-def _pprint(data):
-    print(json.dumps(data, indent=2))
-
-def getSampleInput():
-    res = {
-        "type": "input",
-        "id": "user_myra_config",
-        "label": "Enter your myra configuration ID",
-        "placeholder": "abc13fsdfff",
-        "value": "",
-        "action": {
-            "type": "submit"
-        }
-    }
-    return res
-
-def getSampleApp():
-    res = {
-        "type": "input",
-        "id": "user_question",
-        "label": "Whats your question?",
-        "placeholder": "I cant configure my DNS what should I do?",
-        "value": "",
-        "action": {
-            "type": "submit"
-        }
-    }
-    return res
-
-def getSampleListResponse():
-    res = {
-        "type": "list",
-        "items": [
-            {
-                "type": "item",
-                "id": "article-123",
-                "title": "How to install the messenger",
-                "subtitle": "An article explaining how to integrate Intercom",
-                "action": {
-                    "type": "submit"
-                }
-            },
-            {
-                "type": "item",
-                "id": "article-123",
-                "title": "How to install the messenger",
-                "subtitle": "An article explaining how to integrate Intercom",
-                "action": {
-                    "type": "submit"
-                }
-            },
-            {
-                "type": "item",
-                "id": "article-123",
-                "title": "How to install the messenger",
-                "subtitle": "An article explaining how to integrate Intercom",
-                "action": {
-                    "type": "submit"
-                }
-            },
-            {
-                "type": "item",
-                "id": "article-123",
-                "title": "How to install the messenger",
-                "subtitle": "An article explaining how to integrate Intercom",
-                "action": {
-                    "type": "submit"
-                }
-            }
-        ]
-    }
-    return res
-
-
 @app.route("/v2/intercom/configure", methods=['GET', 'POST'])
 def v2_intercom_configure():
     print("## configure ##")
@@ -754,7 +670,7 @@ def v2_intercom_configure():
                 "content": {
                     "version": "0.1",
                     "components": [
-                        getSampleInput()
+                        im_utils.getSampleInput()
                     ]
                 },
                 "stored_data": {} # optional
@@ -779,7 +695,7 @@ def v2_intercom_submit():
                 "content": {
                     "version": "0.1",
                     "components": [
-                        getSampleApp()
+                        im_utils._getSampleApp()
                     ]
                 },
                 "stored_data": {} # optional
@@ -791,7 +707,7 @@ def v2_intercom_submit():
                 "content": {
                     "version": "0.1",
                     "components": [
-                        getSampleListResponse(),
+                        im_utils._getSampleListResponse(),
                         {
                             "type": "divider"
                         },
@@ -826,7 +742,9 @@ def v2_intercom_submit():
 @app.route("/v2/intercom/initialize", methods=['GET', 'POST'])
 def v2_intercom_initialize():
     """
-    When a card is being added, Intercom POSTs a request to the Messenger App’s initialize_url with the card creation parameters gathered from the teammate. The payload is in the following form:
+    When a card is being added, Intercom POSTs a request to the Messenger App’s
+    # initialize_url with the card creation parameters gathered from the teammat
+    e. The payload is in the following form:
     {
       card_creation_options: {
        <set of key-value pairs>
@@ -848,7 +766,7 @@ def v2_intercom_initialize():
             "content": {
                 "version": "0.1",
                 "components": [
-                    getSampleApp()
+                    im_utils._getSampleApp()
                 ]
             },
             "stored_data": {} # optional
@@ -865,20 +783,9 @@ def v2_intercom_submit_sheet():
     res = json.dumps({})
     return Response(res), 200
 
-
-
-
-
-
-
-
-
-
-
-
-
-
 ########### ---- end intercom configuration ------ #############3
+
+
 
 if __name__ == "__main__":
     usage = "gbot.py [cmd/http] [file/db] <accountId> <agentId> [file: <path to json spec>]"
