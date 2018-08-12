@@ -63,41 +63,68 @@ https://myra-dev.ngrok.io/v2/intercom/submit_sheet
 
 """
 
-
 def _pprint(data):
     print(json.dumps(data, indent=2))
 
-
-
-
-def _getSampleInputCanvas():
-    res = imlib.Canvas()
-def _getSampleInput():
-    res = imlib.InputComponent(
-        id="user_myra_config",
-        label="Enter your myra configuration ID",
-        placeholder="something ID",
-        value="",
-        action=imlib.SubmitAction())
-
-def _getSampleApp():
-    res = imlib.InputComponent(
-        id="user_question",
-        label="Whats your question?",
-        placeholder="I can't configure my dns ...",
-        value="",
-        action=imlib.SubmitAction()
+def getSampleAppCanvas():
+    c = imlib.Canvas(
+        content = imlib.Content(
+            components = [
+                imlib.InputComponent(
+                    id="user_question",
+                    label="Whats your question?",
+                    placeholder="I can't configure my dns ...",
+                    value="",
+                    action=imlib.SubmitAction()
+                )
+            ]
+        )
     )
-    return imlib.asdict(res)
+    return imlib.makeResponse(c)
 
-def _getSampleListResponse():
-    res = imlib.ListComponent(items=[])
+def getConfigureCanvas():
+    c = imlib.Canvas(
+        content=imlib.Content(
+            components=[
+                imlib.InputComponent(
+                    id="user_myra_config",
+                    label="Enter your myra configuration ID",
+                    placeholder="something ID",
+                    value="",
+                    action=imlib.SubmitAction()
+                )
+            ]
+        ))
+    return imlib.makeResponse(c)
+
+
+def getSearchResultsCanvas():
+    l = imlib.ListComponent(items=[])
     num_items = 4
     for i in range(0, num_items):
-        res.items.append(imlib.ListItemComponent(
+        l.items.append(imlib.ListItemComponent(
             id="article_id_{}".format(i),
             title="some title {}".format(i),
             subtitle="some subtitle for {}".format(i),
             action=imlib.SubmitAction()
         ))
-    return imlib.asdict(res)
+    c = imlib.Canvas(
+        content=imlib.Content(
+            components=[
+                l,
+                imlib.DividerComponent(),
+                imlib.ButtonComponent(
+                    id="button-back",
+                    label="back",
+                    style="secondary",
+                    action=imlib.SubmitAction()
+                ),
+                imlib.ButtonComponent(
+                    id="button2",
+                    label="open link",
+                    style="primary",
+                    action=imlib.URLAction(url="www.google.com")
+                )
+            ]
+        ))
+    return imlib.makeResponse(c)
