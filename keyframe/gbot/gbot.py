@@ -665,20 +665,8 @@ def v2_intercom_configure():
             "results": r
         })
     else:
-        canvas = {
-            "canvas": {
-                "content": {
-                    "version": "0.1",
-                    "components": [
-                        im_utils._getSampleInput()
-                    ]
-                },
-                "stored_data": {} # optional
-            }
-        }
+        canvas = im_utils.getConfigureCanvas()
         res = json.dumps(canvas)
-    # Return
-    # change this
     assert res is not None
     return Response(res), 200
 
@@ -688,54 +676,14 @@ def v2_intercom_submit():
     print("## submit ##")
     _pprint(request.json)
     component_id = request.json.get("component_id", None)
-    if (component_id == "button-123"):
-        # Return the original canvas
-        canvas = {
-            "canvas": {
-                "content": {
-                    "version": "0.1",
-                    "components": [
-                        im_utils._getSampleApp()
-                    ]
-                },
-                "stored_data": {} # optional
-            }
-        }
+    canvas = None
+    if (component_id == "button-back"):
+        canvas = im_utils.getSampleAppCanvas()
     else:
-        canvas = {
-            "new_canvas": {
-                "content": {
-                    "version": "0.1",
-                    "components": [
-                        im_utils._getSampleListResponse(),
-                        {
-                            "type": "divider"
-                        },
-                        {
-                            "type":"button",
-                            "id":"button-123",
-                            "label":"back",
-                            "style":"secondary",
-                            "action": {
-                                "type": "submit"
-                            }
-                        },
-                        {
-                            "type":"button",
-                            "id":"button-456",
-                            "label":"Open link",
-                            "style":"primary",
-                            "action":{"type":"url","url":"https://www.intercom.com/"}
-                        }
-                    ]
-                },
-                "stored_data": {} # optional
-            }
-        }
-    nc = canvas
-    res = json.dumps(nc)
+        canvas = im_utils.getSearchResultsCanvas()
+    res = json.dumps(canvas)
     print("-- response --")
-    _pprint(nc)
+    _pprint(canvas)
     return Response(res), 200
 
 
@@ -761,19 +709,8 @@ def v2_intercom_initialize():
     """
     print("## initialize ##")
     _pprint(request.json)
-    canvas = {
-        "canvas": {
-            "content": {
-                "version": "0.1",
-                "components": [
-                    im_utils._getSampleApp()
-                ]
-            },
-            "stored_data": {} # optional
-        }
-    }
-
-    res = json.dumps(canvas)
+    c = im_utils.getSampleAppCanvas()
+    res = json.dumps(c)
     return Response(res), 200
 
 @app.route("/v2/intercom/submit_sheet", methods=['GET', 'POST'])

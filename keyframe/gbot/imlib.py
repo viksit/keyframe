@@ -40,14 +40,18 @@ def asdict(obj):
 
 
 # Component definitions
+# Not using classes since this is easier to do and is basically just a placeholder
+# for JSON
+# Any functions etc can be written in the global namespace, like asdict above.
 
-Action = namedtuple("Action", ("type",))
+Action = namedtuple("Action", ("type"))
+Action.__new__.__defaults__ = (None)
 
 SubmitAction = namedtuple("SubmitAction", Action._fields)
 SubmitAction.__new__.__defaults__ = ("submit",)
 
 URLAction = namedtuple("URLAction", Action._fields + ("url",))
-URLAction.__new__.__defaults__ = ("url",)
+URLAction.__new__.__defaults__ = ("url", None)
 
 Component = namedtuple("Component", ("type,"))
 
@@ -79,11 +83,56 @@ ListItemComponent = namedtuple("ListItemComponent", Component._fields +
                        "action"))
 ListItemComponent.__new__.__defaults__ = ("item",) + (None,) * 4
 
-Content = namedtuple("Content", ("version", "components", "stored_data"))
-Content.__new__.__defaults__ = ("0.1", [], {})
+Content = namedtuple("Content", ("version", "components"))
+Content.__new__.__defaults__ = ("0.1", [])
 
-Canvas = namedtuple("Canvas", ("content"))
-Canvas.__new__.__defaults__ = (Content(),)
+Canvas = namedtuple("Canvas", ("content", "stored_data"))
+Canvas.__new__.__defaults__ = (Content(), {})
 
 ComponentList = namedtuple("ComponentList", ("elements"))
 ComponentList.__new__.__defaults__ = ([],)
+
+def makeResponse(canvasObject, newCanvas=False):
+    canvasKey = "canvas"
+    if newCanvas:
+        canvasKey = "new_canvas"
+    return {
+        canvasKey: asdict(canvasObject)
+    }
+
+# TODO
+# text, image, dropdown, select etc components from
+# https://developers.intercom.com/messenger-framework-reference/reference#list
+
+# # Testing
+# l = ListComponent(items=[])
+# num_items = 4
+# for i in range(0, num_items):
+#     l.items.append(ListItemComponent(
+#         id="article_id_{}".format(i),
+#         title="some title {}".format(i),
+#         subtitle="some subtitle for {}".format(i),
+#         action=SubmitAction()
+#     ))
+
+# c = Canvas(
+#     content=Content(
+#         components=[
+#             l,
+#             DividerComponent(),
+#             ButtonComponent(
+#                 id="button1",
+#                 label="back",
+#                 style="secondary",
+#                 action=SubmitAction()
+#             ),
+#             ButtonComponent(
+#                 id="button2",
+#                 label="open link",
+#                 style="primary",
+#                 action=URLAction(url="www.google.com")
+#             )
+#         ]
+#     ))
+
+# print(asdict(c))
