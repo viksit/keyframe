@@ -91,7 +91,7 @@ class ZendeskClient(object):
         return json.loads(uploadResult["content"])["upload"]["token"]
 
     def createTicket(self, subject, body, requesterName, requesterEmail,
-                     attachments=None):
+                     attachments=None, tags=None):
         """Create a zendesk ticket and return a url for the ticket.
         subject: (string)
         body: (string)
@@ -111,10 +111,10 @@ class ZendeskClient(object):
                 uploadTokens.append(t)
 
         return self._createTicket(subject, body, requesterName, requesterEmail,
-                             uploadTokens)
+                                  uploadTokens, tags)
 
     def _createTicket(self, subject, body, requesterName, requesterEmail,
-                      uploadTokens):
+                      uploadTokens, tags):
         realm = os.getenv("REALM", "dev")
         # All environments create tickets here. I can't think of anything better.
         if realm != "prod":
@@ -129,7 +129,8 @@ class ZendeskClient(object):
                 "comment":{
                     "body":body,
                     # "uploads":uploadTokens  # uploads don't work with zdesk on ticket creation
-                }
+                },
+                "tags":tags
             }
         }
         log.debug("ticketJson: %s", ticketJson)
@@ -149,8 +150,8 @@ class ZendeskClient(object):
         return r["content"]
 
 jsonObjectFormatExample = {
-    "api_host": "https://lyft1450739301.zendesk.com",
-    "auth": "admin.lyft@myralabs.com/token:xld8shasfks8uebndsk",
+    "api_host": "https://myralabsdemo.zendesk.com/",
+    "auth": "viksit+zendesk@myralabs.com:cpUV4X9R8lEvGeguAa86Qph2rtIeSsL10bdL7ouA",
     "subject":"Request for refund",
     "body": "I was charged incorrectly for this service.",
     "requester_name": "MyraLabs Test",
@@ -164,6 +165,7 @@ def createTicket(jsonObject):
     jsonObject: (object) dict as jsonObjectFormatExample
     Returns: (string)
     """
+    log.info("zendesk.createTicket(%s)", jsonObject)
     j = jsonObject
     z = ZendeskClient(j.get("api_host"), j.get("auth"))
     ticketResponse = z.createTicket(
@@ -171,7 +173,8 @@ def createTicket(jsonObject):
         body=j.get("body"),
         requesterEmail=j.get("requester_email"),
         requesterName=j.get("requester_name"),
-        attachments=j.get("attachments")
+        attachments=j.get("attachments"),
+        tags=j.get("ticket_tags")
     )
     agentTicketUrl = createAgentTicketUrl(ticketResponse)
     log.info("agentTicketUrl: %s", agentTicketUrl)

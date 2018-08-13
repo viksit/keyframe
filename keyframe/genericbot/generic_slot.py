@@ -526,14 +526,19 @@ class GenericActionSlot(GenericSlot):
         return urls
 
     def processZendesk(self, botState):
+        log.info("processZendesk CALLED.")
         zendeskConfig = self.actionSpec.get("zendesk")
+        log.debug("zendeskConfig: %s", zendeskConfig)
+        log.debug("self.contactChannelsConfig: %s", self.contactChannelsConfig)
         zc = copy.deepcopy(zendeskConfig.get("request"))
-        if not zc.get("api_host") and self.contactChannelsConfig.get("zendesk"):
+        if not zc.get("api_host") and self.contactChannelsConfig and self.contactChannelsConfig.get("zendesk"):
             zc.update(self.contactChannelsConfig["zendesk"])
+        if not zc.get("ticket_tags") and self.contactChannelsConfig and self.contactChannelsConfig.get("zendesk", {}).get("ticket_tags"):
+            zc["ticket_tags"] = self.contactChannelsConfig.get("zendesk", {}).get("ticket_tags")
 
         _ed = self._entitiesDict(botState)
         for (k,v) in six.iteritems(zendeskConfig.get("request")):
-            log.debug("k: %s, v: %s", k, v)
+            log.info("k: %s, v: %s", k, v)
             if v:
                 zc[k] = Template(v).render(_ed)
         if zc.get("attachments"):
@@ -547,6 +552,10 @@ class GenericActionSlot(GenericSlot):
             else:
                 attachmentUrl = Template(zc.get("attachments")).render(_ed)
                 zc["attachments"] = [attachmentUrl]
+        if zc.get("ticket_tags"):
+            # Zendesk does not allow spaces in tag strings - it will just make them different tags.
+            zc["ticket_tags"] = [e.strip().replace(" ", "_") for e in zc.get("ticket_tags").strip().split(",")]
+
         zr = zendesk.createTicket(zc)
         log.debug("zr (%s): %s", type(zr), zr)
         respTemplate = "A ticket has been filed: {{ticket.agenturl}}"
