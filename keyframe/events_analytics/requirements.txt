@@ -1,5 +1,0 @@
-pyspark
-plac
-dateutils
-boto
-psycopg2
