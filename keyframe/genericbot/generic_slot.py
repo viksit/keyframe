@@ -473,7 +473,7 @@ class GenericActionSlot(GenericSlot):
         log.debug("urlPieces: %s" % (urlPieces,))
         response = {}
         if not (len(urlPieces.scheme) > 0 and len(urlPieces.netloc) > 0):
-            raise Exception("bad api url: %s", templatedUrl)
+            raise Exception("bad api url: %s" % (templatedUrl,))
 
         requestAuthTuple = None
         if requestAuth:
