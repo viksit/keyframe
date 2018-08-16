@@ -5,7 +5,7 @@ from __future__ import print_function
 from __future__ import absolute_import
 import sys, os
 from os.path import expanduser, join
-from flask import Flask, request, Response
+from flask import Flask, request, Response, send_from_directory
 from flask import Flask, current_app, jsonify, make_response
 from flask_cors import CORS, cross_origin
 import datetime
@@ -105,10 +105,15 @@ def wrap_exceptions(func):
             return r
     return decorated_function
 
-app = Flask(__name__)
+app = Flask(__name__, static_folder='static')
 CORS(app, supports_credentials=True)
 
 app.config['DEBUG'] = True
+
+@app.route('/robots.txt')
+def static_from_root():
+    log.info("REQUEST /robots.txt")
+    return send_from_directory(app.static_folder, request.path[1:])
 
 @app.route("/version", methods=["GET"])
 def version():
