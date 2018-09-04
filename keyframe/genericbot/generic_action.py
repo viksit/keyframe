@@ -108,6 +108,7 @@ class GenericActionObject(keyframe.actions.ActionObject):
                 userId=self.canonicalMsg.userId,
                 topicId=self.originalTopicId,
                 topicType=self.getTopicType(),
+                topicName=self.topicName,
                 slotId=slotObject.name,
                 slotTags=slotObject.tags,
                 slotType=slotObject.slotType,
@@ -181,9 +182,9 @@ class GenericActionObject(keyframe.actions.ActionObject):
             if not self.nextSlotToFillName:
                 assert slotObject.slotType != slot_fill.Slot.SLOT_TYPE_INTENT_MODEL, "No transition for value (%s) in current slot" % (slotObject.value,)
                 log.info("slotFillConditional: returning True")
-                if self.getTopicType() == "resolution":
-                    responseEvent.sessionStatus = "end"
-                    responseEvent.resolutionStatus = True
+                # if self.getTopicType() == "resolution":
+                #     responseEvent.sessionStatus = "end"
+                #     responseEvent.resolutionStatus = True
             eventWriter.write(responseEvent.toJSONStr(), responseEvent.userId)
             if not self.nextSlotToFillName:
                 return constants.BOT_REQUEST_STATE_PROCESSED
@@ -222,6 +223,12 @@ class GenericActionObject(keyframe.actions.ActionObject):
         slots = specJson.get("slots", [])
         actionObject.entityModelId = specJson.get("entity_model_id")
         actionObject.screenId = specJson.get("screen_id")
+        #TODO: get topic type from a topictype property of the action when it includes workflow.
+        #NOTE: THERE IS ALREADY A TOPIC_TYPE: DIAGNOSTIC / RESOLUTION - need to change this.
+        if actionObject.screenId == "workflow":
+            actionObject.topicType = "workflow"
+        actionObject.topicName = specJson.get("topic_name")
+
         if not agentParams:
             agentParams = {}
         actionObject.agentParams = agentParams
@@ -410,6 +417,7 @@ class GenericActionObject(keyframe.actions.ActionObject):
         actionObject.channelClient = channelClient
         actionObject.requestState = requestState
         actionObject.originalTopicId = topicId
+        
         log.debug("createActionObject: %s", actionObject)
         # Action object now contains all the information needed to resolve this action
         return actionObject

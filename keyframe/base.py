@@ -63,7 +63,7 @@ class BaseBot(object):
 
         self.intentSlots = defaultdict(lambda: [])
         self.debug = True
-
+        self.topicType = None
 
         self.init()
 
@@ -518,6 +518,7 @@ class BaseBot(object):
                     userId=canonicalMsg.userId,
                     topicId=topicId,
                     topicType=actionObject.getTopicType(),
+                    topicName=actionObject.topicName,
                     payload=canonicalMsg.toJSON(),
                     locationHref=canonicalMsg.locationHref,
                     userInfo=canonicalMsg.userInfo
