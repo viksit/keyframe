@@ -40,10 +40,10 @@ import keyframe.widget_target
 import keyframe.gbot.imlib as imlib
 
 
-logging.basicConfig()
+#logging.basicConfig()
 log = logging.getLogger("keyframe.gbot.intercom_messenger")
-rootLog = logging.getLogger()
-rootLog.setLevel(logging.INFO)
+#rootLog = logging.getLogger()
+#rootLog.setLevel(logging.INFO)
 
 
 
@@ -64,7 +64,7 @@ https://myra-dev.ngrok.io/v2/intercom/submit_sheet
 """
 
 def _pprint(data):
-    print(json.dumps(data, indent=2))
+    log.info(json.dumps(data, indent=2))
 
 def getSampleAppCanvas():
     c = imlib.Canvas(
@@ -124,7 +124,14 @@ def getSearchResultsCanvas():
                     label="open link",
                     style="primary",
                     action=imlib.URLAction(url="www.google.com")
+                ),
+                imlib.ButtonComponent(
+                    id="button3",
+                    label="yes",
+                    style="primary",
+                    action=imlib.SubmitAction()
                 )
+
             ]
         ))
     return imlib.makeResponse(c)

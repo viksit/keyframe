@@ -598,6 +598,33 @@ def _run_agent_intercom():
 
 ## End intercom code
 
+def _intercom_msg_agent_handler(agentDeploymentMeta, intercomEvent, appId):
+    log.info("agentDeploymentMeta: %s, appId: %s", agentDeploymentMeta, appId)
+    accountId = agentDeploymentMeta.get("concierge_meta", {}).get("account_id")
+    agentId = agentDeploymentMeta.get("concierge_meta", {}).get("agent_id")
+    assert accountId and agentId, "Did not find required information from agentDeploymentMeta (%s)" % (agentDeploymentMeta,)
+
+    GenericBotHTTPAPI.fetchBotJsonSpec(
+        accountId=accountId,
+        agentId=agentId
+    )
+
+    event = {
+        "channel": messages.CHANNEL_INTERCOM_MSG,
+        "request-type": None,
+        "body": intercomEvent,
+        "channel-meta": {
+            "user_id": intercomEvent.get("user", {}).get("user_id")
+            "rid": None,  # seems like no rid per msg!
+            "conversation_id": None,  # can't see a conv_id in the request
+            "access_token": None  # This is a request/response system - no token required.
+        }
+    }
+
+    r = GenericBotHTTPAPI.requestHandler(
+        event=event,
+        context={})
+
 def _intercom_agent_handler(agentDeploymentMeta, intercomEvent, appId):
     log.info("agentDeploymentMeta: %s, appId: %s", agentDeploymentMeta, appId)
     accessToken = agentDeploymentMeta.get("access_token")
@@ -650,7 +677,7 @@ def debug_obfuscated():
 
 @app.route("/ping", methods=['GET', 'POST'])
 def ping():
-    print("Received ping")
+    log.info("Received ping")
     resp = json.dumps({
         "status": "OK",
         "env.STAGE":os.environ.get("STAGE")
@@ -662,11 +689,11 @@ def ping():
 
 @app.route("/v2/intercom/configure", methods=['GET', 'POST'])
 def v2_intercom_configure():
-    print("## configure ##")
+    log.info("## configure ##")
     res = None
     _pprint(request.json)
     if (request.json.get("input_values")):
-        print("here", request.json.get("input_values"))
+        log.info("here", request.json.get("input_values"))
         # This is the second configure call
         # Send back a result to deploy this application
         r = request.json.get("input_values")
@@ -682,16 +709,31 @@ def v2_intercom_configure():
 
 @app.route("/v2/intercom/submit", methods=['GET', 'POST'])
 def v2_intercom_submit():
-    print("## submit ##")
-    _pprint(request.json)
-    component_id = request.json.get("component_id", None)
+    log.info("## submit ##")
+    intercomEvent = request.json
+    _pprint(intercomEvent)
     canvas = None
+
+    app_id = request.json.get("app_id")
+    if not app_id:
+        return Response(json.dumps({"msg":"no app_id found"}), 500)
+    # TODO(im): When app is deployed, below code will get the json spec.
+    # For now, just hardcode.
+    #agentDeploymentMeta = ads.getJsonSpec(app_id, "intercom_messenger")
+    #log.info("agentDeploymentMeta: %s", agentDeploymentMeta)
+    agentDeploymentMeta = {"connected": True, "access_token": "", "concierge_meta":{"account_id":"3rxCO9rydbBIf3DOMb9lFh", "agent_id": "ca006972df904823925d122383b4be54"}, "app_id": "cp6b0zl8"}
+    if not agentDeploymentMeta:
+        log.warn("No agent for app_id: %s. Dropping this event.", app_id)
+        return Response(json.dumps({"msg":"bad app_id"})), 500
+
+    res = _intercom_msg_agent_handler(agentDeploymentMeta, request.json, app_id)
+
     if (component_id == "button-back"):
         canvas = im_utils.getSampleAppCanvas()
     else:
         canvas = im_utils.getSearchResultsCanvas()
     res = json.dumps(canvas)
-    print("-- response --")
+    log.info("-- response --")
     _pprint(canvas)
     return Response(res), 200
 
@@ -716,7 +758,7 @@ def v2_intercom_initialize():
     }
 
     """
-    print("## initialize ##")
+    log.info("## initialize ##")
     _pprint(request.json)
     c = im_utils.getSampleAppCanvas()
     res = json.dumps(c)
@@ -724,7 +766,7 @@ def v2_intercom_initialize():
 
 @app.route("/v2/intercom/submit_sheet", methods=['GET', 'POST'])
 def v2_intercom_submit_sheet():
-    print("## submit_sheet ##")
+    log.info("## submit_sheet ##")
     _pprint(request.json)
     res = json.dumps({})
     return Response(res), 200
