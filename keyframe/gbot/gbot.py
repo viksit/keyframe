@@ -220,10 +220,17 @@ class GenericBotHTTPAPI(generic_bot_api.GenericBotAPI):
                 accountId = kwargs.get("accountId")
                 #accountSecret = kwargs.get("accountSecret")
 
+                if not agentId:
+                    # agentId could also be 'default' which is ok.
+                    agentId = "default"
+                js = bms.getJsonSpec(accountId, agentId)
+                # In case agentId is not specified (or is 'default'), important
+                # to set the actual agentId of the agent for the rest of keyframe.
+                agentId = js.get("config_json", {}).get("agent_id")
+
                 GenericBotHTTPAPI.agentId = agentId
                 GenericBotHTTPAPI.accountId = accountId
                 #GenericBotHTTPAPI.accountSecret = accountSecret
-                js = bms.getJsonSpec(accountId, agentId)
                 GenericBotHTTPAPI.configJson = js
                 log.debug("(::) json config spec: %s", GenericBotHTTPAPI.configJson)
                 if not js:
