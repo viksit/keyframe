@@ -116,7 +116,8 @@ class GenericActionObject(keyframe.actions.ActionObject):
                 ticketFiled=False,  # updated if required below
                 resolutionStatus=False,
                 locationHref=self.canonicalMsg.locationHref,
-                userInfo=self.canonicalMsg.userInfo
+                userInfo=self.canonicalMsg.userInfo,
+                topicStatus=None
             )
             if slotObject.slotType == slot_fill.Slot.SLOT_TYPE_TRANSFER:
                 slotObject.addCustomFieldsToSession(botState)
@@ -163,6 +164,7 @@ class GenericActionObject(keyframe.actions.ActionObject):
             if not slotObject.slotTransitions:
                 assert slotObject.slotType != slot_fill.Slot.SLOT_TYPE_INTENT_MODEL, "Intent slots should always have an edge to another slot"
                 log.debug("slotFillConditional: returning True")
+                responseEvent.topicStatus = "end"
                 if self.getTopicType() == "resolution":
                     responseEvent.sessionStatus = "end"
                     responseEvent.resolutionStatus = True
@@ -181,6 +183,7 @@ class GenericActionObject(keyframe.actions.ActionObject):
             if not self.nextSlotToFillName:
                 assert slotObject.slotType != slot_fill.Slot.SLOT_TYPE_INTENT_MODEL, "No transition for value (%s) in current slot" % (slotObject.value,)
                 log.info("slotFillConditional: returning True")
+                responseEvent.topicStatus = "end"
                 if self.getTopicType() == "resolution":
                     responseEvent.sessionStatus = "end"
                     responseEvent.resolutionStatus = True
