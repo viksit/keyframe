@@ -131,10 +131,22 @@ def widget_target():
     url = request.args.get("url")
     log.info("url: %s", url)
     kvStore = getKVStore()
-    r = keyframe.widget_target.validateWidgetTarget(kvStore, agentId, url)
-    if r:
-        return "yes"
-    return "no"
+    widgetTargetConfig = keyframe.widget_target.getWidgetTargetConfig(
+        kvStore, agentId)
+    r = keyframe.widget_target.evaluateWidgetTarget(widgetTargetConfig, url)
+    if not r:
+        return jsonify({
+            "show_cta": False,
+            "context_api_response": None
+        })
+    # Work out contexts
+    contextConfig = keyframe.widget_target.getContextConfig(
+        widgetTargetConfig, url)
+    return jsonify({
+        "show_cta": True,
+        "context_api_response": contextConfig
+    })
+
 
 @app.route("/agent_pin_config", methods=["GET","POST"])
 @wrap_exceptions

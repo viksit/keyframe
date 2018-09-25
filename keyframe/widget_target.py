@@ -25,10 +25,13 @@ def _extractDomainAndPathFromUrl(url):
     log.debug("s: %s", s)
     return s
 
-def validateWidgetTarget(kvStore, agentId, url):
+def getWidgetTargetConfig(kvStore, agentId):
     k = "widget_target.%s" % (agentId)
     widgetTargetConfig = kvStore.get_json(k)
     log.debug("found widgetTargetConfig: %s", widgetTargetConfig)
+    return widgetTargetConfig
+
+def validateWidgetTarget(kvStore, agentId, url):
     return _evaluateWidgetTarget(widgetTargetConfig, url)
 
 """
@@ -39,7 +42,7 @@ Example widgetTargetConfig:
  'url_whitelist': ['www.foo.com/bar', 'www.foo.com/baz']
 }
 """
-def _evaluateWidgetTarget(widgetTargetConfig, url):
+def evaluateWidgetTarget(widgetTargetConfig, url):
     if not widgetTargetConfig:
         return False
     if not widgetTargetConfig.get("agent_enabled"):
@@ -66,3 +69,54 @@ def _evaluateWidgetTarget(widgetTargetConfig, url):
     return False
 
 
+"""
+Example of widgetTargetConfig:
+{
+    "agent_enabled": true,
+    "url_whitelist_enabled": true
+    'url_regex': ['support.myralabs.com', 'support.dev.myralabs.com'],
+    'url_whitelist': ['www.foo.com/bar', 'www.foo.com/baz'],
+    "contextualCtaLookup": {
+        "Context Name 1": {
+            "cta_element": "CTA Element 1",
+            "default_intent": "[topic=topic_1df1240009bf44078117d4705d250cd9]",
+            "name": "Context Name 1",
+            "render_fn": "render_function_1",
+            "urls": [
+                "www.wpengine.com/helppage1",
+                "www.wpengine.com/dns1",
+                "help.wpengine.com/dns2"
+            ]
+        }
+    },
+    "lookupContexts": {
+        "help.wpengine.com/dns2": ["Context Name 1",],
+        "www.wpengine.com/dns1": ["Context Name 1",],
+        "www.wpengine.com/helppage1": ["Context Name 1",],
+    },
+}
+"""
+def getContextConfig(widgetTargetConfig, url):
+    cfg = widgetTargetConfig.get("contextualConfig")
+    log.info("cfg: %s", cfg)
+    if not cfg:
+        return None
+    if not cfg.get("enabled", False):
+        return {"enabled": False}
+    normalizedUrl = _extractDomainAndPathFromUrl(url)
+    log.info("looking up normalizedUrl: %s in cfg", normalizedUrl)
+    contextNames = cfg.get("lookupContexts", {}).get(normalizedUrl)
+    log.info("got contextNames: %s", contextNames)
+    if not contextNames:
+        return {"enabled": True}
+    contexts = []
+    contextualCtaLookup = cfg.get("contextualCtaLookup", {})
+    log.info("contextualCtaLookup: %s", contextualCtaLookup)
+    for cn in contextNames:
+        contextCfg = contextualCtaLookup.get(cn)
+        log.info("got contextCfg: %s", contextCfg)
+        if contextCfg:
+            contexts.append(contextCfg)
+    return {
+        "enabled": True,
+        "contexts": contexts}
