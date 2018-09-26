@@ -44,6 +44,9 @@ class GenericActionObject(keyframe.actions.ActionObject):
     def getTopicType(self):
         return self.specJson.get("topic_type")
 
+    def getWorkflowType(self):
+        return self.specJson.get("workflow_type")
+
     def getPreemptWaitingActionThreshold(self):
         if self.specJson:
             return self.specJson.get("preempt_waiting_action_threshold")
@@ -108,6 +111,7 @@ class GenericActionObject(keyframe.actions.ActionObject):
                 userId=self.canonicalMsg.userId,
                 topicId=self.originalTopicId,
                 topicType=self.getTopicType(),
+                workflowType=self.getWorkflowType(),
                 slotId=slotObject.name,
                 slotTags=slotObject.tags,
                 slotType=slotObject.slotType,

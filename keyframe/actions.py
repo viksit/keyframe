@@ -76,6 +76,9 @@ class ActionObject(object):
     def getTopicType(self):
         raise Exception("ActionObject base class does not have a topic type")
 
+    def getWorkflowType(self):
+        raise Exception("ActionObject base class does not have a workflow type")
+
     @classmethod
     def createActionObject(
             cls, accountId, agentId,

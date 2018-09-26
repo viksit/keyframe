@@ -31,8 +31,6 @@ def getWidgetTargetConfig(kvStore, agentId):
     log.debug("found widgetTargetConfig: %s", widgetTargetConfig)
     return widgetTargetConfig
 
-def validateWidgetTarget(kvStore, agentId, url):
-    return _evaluateWidgetTarget(widgetTargetConfig, url)
 
 """
 Example widgetTargetConfig:
