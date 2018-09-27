@@ -98,15 +98,15 @@ def getContextConfig(widgetTargetConfig, url):
     cfg = widgetTargetConfig.get("contextualConfig")
     log.info("cfg: %s", cfg)
     if not cfg:
-        return None
+        return {"enabled": False, "contexts": []}
     if not cfg.get("enabled", False):
-        return {"enabled": False}
+        return {"enabled": False, "contexts": []}
     normalizedUrl = _extractDomainAndPathFromUrl(url)
     log.info("looking up normalizedUrl: %s in cfg", normalizedUrl)
     contextNames = cfg.get("lookupContexts", {}).get(normalizedUrl)
     log.info("got contextNames: %s", contextNames)
     if not contextNames:
-        return {"enabled": True}
+        return {"enabled": True, "contexts": []}
     contexts = []
     contextualCtaLookup = cfg.get("contextualCtaLookup", {})
     log.info("contextualCtaLookup: %s", contextualCtaLookup)

@@ -137,7 +137,10 @@ def widget_target():
     if not r:
         return jsonify({
             "show_cta": False,
-            "context_api_response": None
+            "context_api_response": {
+                "enabled": False,
+                "contexts": []
+            }
         })
     # Work out contexts
     contextConfig = keyframe.widget_target.getContextConfig(
