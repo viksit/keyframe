@@ -283,7 +283,9 @@ class BaseBot(object):
             eventType=e.get("event_type"),
             sessionId=botState.getSessionId(),
             payload={"target_href":e.get("target_href"),
-                     "target_title":e.get("target_title")})
+                     "target_title":e.get("target_title")},
+            customProps=e.get("custom_props"))
+
         eventWriter = event_writer.getWriter(
             streamName=self.config.KINESIS_STREAM_NAME)
         eventWriter.write(aEvent.toJSONStr(), canonicalMsg.userId)
@@ -521,7 +523,8 @@ class BaseBot(object):
                     payload=canonicalMsg.toJSON(),
                     locationHref=canonicalMsg.locationHref,
                     userInfo=canonicalMsg.userInfo,
-                    workflowType=actionObject.getWorkflowType()
+                    workflowType=actionObject.getWorkflowType(),
+                    customProps=canonicalMsg.customProps
                 )
                 eventWriter = event_writer.getWriter(
                     streamName=self.config.KINESIS_STREAM_NAME)

@@ -53,6 +53,7 @@ class Event(object):
         self.userInfo = kwargs.get("userInfo")
         self.topicStatus = kwargs.get("topicStatus")
         self.workflowType = kwargs.get("workflowType")
+        self.customProps = kwargs.get("customProps")
 
     def toJSON(self):
         return {
@@ -80,7 +81,8 @@ class Event(object):
             "location_href":self.locationHref,
             "user_info":self.userInfo,
             "topic_status":self.topicStatus,
-            "workflow_type":self.workflowType}
+            "workflow_type":self.workflowType,
+            "custom_props":self.customProps}
 
     def toJSONStr(self):
         return json.dumps(self.toJSON())

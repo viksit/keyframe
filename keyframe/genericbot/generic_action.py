@@ -121,7 +121,8 @@ class GenericActionObject(keyframe.actions.ActionObject):
                 resolutionStatus=False,
                 locationHref=self.canonicalMsg.locationHref,
                 userInfo=self.canonicalMsg.userInfo,
-                topicStatus=None
+                topicStatus=None,
+                customProps=canonicalMsg.customProps
             )
             if slotObject.slotType == slot_fill.Slot.SLOT_TYPE_TRANSFER:
                 slotObject.addCustomFieldsToSession(botState)
