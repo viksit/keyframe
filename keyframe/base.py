@@ -284,7 +284,8 @@ class BaseBot(object):
             sessionId=botState.getSessionId(),
             payload={"target_href":e.get("target_href"),
                      "target_title":e.get("target_title")},
-            customProps=e.get("custom_props"))
+            customProps=canonicalMsg.customProps
+        )
 
         eventWriter = event_writer.getWriter(
             streamName=self.config.KINESIS_STREAM_NAME)

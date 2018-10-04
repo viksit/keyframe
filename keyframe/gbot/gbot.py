@@ -176,7 +176,7 @@ def agent_pin_config():
 @app.route("/agent_event", methods=["POST"])
 @wrap_exceptions
 def agent_event():
-    r, text = _run_agent()
+    r, text = _run_agent(request_api="agent_event")
     return jsonify(r)
 
 @app.route("/event", methods=["POST"])
@@ -288,13 +288,7 @@ class GenericBotHTTPAPI(generic_bot_api.GenericBotAPI):
             agentId=agentId)
         return self.bot
 
-@app.route("/run_agent1", methods=["GET", "POST"])
-@wrap_exceptions
-def run_agent1():
-    r, text = _run_agent()
-    return jsonify(r)
-
-@app.route("/run_agent2", methods=["GET", "POST"])
+@app.route("/run_agent2", methods=["POST"])
 @wrap_exceptions
 def run_agent2():
     r, text = _run_agent()
@@ -319,7 +313,7 @@ def run_agent2():
     log.info("resp.headers: %s", h)
     return resp
 
-def _run_agent():
+def _run_agent(request_api=None):
     log.info("HEADERS: %s", request.headers)
     log.info("DATA: %s", request.data)
     log.info("COOKIES: %s", request.cookies)
@@ -334,23 +328,12 @@ def _run_agent():
         agentId = request.json.get("agent_id", None)
 
     else:
-        accountId = request.args.get("account_id", None)
-        agentId = request.args.get("agent_id", None)
-        requestData = {
-            "user_id": request.args.get("user_id"),
-            "text": request.args.get("text"),
-            "rid": request.args.get("rid"),
-            "bot_state_uid": request.args.get("bot_state_uid")
-            }
-        text = request.args.get("text")
-        customProps = request.args.get("custom_props")
-        if customProps:
-            try:
-                customProps = base64.b64decode(customProps)
-                customProps = json.loads(customProps)
-                requestData["custom_props"] = customProps
-            except:
-                log.error("Could not load custom_props (%s)", customProps)
+        raise Exception("cannot handle this request")
+
+    if request_api == "agent_event":
+        eventType = request.json.get("event_type")
+        if not eventType:
+            raise Exception("Bad event. Event must have event_type.")
 
     GenericBotHTTPAPI.fetchBotJsonSpec(
         accountId=accountId,
