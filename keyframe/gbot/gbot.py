@@ -5,14 +5,18 @@ from __future__ import print_function
 from __future__ import absolute_import
 
 import sys, os
+import time
 
-print("STARTING GBOT", file=sys.stderr)
+print("[%s] STARTING GBOT" % (time.time(),), file=sys.stderr)
+print("PYTHONPATH: %s" % (sys.path,), file=sys.stderr)
 
 from os.path import expanduser, join
 from flask import Flask, request, Response, send_from_directory
 from flask import Flask, current_app, jsonify, make_response
 from flask_cors import CORS, cross_origin
 import datetime
+
+print("[%s] STEP 10" % (time.time(),), file=sys.stderr)
 
 from functools import wraps
 import yaml
@@ -21,6 +25,8 @@ import traceback
 import base64
 import logging
 from six.moves import range
+
+print("[%s] STEP 20" % (time.time(),), file=sys.stderr)
 
 logging.basicConfig()
 def _getLogLevel(envVar, defaultLogLevel=logging.INFO):
@@ -48,10 +54,13 @@ rootLog = logging.getLogger()
 rootLog.setLevel(logging.INFO)
 #rootLog.setLevel(logging.DEBUG)
 
+print("[%s] STEP 30" % (time.time(),), file=sys.stderr)
+
 #from pymyra.api import client
 import pymyra.api.inference_proxy_client as inference_proxy_client
 import pymyra.api.inference_proxy_api as inference_proxy_api
 
+print("[%s] STEP 32" % (time.time(),), file=sys.stderr)
 
 from keyframe.cmdline import BotCmdLineHandler
 from keyframe.base import BaseBot
@@ -59,6 +68,8 @@ from keyframe.actions import ActionObject
 from keyframe.slot_fill import Slot
 from keyframe.bot_api import BotAPI
 from keyframe import channel_client
+
+print("[%s] STEP 35" % (time.time(),), file=sys.stderr)
 
 from keyframe import messages
 from keyframe import config
@@ -68,6 +79,8 @@ import keyframe.event_api as event_api
 import keyframe.utils
 import keyframe.widget_target
 
+print("[%s] STEP 38" % (time.time(),), file=sys.stderr)
+
 from keyframe.genericbot import generic_bot
 from keyframe.genericbot import generic_bot_api
 from keyframe.genericbot import generic_cmdline
@@ -76,6 +89,8 @@ from keyframe.genericbot import generic_cmdline
 #VERSION = "3.0.2"
 VERSION = keyframe.utils.getFromFileOrDefault(
     "keyframe_version.txt", "default")
+
+print("[%s] STEP 40" % (time.time(),), file=sys.stderr)
 
 cfg = config.getConfig()
 _kvStore = None
@@ -113,6 +128,8 @@ app = Flask(__name__, static_folder='static')
 CORS(app, supports_credentials=True)
 
 app.config['DEBUG'] = True
+
+print("[%s] STEP 50" % (time.time(),), file=sys.stderr)
 
 @app.route('/robots.txt')
 def static_from_root():
