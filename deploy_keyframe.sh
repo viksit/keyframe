@@ -6,10 +6,10 @@ set -o xtrace
 set -o errexit
 
 pushd ~/work/keyframe
-source keyframevenv/bin/activate
+#source keyframevenv/bin/activate
 set -o nounset
 
-git checkout master
+#git checkout master
 #git pull --rebase
 
 GIT_VERSION=$(git rev-parse HEAD)

@@ -3,7 +3,11 @@
 
 from __future__ import print_function
 from __future__ import absolute_import
+
 import sys, os
+
+print("STARTING GBOT", file=sys.stderr)
+
 from os.path import expanduser, join
 from flask import Flask, request, Response, send_from_directory
 from flask import Flask, current_app, jsonify, make_response
