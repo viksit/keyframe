@@ -274,6 +274,14 @@ class BaseBot(object):
                       lastWriteTime, currentTime)
             if lastWriteTime and lastWriteTime <= currentTime - self.config.BOTSTATE_TTL_SECONDS:
                 createNewSession = True
+                log.debug("SESSION TIMED OUT")
+                cr = messages.createTextResponse(
+                    canonicalMsg,
+                    "Your session has timed out.",
+                    messages.ResponseElement.RESPONSE_TYPE_RESPONSE,
+                    #botStateUid=botState.getUid(),
+                    inputExpected=False)
+                self.channelClient.sendResponse(cr)
 
         if createNewSession:
             # There is no session. Create a new session.
@@ -416,7 +424,7 @@ class BaseBot(object):
         wroteEvent = False
 
         while True:
-            log.debug("botState.sessionStartLastEvent: %s", botState.sessionStartLastEvent)
+            log.info("botState.sessionStartLastEvent: %s", botState.sessionStartLastEvent)
             topicId = None
             topicNodeId = None
             actionStateJson = None
@@ -476,12 +484,12 @@ class BaseBot(object):
                     if actionStateJson:
                         lastWriteTime = botState.getWriteTime()
                         currentTime = time.time()
-                        log.debug("lastWriteTime: %s, currentTime: %s",
+                        log.info("lastWriteTime: %s, currentTime: %s",
                                   lastWriteTime, currentTime)
                         if lastWriteTime and lastWriteTime > currentTime - self.config.BOTSTATE_TTL_SECONDS: 
                             topicId = actionStateJson.get("origTopicId")
                         else:
-                            log.debug("SESSION TIMED OUT")
+                            log.info("SESSION TIMED OUT")
                             cr = messages.createTextResponse(
                                 canonicalMsg,
                                 "Your session has timed out.",
