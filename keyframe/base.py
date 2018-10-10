@@ -262,7 +262,20 @@ class BaseBot(object):
         #time.sleep(20)  # For testing widget event generation async...
         e = canonicalMsg.eventInfo
         sessionStatus = None
-        if not botState.getSessionId():
+        createNewSession = False
+
+        if not (botState or botState.getSessionId()):
+            createNewSession = True
+
+        if not createNewSession:
+            lastWriteTime = botState.getWriteTime()
+            currentTime = time.time()
+            log.debug("lastWriteTime: %s, currentTime: %s",
+                      lastWriteTime, currentTime)
+            if lastWriteTime and lastWriteTime <= currentTime - self.config.BOTSTATE_TTL_SECONDS:
+                createNewSession = True
+
+        if createNewSession:
             # There is no session. Create a new session.
             botState.clear()
             botState.startSession(canonicalMsg.userId)
