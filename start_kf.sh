@@ -1,0 +1,1 @@
+env MYRA_SEARCH_SERVER="localhost:7096" KEYFRAME_EVENT_WRITER_TYPE=kinesis MYRA_ENV=dev MYRA_INFERENCE_PROXY_LB="localhost" MYRA_INFERENCE_PROXY_LB_PORT=7096 MYRA_LOG=DEBUG rlwrap python -m keyframe.gbot.gbot http db
