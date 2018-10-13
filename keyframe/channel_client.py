@@ -12,6 +12,7 @@ from . import messages
 from . import fb
 from slackclient import SlackClient
 from .intercom_client import IntercomClient
+from . import intercom_messenger
 
 log = logging.getLogger(__name__)
 
@@ -343,6 +344,50 @@ class ChannelClientIntercom(ChannelClient):
         self.responses.clear()
 
 
+class ChannelClientIntercomMsg(ChannelClient):
+    def __init__(self, config=None):
+        log.info("Init ChannelClientIntercomMsg__init__(%s)", locals())
+        self.config = config
+        self.responses = collections.deque()
+        self.userId = config.CHANNEL_META.get("user_id")
+        self.conversationId = config.CHANNEL_META.get("conversation_id")
+        # userAccessToken enables responses to a particular clients conversion.
+        # I.e. it is the intercom token allowing api access for the client the bot is responding on behalf of.
+
+    def extract(self, channelMsg):
+        log.info("extract(%s)", channelMsg)
+        # TODO: how do we extract the right text?
+        _d = channelMsg.body.get("input_values", {})
+        text = " ".join(v.strip() for (k,v) in _d.items())
+        #text = channelMsg.body.get("input_values", {}).get("text")
+        log.info("intercom extracted text: %s", text)
+        if channelMsg.body.get("component_id") == "user_question":
+            text = "[topic=default] %s" % (text,)
+            log.info("reset agent with text: %s", text)
+        return messages.CanonicalMsg(
+            channel=channelMsg.channel,
+            httpType=channelMsg.httpType,
+            userId=self.userId,
+            text=text,
+            rid=channelMsg.body.get("id"),
+            # For intercom msg, there doesn't seem to be anything to use as conversationId.
+            instanceId=self.conversationId
+        )
+
+    def sendResponse(self, canonicalResponse):
+        log.info("sendResponse(%s)", canonicalResponse)
+        for rElem in canonicalResponse.responseElements:
+            if rElem.type == messages.ResponseElement.TYPE_TEXT:
+                t = rElem.text
+                if rElem.textList:
+                    t = ' '.join(e.strip() for e in rElem.textList)
+                r = intercom_messenger.getTextCanvas(t)
+                self.responses.append(r)
+            else:
+                # TODO: this needs to be changed.
+                r = intercom_messenger.getConfigureCanvas()
+                self.responses.append(r)
+
 
 
 channelClientMap = {
@@ -351,7 +396,8 @@ channelClientMap = {
     messages.CHANNEL_FB: ChannelClientFacebook,
     messages.CHANNEL_SLACK: ChannelClientSlack,
     messages.CHANNEL_SCRIPT: ChannelClientScript,
-    messages.CHANNEL_INTERCOM: ChannelClientIntercom
+    messages.CHANNEL_INTERCOM: ChannelClientIntercom,
+    messages.CHANNEL_INTERCOM_MSG: ChannelClientIntercomMsg
 }
 
 def getChannelClient(channel, requestType, config=None):

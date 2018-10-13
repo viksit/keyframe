@@ -14,7 +14,12 @@ localhost:8080/intercom.html
 
 use the sample integration there.
 
-
+## On Intercom web site
+Login
+Click on 'App Store' (the icon with 3 squares and a +).
+There should be a link to 'build your own app' at the top. Click it.
+That should open up this link: https://app.intercom.com/a/apps/vlvh6qvv/developer-hub
+(In case going to this link directly does not work..)
 
 
 

@@ -12,6 +12,7 @@ CHANNEL_CMDLINE = "channel-cmdline"
 CHANNEL_HTTP_REQUEST_RESPONSE = "channel-http-request-response"
 CHANNEL_SCRIPT = "channel-script"
 CHANNEL_INTERCOM = "channel-intercom"
+CHANNEL_INTERCOM_MSG = "channel-intercom-msg"
 
 class ChannelMsg(object):
     def __init__(self, channel, httpType, body):
