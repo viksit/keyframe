@@ -70,6 +70,7 @@ from keyframe.actions import ActionObject
 from keyframe.slot_fill import Slot
 from keyframe.bot_api import BotAPI
 from keyframe import channel_client
+from keyframe import intercom_messenger
 
 print("[%s] STEP 35" % (time.time(),), file=sys.stderr)
 
@@ -759,15 +760,23 @@ def v2_intercom_submit():
         log.warn("No agent for app_id: %s. Dropping this event.", app_id)
         return Response(json.dumps({"msg":"bad app_id"})), 500
 
-    res = _intercom_msg_agent_handler(agentDeploymentMeta, request.json, app_id)
-
+    resp = _intercom_msg_agent_handler(agentDeploymentMeta, request.json, app_id)
+    log.info("resp: %s", resp)
     #if (component_id == "button-back"):
     #canvas = im_utils.getSampleAppCanvas()
     #else:
     #    canvas = im_utils.getSearchResultsCanvas()
-    res = json.dumps(canvas)
+    #res = json.dumps(canvas)
+    res = json.dumps(resp)
     log.info("-- response --")
-    _pprint(canvas)
+    log.info("res: %s", res)
+    #_pprint(res)
+
+    # DEBUG
+    #_tmp1 = intercom_messenger.getSampleAppCanvas()
+    #res = json.dumps(_tmp1)
+    #log.info("res: %s", res)
+
     return Response(res), 200
 
 

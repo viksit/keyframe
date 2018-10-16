@@ -5,6 +5,7 @@ import traceback
 import logging
 
 log = logging.getLogger(__name__)
+log.warn("IMPORTING KEYFRAME.EMAIL")
 
 cfg = config.Config()
 

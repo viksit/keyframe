@@ -13,6 +13,7 @@ from . import fb
 from slackclient import SlackClient
 from .intercom_client import IntercomClient
 from . import intercom_messenger
+from . import imlib
 
 log = logging.getLogger(__name__)
 
@@ -188,11 +189,38 @@ class ChannelClientSlack(ChannelClient):
         self.responses.clear()
 
 
-class ChannelClientRESTAPI(ChannelClient):
+class ChannelClientReturnResponse(ChannelClient):
     def __init__(self, config=None):
         log.info("ChannelClientRESTAPI.__init__(%s)", locals())
         self.config = config
         self.responses = collections.deque()
+
+    def sendResponse(self, canonicalResponse):
+        log.debug("sendResponse(%s)", canonicalResponse)
+        self.responses.append(canonicalResponse)
+
+    def getResponses(self):
+        # Just get the response objects back vs json as for base class.
+        ret = [r for r in self.responses]
+        log.debug("getResponses called, returning: %s", ret)
+        return ret
+
+    def popResponses(self):
+        ret = self.getResponses()
+        self.clearResponses()
+        return ret
+
+    def clearResponses(self):
+        self.responses.clear()
+
+class ChannelClientRESTAPI(ChannelClientReturnResponse):
+    def __init__(self, config=None):
+        super(ChannelClientRESTAPI, self).__init__(config)
+
+    def getResponses(self):
+        ret = [r.toJSON() for r in self.responses]
+        log.debug("getResponses called, returning: %s", ret)
+        return ret
 
     def _extractEventInfo(self, channelMsg):
         eventType = channelMsg.body.get("event_type")
@@ -255,36 +283,14 @@ class ChannelClientRESTAPI(ChannelClient):
             instanceId=instanceId
         )
 
-    def sendResponse(self, canonicalResponse):
-        log.debug("sendResponse(%s)", canonicalResponse)
-        self.responses.append(canonicalResponse)
-
-    def getResponses(self):
-        ret = [r.toJSON() for r in self.responses]
-        log.debug("getResponses called, returning: %s", ret)
-        return ret
-
-    def popResponses(self):
-        ret = self.getResponses()
-        self.clearResponses()
-        return ret
-
-    def clearResponses(self):
-        self.responses.clear()
 
 class ChannelClientScript(ChannelClientRESTAPI):
-    def getResponses(self):
-        # Just get the response objects back vs json as for base class.
-        ret = [r for r in self.responses]
-        log.debug("getResponses called, returning: %s", ret)
-        return ret
+    pass
 
-
-class ChannelClientIntercom(ChannelClient):
+class ChannelClientIntercom(ChannelClientReturnResponse):
     def __init__(self, config=None):
         log.info("Init ChannelClientIntercom__init__(%s)", locals())
-        self.config = config
-        self.responses = collections.deque()
+        super(ChannelClientIntercom, self).__init__(config)
         #self.channelMeta = config.CHANNEL_META
         # TODO(viksit): add user/team ids
         self.userId = config.CHANNEL_META.get("user_id")
@@ -344,11 +350,10 @@ class ChannelClientIntercom(ChannelClient):
         self.responses.clear()
 
 
-class ChannelClientIntercomMsg(ChannelClient):
+class ChannelClientIntercomMsg(ChannelClientReturnResponse):
     def __init__(self, config=None):
         log.info("Init ChannelClientIntercomMsg__init__(%s)", locals())
-        self.config = config
-        self.responses = collections.deque()
+        super(ChannelClientIntercomMsg, self).__init__(config)
         self.userId = config.CHANNEL_META.get("user_id")
         self.conversationId = config.CHANNEL_META.get("conversation_id")
         # userAccessToken enables responses to a particular clients conversion.
@@ -375,19 +380,38 @@ class ChannelClientIntercomMsg(ChannelClient):
         )
 
     def sendResponse(self, canonicalResponse):
-        log.info("sendResponse(%s)", canonicalResponse)
+        log.info("ChannelClientIntercomMsg.sendResponse(%s)", canonicalResponse)
         for rElem in canonicalResponse.responseElements:
+            log.info("rElem: %s", rElem)
             if rElem.type == messages.ResponseElement.TYPE_TEXT:
+                log.info("TYPE_TEXT")
                 t = rElem.text
                 if rElem.textList:
                     t = ' '.join(e.strip() for e in rElem.textList)
-                r = intercom_messenger.getTextCanvas(t)
+                r = intercom_messenger.getTextComponent(t)
+                self.responses.append(r)
+            elif rElem.type == messages.ResponseElement.TYPE_NEW_TOPIC:
+                log.info("dropping type newtopic")
+                continue
+            elif rElem.type == messages.ResponseElement.TYPE_OPTIONS:
+                log.info("TYPE_OPTIONS")
+                t = rElem.text
+                if rElem.textList:
+                    t = ' '.join(e.strip() for e in rElem.textList)
+                r = intercom_messenger.getDropdownComponent(
+                    label=t, values=rElem.optionsList)
                 self.responses.append(r)
             else:
-                # TODO: this needs to be changed.
-                r = intercom_messenger.getConfigureCanvas()
-                self.responses.append(r)
+                raise NotImplementedError("Element type %s is not implemented" % (rElem.type,))
+        log.info("self.responses: %s", self.responses)
 
+    def getResponses(self):
+        c = imlib.Canvas(
+            content=imlib.Content(
+                components=[r for r in self.responses]))
+        ret = imlib.makeResponse(c)
+        log.debug("getResponses called, returning: %s", ret)
+        return ret
 
 
 channelClientMap = {

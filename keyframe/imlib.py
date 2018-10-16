@@ -60,8 +60,10 @@ DividerComponent.__new__.__defaults__ = ("divider",)
 
 TextComponent = namedtuple("TextComponent", Component._fields +
                             ("id",
-                             "text"))
-TextComponent.__new__.__defaults__ = ("input",) + (None,) * 2
+                             "text",
+                             "style",
+                             "align"))
+TextComponent.__new__.__defaults__ = ("text",) + (None,) * 4
 
 InputComponent = namedtuple("InputComponent", Component._fields +
                             ("id",
@@ -88,6 +90,24 @@ ListItemComponent = namedtuple("ListItemComponent", Component._fields +
                        "action"))
 ListItemComponent.__new__.__defaults__ = ("item",) + (None,) * 4
 
+DropdownComponent = namedtuple("DropdownComponent",
+                               Component._fields + ("id", "label", "options",))
+DropdownComponent.__new__.__defaults__ = ("dropdown",) + (None, None, [],)
+
+DropdownOptionComponent = namedtuple(
+    "DropdownOptionComponent", Component._fields + ("id", "text"))
+DropdownOptionComponent.__new__.__defaults__ = ("option",) + (None,) * 2
+
+#---
+SingleSelectComponent = namedtuple("SingleSelectComponent",
+                               Component._fields + ("id", "label", "options", "action"))
+SingleSelectComponent.__new__.__defaults__ = ("single-select",) + (None, None, [], None)
+
+SingleSelectOptionComponent = namedtuple(
+    "SingleSelectOptionComponent", Component._fields + ("id", "text"))
+SingleSelectOptionComponent.__new__.__defaults__ = ("option",) + (None,) * 2
+
+#----
 Content = namedtuple("Content", ("version", "components"))
 Content.__new__.__defaults__ = ("0.1", [])
 

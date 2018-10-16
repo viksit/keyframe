@@ -66,13 +66,77 @@ https://myra-dev.ngrok.io/v2/intercom/submit_sheet
 def _pprint(data):
     log.info(json.dumps(data, indent=2))
 
+def getTextComponent(text, id=None):
+    if not id:
+        id = "myra_text_component"
+    c = imlib.TextComponent(
+        id=id,
+        text=text,
+        style="header",
+        align="left")
+    ret = imlib.asdict(c)
+    log.debug(ret)
+    return ret
+
+def getSingleSelectComponent(label, values, id=None):
+    # For now, do not allow value to be specified.
+    if not id:
+        id = "myra_singleselect_component"
+    options = []
+    ctr = 0
+    for v in values:
+        o = imlib.SingleSelectOptionComponent(
+            id="option_%s" % (ctr,),
+            text=v)
+        options.append(o)
+        ctr += 1
+    c = imlib.SingleSelectComponent(
+        id=id,
+        label=label,
+        options=options,
+        action=imlib.SubmitAction())
+    ret = imlib.asdict(c)
+    log.debug(ret)
+    return ret
+
+def getButtonComponent(label, values, style="primary", id=None):
+    buttons = []
+    ctr = 0
+    for v in values:
+        o = imlib.ButtonComponent(
+            id="button_%s" % (ctr,),
+            label=v,
+            style=style,
+            action=imlib.SubmitAction())
+        buttons.append(imlib.asdict(o))
+        ctr += 1
+    log.debug(buttons)
+    return buttons
+
+def getTextInputComponent(label, id=None, placeholder=None, value=None):
+    if not id:
+        id = "myra_textinput_component"
+    c = imlib.InputComponent(
+        id=id,
+        label=label,
+        placeholder=placeholder,
+        value=value,
+        action=imlib.SubmitAction())
+    ret = imlib.asdict(c)
+    log.debug(ret)
+    return ret
+
+
+# ----------------
 def getTextCanvas(text):
     c = imlib.Canvas(
         content = imlib.Content(
             components = [
                 imlib.TextComponent(
                     id="bot_text_response",
-                    text=text
+                    text=text,
+                    style="header",
+                    align="left"
                 )
             ]
         )
