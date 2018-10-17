@@ -39,9 +39,11 @@ def submit():
     id = kim.getInputFromAppRequest(e)
     log.info("extracted input: %s", id)
     components = []
+    stored_data = None
     if not id:
         id = "component_id_input"
-    _c = get_components(id)
+    r = get_components(id)
+    _c = r.get("components")
     log.info("_c: %s", _c)
     if isinstance(_c, list):
         components.extend(_c)
@@ -52,18 +54,27 @@ def submit():
             {"content":
              {"version":"0.1",
               "components":components}}}
+    if "stored_data" in r:
+        canvasDict["canvas"]["stored_data"] = r["stored_data"]
     log.info("canvasDict: %s", canvasDict)
     return jsonify(canvasDict)
 
 def get_components(id):
     log.info("get_component(%s)", locals())
     components = []
+    storedData = {}
     if id == "singleselect":
         c = kim.getSingleSelectComponent(
             label="example of a single select component",
             values=["option0", "option1"])
         components.append(c)
     elif id == "component_id_input":
+        c = kim.getButtonComponent(
+            label="Choose component to display",
+            values=["text", "textinput", "singleselect", "button", "list"],
+            style="primary")
+        components.extend(c)
+    elif id == "component_id_input_old":
         c = kim.getTextInputComponent(
             label="Input id of component to see",
             id=id)
@@ -72,7 +83,11 @@ def get_components(id):
         c = kim.getTextComponent(
             text="example of a text component")
         components.append(c)
-        c = get_components("component_id_input")
+        components.append(kim.getSpacerComponent())
+        c = kim.getDividerComponent()
+        components.append(c)
+        components.append(kim.getSpacerComponent())
+        c = get_components("component_id_input").get("components")
         components.extend(c)
     elif id == "textinput":
         c = kim.getTextInputComponent(
@@ -86,12 +101,18 @@ def get_components(id):
             values=["button0", "button1"],
             style="primary")
         components.extend(c)
+    elif id == "list":
+        l = [{"url":"https://www.google.com", "title":"go to google", "type":"kb"},
+             {"type":"workflow", "title":"this is a workflow", "workflowid":"[transfer-topic=topic_2833383uesdjsdisdfsf]"}]
+        r = kim.getListComponent(l)
+        components.append(r.get("component"))
+        storedData = r.get("stored_data")
     else:
-        c = get_components("component_id_input")
+        c = get_components("component_id_input").get("components")
         components.extend(c)
 
     log.info("returning components: %s", components)
-    return components
+    return {"components":components, "stored_data":storedData}
 
 
 def print_request_details(**kwargs):

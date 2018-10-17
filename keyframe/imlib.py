@@ -58,6 +58,9 @@ Component = namedtuple("Component", ("type,"))
 DividerComponent = namedtuple("DividerComponent", Component._fields)
 DividerComponent.__new__.__defaults__ = ("divider",)
 
+SpacerComponent = namedtuple("SpacerComponent", Component._fields + ("size",))
+SpacerComponent.__new__.__defaults__ = ("spacer",) +  ("l",)
+
 TextComponent = namedtuple("TextComponent", Component._fields +
                             ("id",
                              "text",

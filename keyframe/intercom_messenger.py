@@ -66,6 +66,14 @@ https://myra-dev.ngrok.io/v2/intercom/submit_sheet
 def _pprint(data):
     log.info(json.dumps(data, indent=2))
 
+def getDividerComponent():
+    c = imlib.DividerComponent()
+    return imlib.asdict(c)
+
+def getSpacerComponent(size="l"):
+    c = imlib.SpacerComponent(size=size)
+    return imlib.asdict(c)
+
 def getTextComponent(text, id=None):
     if not id:
         id = "myra_text_component"
@@ -126,6 +134,30 @@ def getTextInputComponent(label, id=None, placeholder=None, value=None):
     log.debug(ret)
     return ret
 
+def getListComponent(listItems):
+    l = imlib.ListComponent(items=[])
+    d = {}
+    ctr = 0
+    for i in listItems:
+        action = None
+        t = i.get("type")
+        if t == "workflow":
+            action = imlib.SubmitAction()
+        elif t == "kb":
+            action = imlib.URLAction(url=i.get("url"))
+        else:
+            raise Exception("Unknown type: %s", t)
+        id = f"listitem_{ctr}"
+        l.items.append(imlib.ListItemComponent(
+            id=id,
+            title=i.get("title"),
+            action=action))
+        d[id] = {"workflowid":i.get("workflowid")}
+        ctr += 1
+    ret = imlib.asdict(l)
+    log.debug(ret)
+    return {"component":ret, "stored_data":d}
+
 def getInputFromAppRequest(appResponse):
     """Extract the text input from the response.
     """
@@ -137,6 +169,9 @@ def getInputFromAppRequest(appResponse):
     for c in canvasComponents:
         if componentId == c.get("id"):
             return c.get("label")
+    v = appResponse.get("current_canvas", {}).get("stored_data", {}).get(componentId)
+    if v:
+        return v
     raise Exception("could not extract user input as text from request.")
 
 
