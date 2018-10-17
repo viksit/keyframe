@@ -35,16 +35,19 @@ def initialize():
 def submit():
     print_request_details()
     e = request.json
-    id = e.get("input_values", {}).get("component_id_input")
+    #id = e.get("input_values", {}).get("component_id_input")
+    id = kim.getInputFromAppRequest(e)
+    log.info("extracted input: %s", id)
     components = []
-    if id:
-        _c = get_component(id)
-        if isinstance(_c, list):
-            components.extend(_c)
-        else:
-            components.append(_c)
-    _c = get_component("component_id_input")
-    components.append(_c)
+    if not id:
+        id = "component_id_input"
+    _c = get_components(id)
+    log.info("_c: %s", _c)
+    if isinstance(_c, list):
+        components.extend(_c)
+    else:
+        components.append(_c)
+    log.info("components: %s", components)
     canvasDict = {"canvas":
             {"content":
              {"version":"0.1",
@@ -52,34 +55,43 @@ def submit():
     log.info("canvasDict: %s", canvasDict)
     return jsonify(canvasDict)
 
-def get_component(id):
+def get_components(id):
     log.info("get_component(%s)", locals())
-    c = None
+    components = []
     if id == "singleselect":
         c = kim.getSingleSelectComponent(
             label="example of a single select component",
             values=["option0", "option1"])
+        components.append(c)
     elif id == "component_id_input":
         c = kim.getTextInputComponent(
             label="Input id of component to see",
             id=id)
+        components.append(c)
     elif id == "text":
         c = kim.getTextComponent(
             text="example of a text component")
+        components.append(c)
+        c = get_components("component_id_input")
+        components.extend(c)
     elif id == "textinput":
         c = kim.getTextInputComponent(
             label="label for text input component",
             placeholder="placeholder for text input",
             value="this is the default value")
+        components.append(c)
     elif id == "button":
         c = kim.getButtonComponent(
             label="label for button component",
             values=["button0", "button1"],
             style="primary")
+        components.extend(c)
     else:
-        raise NotImplementedError()
-    log.info("returning component: %s", c)
-    return c
+        c = get_components("component_id_input")
+        components.extend(c)
+
+    log.info("returning components: %s", components)
+    return components
 
 
 def print_request_details(**kwargs):

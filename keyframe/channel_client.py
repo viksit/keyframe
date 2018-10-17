@@ -361,6 +361,20 @@ class ChannelClientIntercomMsg(ChannelClientReturnResponse):
 
     def extract(self, channelMsg):
         log.info("extract(%s)", channelMsg)
+        text = intercom_messenger.getInputFromAppRequest(channelMsg.body)
+        log.info("extracted text from intercom msg: %s", text)
+        return messages.CanonicalMsg(
+            channel=channelMsg.channel,
+            httpType=channelMsg.httpType,
+            userId=self.userId,
+            text=text,
+            rid=channelMsg.body.get("id"),
+            # For intercom msg, there doesn't seem to be anything to use as conversationId.
+            instanceId=self.conversationId
+        )
+
+    def extract2(self, channelMsg):
+        log.info("extract(%s)", channelMsg)
         # TODO: how do we extract the right text?
         _d = channelMsg.body.get("input_values", {})
         text = " ".join(v.strip() for (k,v) in _d.items())

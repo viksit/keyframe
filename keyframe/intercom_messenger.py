@@ -126,6 +126,20 @@ def getTextInputComponent(label, id=None, placeholder=None, value=None):
     log.debug(ret)
     return ret
 
+def getInputFromAppRequest(appResponse):
+    """Extract the text input from the response.
+    """
+    componentId = appResponse.get("component_id")
+    v = appResponse.get("input_values", {}).get(componentId)
+    if v:
+        return v
+    canvasComponents = appResponse.get("current_canvas", {}).get("content", {}).get("components")
+    for c in canvasComponents:
+        if componentId == c.get("id"):
+            return c.get("label")
+    raise Exception("could not extract user input as text from request.")
+
+
 
 # ----------------
 def getTextCanvas(text):
