@@ -28,32 +28,34 @@ from six.moves import range
 
 print("[%s] STEP 20" % (time.time(),), file=sys.stderr)
 
+import keyframe.logservice
+log = keyframe.logservice.getLogger("keyframe.gbot.gbot")
 
-logging.basicConfig()
-def _getLogLevel(envVar, defaultLogLevel=logging.INFO):
-    l = os.getenv(envVar, defaultLogLevel)
-    try:
-        ll = int(l)
-        return ll
-    except ValueError as ve:
-        traceback.print_exc()
-        return defaultLogLevel
+#logging.basicConfig()
+# def _getLogLevel(envVar, defaultLogLevel=logging.INFO):
+#     l = os.getenv(envVar, defaultLogLevel)
+#     try:
+#         ll = int(l)
+#         return ll
+#     except ValueError as ve:
+#         traceback.print_exc()
+#         return defaultLogLevel
 
 #log = logging.getLogger(__name__)
 # Make the logger used by keyframe and genericbot, but not the root logger.
 # If you want to set keyframe / pymyra to a different log level, comment out
 # the setLevel below or set explicity or use the env var for that library.
-logLevel = int(_getLogLevel("GBOT_LOG_LEVEL", logging.INFO))
+#logLevel = int(_getLogLevel("GBOT_LOG_LEVEL", logging.INFO))
 #log = logging.getLogger("genericbot")
 #log.setLevel(logLevel)
-log_keyframe = logging.getLogger("keyframe")
-log_keyframe.setLevel(logLevel)
-log_pymyra = logging.getLogger("pymyra")
-pymyra_loglevel = int(_getLogLevel("PYMYRA_LOG_LEVEL", logLevel))
-log_pymyra.setLevel(pymyra_loglevel)
-log = logging.getLogger("keyframe.gbot.gbot")
-rootLog = logging.getLogger()
-rootLog.setLevel(logging.INFO)
+# log_keyframe = logging.getLogger("keyframe")
+# log_keyframe.setLevel(logLevel)
+# log_pymyra = logging.getLogger("pymyra")
+# pymyra_loglevel = int(_getLogLevel("PYMYRA_LOG_LEVEL", logLevel))
+# log_pymyra.setLevel(pymyra_loglevel)
+# log = logging.getLogger("keyframe.gbot.gbot")
+# rootLog = logging.getLogger()
+# rootLog.setLevel(logging.INFO)
 #rootLog.setLevel(logging.DEBUG)
 
 print("[%s] STEP 30" % (time.time(),), file=sys.stderr)
@@ -95,7 +97,8 @@ from keyframe.intercom_messenger import _pprint
 app = Flask(__name__)
 CORS(app, supports_credentials=True)
 
-app.config['DEBUG'] = True
+#app.config['DEBUG'] = True
+app.config['DEBUG'] = False
 
 #VERSION = "3.0.2"
 VERSION = keyframe.utils.getFromFileOrDefault(
@@ -141,6 +144,11 @@ CORS(app, supports_credentials=True)
 app.config['DEBUG'] = True
 
 print("[%s] STEP 50" % (time.time(),), file=sys.stderr)
+
+@app.route('/test')
+def app_test():
+    log.info("This is an info log")
+    return Response(), 200
 
 @app.route('/robots.txt')
 def static_from_root():
@@ -743,6 +751,7 @@ def v2_intercom_configure():
 
 @app.route("/v2/intercom/submit", methods=['GET', 'POST'])
 def v2_intercom_submit():
+    requestStartTime = time.time()
     log.info("## submit ##")
     intercomEvent = request.json
     _pprint(intercomEvent)
@@ -756,7 +765,11 @@ def v2_intercom_submit():
     #agentDeploymentMeta = ads.getJsonSpec(app_id, "intercom_messenger")
     #log.info("agentDeploymentMeta: %s", agentDeploymentMeta)
     # agent_id: "ca006972df904823925d122383b4be54" => nishant-intercom-m-20180904-1 / nishant+dev@myralabs.com
-    agentDeploymentMeta = {"connected": True, "access_token": "", "concierge_meta":{"account_id":"3rxCO9rydbBIf3DOMb9lFh", "agent_id": "ca006972df904823925d122383b4be54"}, "app_id": "cp6b0zl8"}
+    #agentDeploymentMeta = {"connected": True, "access_token": "", "concierge_meta":{"account_id":"3rxCO9rydbBIf3DOMb9lFh", "agent_id": "ca006972df904823925d122383b4be54"}, "app_id": "cp6b0zl8"}
+    # agent_id: "2b91938a2b544322b63792c4024e12ae" (wpengine_v3-dev-20181018) / demo+dev@myralabs.com
+    #agentDeploymentMeta = {"connected": True, "access_token": "", "concierge_meta":{"account_id":"bd80e4cbc57f47178ef323b87fd4823d", "agent_id":"2b91938a2b544322b63792c4024e12ae"}, "app_id": "iv6ijpl5"}
+    # agent_id: "3c1b9fd4341c4be09a8e8a0172cff06a" (nishant-intercom-app-search-1) / nishant+dev@myralabs.com
+    agentDeploymentMeta = {"connected": True, "access_token": "", "concierge_meta":{"account_id":"3rxCO9rydbBIf3DOMb9lFh", "agent_id":"3c1b9fd4341c4be09a8e8a0172cff06a"}, "app_id": "iv6ijpl5"}
     if not agentDeploymentMeta:
         log.warn("No agent for app_id: %s. Dropping this event.", app_id)
         return Response(json.dumps({"msg":"bad app_id"})), 500
@@ -777,7 +790,9 @@ def v2_intercom_submit():
     #_tmp1 = intercom_messenger.getSampleAppCanvas()
     #res = json.dumps(_tmp1)
     #log.info("res: %s", res)
-
+    
+    requestEndTime = time.time()
+    log.info("REQUEST TIME: %s", requestEndTime - requestStartTime)
     return Response(res), 200
 
 
@@ -821,7 +836,7 @@ def v2_intercom_submit_sheet():
 if __name__ == "__main__":
     usage = "gbot.py [cmd/http] [file/db] <accountId> <agentId> [file: <path to json spec>]"
     assert len(sys.argv) > 2, usage
-
+    #keyframe.logservice.resetRootHandler()
     #logging.basicConfig()
     #log.setLevel(int(os.getenv("GENERICBOT_LOGLEVEL", 20)))
     #log.debug("debug log")
@@ -871,4 +886,4 @@ if __name__ == "__main__":
         app.config["cmd_mode"] = cmd
         app.config["run_mode"] = runtype
         app.config["config_json"] = d
-        app.run(debug=True)  # default port is 5000
+        app.run(debug=False)  # default port is 5000
