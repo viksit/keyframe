@@ -84,7 +84,7 @@ class GenericSlot(keyframe.slot_fill.Slot):
                 botStateUid=botStateUid)
         elif contentType == "search":
             searchResults = searchAPIResult.get("hits")
-            log.info("searchResults: %s", searchResults)
+            log.debug("searchResults: %s", searchResults)
             if not searchResults:
                 cr = keyframe.messages.createTextResponse(
                     canonicalMsg,
