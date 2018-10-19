@@ -66,11 +66,11 @@ def get_components(id):
     if id == "singleselect":
         c = kim.getSingleSelectComponent(
             label="example of a single select component",
-            values=["option0", "option1"])
+            values=["text", "textinput", "singleselect", "button", "list"])
         components.append(c)
     elif id == "component_id_input":
         c = kim.getButtonComponent(
-            label="Choose component to display",
+            #label="Choose component to display",
             values=["text", "textinput", "singleselect", "button", "list"],
             style="primary")
         components.extend(c)
@@ -97,7 +97,7 @@ def get_components(id):
         components.append(c)
     elif id == "button":
         c = kim.getButtonComponent(
-            label="label for button component",
+            #label="label for button component",
             values=["button0", "button1"],
             style="primary")
         components.extend(c)

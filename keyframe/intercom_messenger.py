@@ -107,7 +107,7 @@ def getSingleSelectComponent(label, values, id=None):
     log.debug(ret)
     return ret
 
-def getButtonComponent(label, values, style="primary", id=None):
+def getButtonComponent(values, style="primary", id=None):
     buttons = []
     ctr = 0
     for v in values:

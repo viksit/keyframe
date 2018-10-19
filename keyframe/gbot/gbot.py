@@ -755,6 +755,7 @@ def v2_intercom_submit():
     # For now, just hardcode.
     #agentDeploymentMeta = ads.getJsonSpec(app_id, "intercom_messenger")
     #log.info("agentDeploymentMeta: %s", agentDeploymentMeta)
+    # agent_id: "ca006972df904823925d122383b4be54" => nishant-intercom-m-20180904-1 / nishant+dev@myralabs.com
     agentDeploymentMeta = {"connected": True, "access_token": "", "concierge_meta":{"account_id":"3rxCO9rydbBIf3DOMb9lFh", "agent_id": "ca006972df904823925d122383b4be54"}, "app_id": "cp6b0zl8"}
     if not agentDeploymentMeta:
         log.warn("No agent for app_id: %s. Dropping this event.", app_id)

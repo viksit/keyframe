@@ -356,8 +356,7 @@ class ChannelClientIntercomMsg(ChannelClientReturnResponse):
         super(ChannelClientIntercomMsg, self).__init__(config)
         self.userId = config.CHANNEL_META.get("user_id")
         self.conversationId = config.CHANNEL_META.get("conversation_id")
-        # userAccessToken enables responses to a particular clients conversion.
-        # I.e. it is the intercom token allowing api access for the client the bot is responding on behalf of.
+        self.storedData = {}
 
     def extract(self, channelMsg):
         log.info("extract(%s)", channelMsg)
@@ -393,38 +392,79 @@ class ChannelClientIntercomMsg(ChannelClientReturnResponse):
             instanceId=self.conversationId
         )
 
+    def _addC(self, responses, c):
+        if isinstance(c, list):
+            responses.extend(c)
+        else:
+            responses.append(c)
+
     def sendResponse(self, canonicalResponse):
         log.info("ChannelClientIntercomMsg.sendResponse(%s)", canonicalResponse)
         for rElem in canonicalResponse.responseElements:
             log.info("rElem: %s", rElem)
-            if rElem.type == messages.ResponseElement.TYPE_TEXT:
-                log.info("TYPE_TEXT")
-                t = rElem.text
-                if rElem.textList:
-                    t = ' '.join(e.strip() for e in rElem.textList)
-                r = intercom_messenger.getTextComponent(t)
-                self.responses.append(r)
-            elif rElem.type == messages.ResponseElement.TYPE_NEW_TOPIC:
-                log.info("dropping type newtopic")
-                continue
-            elif rElem.type == messages.ResponseElement.TYPE_OPTIONS:
-                log.info("TYPE_OPTIONS")
-                t = rElem.text
-                if rElem.textList:
-                    t = ' '.join(e.strip() for e in rElem.textList)
-                r = intercom_messenger.getDropdownComponent(
-                    label=t, values=rElem.optionsList)
-                self.responses.append(r)
+            if rElem.responseType in ("slotfill", "slotfillretry"):
+                if rElem.type == messages.ResponseElement.TYPE_TEXT:
+                    log.info("TYPE_TEXT")
+                    t = rElem.text
+                    if rElem.textList:
+                        t = ' '.join(e.strip() for e in rElem.textList)
+                    c = intercom_messenger.getTextInputComponent(label=t)
+                    self._addC(self.responses, c)
+                elif rElem.type == messages.ResponseElement.TYPE_OPTIONS:
+                    log.info("TYPE_OPTIONS")
+                    t = rElem.text
+                    if rElem.textList:
+                        t = ' '.join(e.strip() for e in rElem.textList)
+                    if t:
+                        c = intercom_messenger.getTextComponent(t)
+                        self._addC(self.responses, c)
+                    if rElem.displayType == messages.ResponseElement.DISPLAY_TYPE_BUTTON_LIST:
+                        c = intercom_messenger.getButtonComponent(
+                            values=rElem.optionsList)
+                        self._addC(self.responses, c)
+                    elif rElem.displayType == messages.ResponseElement.DISPLAY_TYPE_DROPDOWN:
+                        c = intercom_messenger.getSingleSelectComponent(
+                            label=t, values=rElem.optionsList)
+                        self._addC(self.responses, c)
+                    elif rElem.displayType == messages.ResponseElement.DISPLAY_TYPE_TEXT:
+                        v = "[" + "|".join(eElem.optionsList) + "]"
+                        c = intercom_messenger.getTextInputComponent(
+                            label=t, placeholder=v)
+                        self._addC(self.responses, c)
+                        #raise NotImplementedError("options as text are not supported as yet")
+                elif rElem.type == messages.ResponseElement.TYPE_SEARCH_RESULT:
+                    aList = []
+                    for sr in rElem.get("structuredResults", []):
+                        if sr.get("doctype") == "kb":
+                            aList.append({"url":sr.get("url"), "title":sr.get("title"), "type":"kb"})
+                        elif sr.get("doctype") == "workflow":
+                            aList.append(
+                                {"type":"workflow", "title":sr.get("title"), "workflowid":sr.get("workflowid")})
+                        else:
+                            raise Exception("Unknown doctype: %s" % (sr.get("doctype"),))
+                    r = intercom_messenger.getListComponent(aList)
+                    self._addC(self.responses, r.get("component"))
+                    self.storedData = r.get("stored_data")
+                else:
+                    raise NotImplementedError("Element type %s is not implemented" % (rElem.type,))
             else:
-                raise NotImplementedError("Element type %s is not implemented" % (rElem.type,))
+                # all of the rest are probably fine to just drop
+                log.info("DROPPING responseElement: %s", rElem)
+                if rElem.type == messages.ResponseElement.TYPE_NEW_TOPIC:
+                    log.info("dropping type newtopic")
+                    continue
+                else:
+                    continue
+
         log.info("self.responses: %s", self.responses)
 
     def getResponses(self):
         c = imlib.Canvas(
             content=imlib.Content(
-                components=[r for r in self.responses]))
+                components=[r for r in self.responses]),
+            stored_data=self.storedData)
         ret = imlib.makeResponse(c)
-        log.debug("getResponses called, returning: %s", ret)
+        log.info("getResponses called, returning: %s", ret)
         return ret
 
 
