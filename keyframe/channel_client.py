@@ -402,7 +402,16 @@ class ChannelClientIntercomMsg(ChannelClientReturnResponse):
         log.info("ChannelClientIntercomMsg.sendResponse(%s)", canonicalResponse)
         for rElem in canonicalResponse.responseElements:
             log.info("rElem: %s", rElem)
-            if rElem.responseType in ("slotfill", "slotfillretry"):
+            if not rElem.responseType or rElem.responseType == "response":
+                if rElem.type == messages.ResponseElement.TYPE_TEXT:
+                    log.info("TYPE_TEXT")
+                    t = rElem.text
+                    if rElem.textList:
+                        t = ' '.join(e.strip() for e in rElem.textList)
+                    c = intercom_messenger.getTextComponent(text=t)
+                    self._addC(self.responses, c)
+
+            if rElem.responseType in ("slotfill", "slotfillretry") or rElem.type == messages.ResponseElement.TYPE_SEARCH_RESULT:
                 if rElem.type == messages.ResponseElement.TYPE_TEXT:
                     log.info("TYPE_TEXT")
                     t = rElem.text
@@ -433,8 +442,9 @@ class ChannelClientIntercomMsg(ChannelClientReturnResponse):
                         self._addC(self.responses, c)
                         #raise NotImplementedError("options as text are not supported as yet")
                 elif rElem.type == messages.ResponseElement.TYPE_SEARCH_RESULT:
+                    log.info("NOW FORMATTING SEARCH RESULTS")
                     aList = []
-                    for sr in rElem.get("structuredResults", []):
+                    for sr in rElem.structuredResults:
                         if sr.get("doctype") == "kb":
                             aList.append({"url":sr.get("url"), "title":sr.get("title"), "type":"kb"})
                         elif sr.get("doctype") == "workflow":
