@@ -74,6 +74,9 @@ def getSpacerComponent(size="l"):
     c = imlib.SpacerComponent(size=size)
     return imlib.asdict(c)
 
+def getSheetComponent():
+    pass
+
 def getTextComponent(text, id=None):
     if not id:
         id = "myra_text_component"
@@ -107,15 +110,18 @@ def getSingleSelectComponent(label, values, id=None):
     log.debug(ret)
     return ret
 
-def getButtonComponent(values, style="primary", id=None):
+def getButtonComponent(values, style="primary", id=None, actions={}):
+    # actions = {value1:action1,...}
     buttons = []
     ctr = 0
     for v in values:
+        action = imlib.SubmitAction()
+        action = actions.get(v, action)
         o = imlib.ButtonComponent(
             id="button_%s" % (ctr,),
             label=v,
             style=style,
-            action=imlib.SubmitAction())
+            action=action)
         buttons.append(imlib.asdict(o))
         ctr += 1
     log.debug(buttons)
