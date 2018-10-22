@@ -29,34 +29,7 @@ from six.moves import range
 print("[%s] STEP 20" % (time.time(),), file=sys.stderr)
 
 import keyframe.logservice
-log = keyframe.logservice.getLogger("keyframe.gbot.gbot")
-
-#logging.basicConfig()
-# def _getLogLevel(envVar, defaultLogLevel=logging.INFO):
-#     l = os.getenv(envVar, defaultLogLevel)
-#     try:
-#         ll = int(l)
-#         return ll
-#     except ValueError as ve:
-#         traceback.print_exc()
-#         return defaultLogLevel
-
-#log = logging.getLogger(__name__)
-# Make the logger used by keyframe and genericbot, but not the root logger.
-# If you want to set keyframe / pymyra to a different log level, comment out
-# the setLevel below or set explicity or use the env var for that library.
-#logLevel = int(_getLogLevel("GBOT_LOG_LEVEL", logging.INFO))
-#log = logging.getLogger("genericbot")
-#log.setLevel(logLevel)
-# log_keyframe = logging.getLogger("keyframe")
-# log_keyframe.setLevel(logLevel)
-# log_pymyra = logging.getLogger("pymyra")
-# pymyra_loglevel = int(_getLogLevel("PYMYRA_LOG_LEVEL", logLevel))
-# log_pymyra.setLevel(pymyra_loglevel)
-# log = logging.getLogger("keyframe.gbot.gbot")
-# rootLog = logging.getLogger()
-# rootLog.setLevel(logging.INFO)
-#rootLog.setLevel(logging.DEBUG)
+log = logging.getLogger("keyframe.gbot.gbot")
 
 print("[%s] STEP 30" % (time.time(),), file=sys.stderr)
 
@@ -145,9 +118,12 @@ app.config['DEBUG'] = True
 
 print("[%s] STEP 50" % (time.time(),), file=sys.stderr)
 
-@app.route('/test')
-def app_test():
+@app.route('/logtest')
+def log_test():
     log.info("This is an info log")
+    logging.info("logging info")
+    logging.warn("logging warn")
+    log.info("this is a repeating sentence. "*100)
     return Response(), 200
 
 @app.route('/robots.txt')
@@ -836,11 +812,7 @@ def v2_intercom_submit_sheet():
 if __name__ == "__main__":
     usage = "gbot.py [cmd/http] [file/db] <accountId> <agentId> [file: <path to json spec>]"
     assert len(sys.argv) > 2, usage
-    #keyframe.logservice.resetRootHandler()
-    #logging.basicConfig()
-    #log.setLevel(int(os.getenv("GENERICBOT_LOGLEVEL", 20)))
-    #log.debug("debug log")
-    #log.info("info log")
+    keyframe.logservice.setupHandlers()
 
     d = {}
     cmd = sys.argv[1] # cmd/http/script

@@ -43,37 +43,6 @@ def createKeyframeHandler():
     #handler.setFormatter()
     return handler
 
-#handler = None
-# def getHandler():
-#     global handler
-#     if not handler:
-#         handler = createHandler()
-#     return handler
-
-# def _setupLogger(moduleName=None):
-#     logger = logging.getLogger(moduleName)
-#     logger.setLevel(LEVEL)
-
-#     handler = getHandler()
-#     formatter = logging.Formatter(LOG_FORMAT)
-#     handler.setFormatter(formatter)
-#     logger.addHandler(handler)
-#     return logger
-
-# Setup the logger for all modules under keyframe.
-# By setting up keyframe vs () (i.e. root), only myra modules will
-# use this - so we won't get info/debug logs from third party modules.
-#_logger = _setupLogger("keyframe")
-#_logger = _setupLogger()
-#_logger.setLevel(LEVEL)
-#_logger.debug("logging level DEBUG")
-#_logger.info("logging level INFO")
-#_logger.warn("logging level WARN")
-#_logger.error("logging level ERROR")
-
-def getLogger(moduleName):
-    return logging.getLogger(moduleName)
-
 def resetRootHandler():
     print("resetRootHandler called")
     global handler
@@ -83,7 +52,12 @@ def resetRootHandler():
     print("removed existing handlers from root_logger")
     #root_logger.addHandler(logging.NullHandler())
 
-def setupHandlers():
+def setupHandlers(
+        logFormat=LOG_FORMAT, rootLogLevel=logging.WARNING,
+        keyframeLogLevel=logging.INFO):
+    # Set up a single handler with the format LOG_FORMAT at the root.
+    # Make the root logger level WARNING so can see any warning from other libraries.
+    # Make the keyframe logger level INFO so all keyframe modules can 
     rootHandler = createKeyframeHandler()
     rootFormatter = logging.Formatter(LOG_FORMAT)
     rootHandler.setFormatter(rootFormatter)
@@ -91,13 +65,7 @@ def setupHandlers():
     rootLogger.setLevel(logging.WARNING)
     rootLogger.addHandler(rootHandler)
 
-    #keyframeHandler = createKeyframeHandler()
-    #keyframeFormatter = logging.Formatter(LOG_FORMAT)
-    #keyframeHandler.setFormatter(keyframeFormatter)
     keyframeLogger = logging.getLogger("keyframe")
     keyframeLogger.setLevel(LEVEL)
-    #keyframeLogger.addHandler(keyframeHandler)
 
 
-resetRootHandler()
-setupHandlers()
