@@ -117,6 +117,9 @@ Content.__new__.__defaults__ = ("0.1", [])
 Canvas = namedtuple("Canvas", ("content", "stored_data"))
 Canvas.__new__.__defaults__ = (Content(), {})
 
+LiveCanvas = namedtuple("LiveCanvas", ("content_url", "stored_data"))
+LiveCanvas.__new__.__defaults__ = (None, {})
+
 ComponentList = namedtuple("ComponentList", ("elements"))
 ComponentList.__new__.__defaults__ = ([],)
 

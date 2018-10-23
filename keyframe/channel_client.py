@@ -14,6 +14,7 @@ from slackclient import SlackClient
 from .intercom_client import IntercomClient
 from . import intercom_messenger
 from . import imlib
+from . import utils
 
 log = logging.getLogger(__name__)
 
@@ -401,6 +402,8 @@ class ChannelClientIntercomMsg(ChannelClientReturnResponse):
     def sendResponse(self, canonicalResponse):
         log.info("ChannelClientIntercomMsg.sendResponse(%s)", canonicalResponse)
         for rElem in canonicalResponse.responseElements:
+            # Must use uuid because id needs to be unique across multiple calls.
+            eId = utils.getUUID()
             log.info("rElem: %s", rElem)
             if not rElem.responseType or rElem.responseType == "response":
                 if rElem.type == messages.ResponseElement.TYPE_TEXT:
@@ -408,7 +411,8 @@ class ChannelClientIntercomMsg(ChannelClientReturnResponse):
                     t = rElem.text
                     if rElem.textList:
                         t = ' '.join(e.strip() for e in rElem.textList)
-                    c = intercom_messenger.getTextComponent(text=t)
+                    c = intercom_messenger.getTextComponent(
+                        text=t, id=f"text_response_{eId}")
                     self._addC(self.responses, c)
 
             if rElem.responseType in ("slotfill", "slotfillretry") or rElem.type == messages.ResponseElement.TYPE_SEARCH_RESULT:
@@ -417,7 +421,8 @@ class ChannelClientIntercomMsg(ChannelClientReturnResponse):
                     t = rElem.text
                     if rElem.textList:
                         t = ' '.join(e.strip() for e in rElem.textList)
-                    c = intercom_messenger.getTextInputComponent(label=t)
+                    c = intercom_messenger.getTextInputComponent(
+                        label=t, id=f"text_slotfill_{eId}")
                     self._addC(self.responses, c)
                 elif rElem.type == messages.ResponseElement.TYPE_OPTIONS:
                     log.info("TYPE_OPTIONS")
@@ -425,7 +430,8 @@ class ChannelClientIntercomMsg(ChannelClientReturnResponse):
                     if rElem.textList:
                         t = ' '.join(e.strip() for e in rElem.textList)
                     if t:
-                        c = intercom_messenger.getTextComponent(t)
+                        c = intercom_messenger.getTextComponent(
+                            t, id=f"options_slotfill_{eId}")
                         self._addC(self.responses, c)
                     if rElem.displayType == messages.ResponseElement.DISPLAY_TYPE_BUTTON_LIST:
                         c = intercom_messenger.getButtonComponent(
@@ -446,10 +452,17 @@ class ChannelClientIntercomMsg(ChannelClientReturnResponse):
                     aList = []
                     for sr in rElem.structuredResults:
                         if sr.get("doctype") == "kb":
-                            aList.append({"url":sr.get("url"), "title":sr.get("title"), "type":"kb"})
+                            snippet = sr.get("snippets")
+                            if not snippet:
+                                snippet = ""
+                            else:
+                                snippet = snippet[0]
+                            aList.append({"url":sr.get("url"), "title":sr.get("title"),
+                                          "type":"kb", "snippet":snippet})
                         elif sr.get("doctype") == "workflow":
                             aList.append(
-                                {"type":"workflow", "title":sr.get("title"), "workflowid":sr.get("workflowid")})
+                                {"type":"workflow", "title":sr.get("title") + " [wf]",
+                                 "workflowid":sr.get("workflowid"), "snippet":sr.get("body")})
                         else:
                             raise Exception("Unknown doctype: %s" % (sr.get("doctype"),))
                     r = intercom_messenger.getListComponent(aList)

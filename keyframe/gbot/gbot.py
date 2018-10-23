@@ -67,11 +67,11 @@ import keyframe.intercom_messenger as im_utils
 from keyframe.intercom_messenger import _pprint
 
 
-app = Flask(__name__)
-CORS(app, supports_credentials=True)
+#app = Flask(__name__)
+#CORS(app, supports_credentials=True)
 
 #app.config['DEBUG'] = True
-app.config['DEBUG'] = False
+#app.config['DEBUG'] = False
 
 #VERSION = "3.0.2"
 VERSION = keyframe.utils.getFromFileOrDefault(
@@ -724,9 +724,32 @@ def v2_intercom_configure():
     assert res is not None
     return Response(res), 200
 
+@app.route("/v2/intercom/sampleapp", methods=['GET', 'POST'])
+def sampleapp():
+    log.info("sampleapp called")
+    canvas = im_utils.getSampleAppCanvas()
+    log.info("canvas (%s): %s", type(canvas), canvas)
+    c2 = canvas.get("canvas")
+    #c2 = canvas.content
+    res = json.dumps(c2)
+    log.info("SAMPLEAPP returning: %s", res)
+    return Response(res), 200
+
+@app.route("/v2/intercom/startinit", methods=['GET', 'POST'])
+def startinit():
+    log.info("startinit called")
+    canvas = im_utils.getStartInitCanvas()
+    log.info("canvas (%s): %s", type(canvas), canvas)
+    c2 = canvas.get("canvas")
+    res = json.dumps(c2)
+    log.info("startinit returning: %s", res)
+    return Response(res), 200
 
 @app.route("/v2/intercom/submit", methods=['GET', 'POST'])
 def v2_intercom_submit():
+    return doIntercomMsg()
+
+def doIntercomMsg():
     requestStartTime = time.time()
     log.info("## submit ##")
     intercomEvent = request.json
@@ -772,6 +795,9 @@ def v2_intercom_submit():
     return Response(res), 200
 
 
+def v2_intercom_initializefisdks():
+    return doIntercomMsg()
+
 @app.route("/v2/intercom/initialize", methods=['GET', 'POST'])
 def v2_intercom_initialize():
     """
@@ -794,8 +820,10 @@ def v2_intercom_initialize():
     """
     log.info("## initialize ##")
     _pprint(request.json)
-    c = im_utils.getSampleAppCanvas()
+    c = im_utils.getLiveCanvas()
+    #c = im_utils.getSampleAppCanvas()
     res = json.dumps(c)
+    log.info("INITIALIZE returning: %s", res)
     return Response(res), 200
 
 @app.route("/v2/intercom/submit_sheet", methods=['GET', 'POST'])
@@ -858,4 +886,4 @@ if __name__ == "__main__":
         app.config["cmd_mode"] = cmd
         app.config["run_mode"] = runtype
         app.config["config_json"] = d
-        app.run(debug=False)  # default port is 5000
+        app.run(debug=True)  # default port is 5000

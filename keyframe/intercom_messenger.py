@@ -9,6 +9,7 @@ from os.path import expanduser, join
 #from flask import Flask, current_app, jsonify, make_response
 #from flask_cors import CORS, cross_origin
 import datetime
+from six import string_types
 
 from functools import wraps
 import yaml
@@ -38,7 +39,7 @@ from six.moves import range
 #import keyframe.widget_target
 
 import keyframe.imlib as imlib
-
+import keyframe.utils as utils
 
 #logging.basicConfig()
 log = logging.getLogger("keyframe.gbot.intercom_messenger")
@@ -88,16 +89,19 @@ def getTextComponent(text, id=None):
 
 def getSingleSelectComponent(label, values, id=None):
     # For now, do not allow value to be specified.
+    # Also, intercom does not allow more than 11 elements, so enforce that here.
     if not id:
         id = "myra_singleselect_component"
     options = []
     ctr = 0
     for v in values:
         o = imlib.SingleSelectOptionComponent(
-            id="option_%s" % (ctr,),
+            id="option_%s" % (utils.getUUID(),),
             text=v)
         options.append(o)
         ctr += 1
+        if ctr >= 11:
+            break
     c = imlib.SingleSelectComponent(
         id=id,
         label=label,
@@ -121,7 +125,7 @@ def getButtonComponent(values, style="primary", id=None):
     log.debug(buttons)
     return buttons
 
-def getTextInputComponent(label, id=None, placeholder=None, value=None):
+def getTextInputComponent(label, id=None, placeholder="", value=""):
     if not id:
         id = "myra_textinput_component"
     c = imlib.InputComponent(
@@ -151,6 +155,7 @@ def getListComponent(listItems):
         l.items.append(imlib.ListItemComponent(
             id=id,
             title=i.get("title"),
+            subtitle=i.get("snippet"),
             action=action))
         d[id] = {"workflowid":i.get("workflowid")}
         ctr += 1
@@ -162,16 +167,28 @@ def getInputFromAppRequest(appResponse):
     """Extract the text input from the response.
     """
     componentId = appResponse.get("component_id")
+    if not componentId or componentId == "button-start":
+        return "[topic=default]"
     v = appResponse.get("input_values", {}).get(componentId)
-    if v:
+    if v and (not componentId or not componentId.startswith("myra_singleselect")):
         return v
     canvasComponents = appResponse.get("current_canvas", {}).get("content", {}).get("components")
     for c in canvasComponents:
         if componentId == c.get("id"):
-            return c.get("label")
+            if componentId.startswith("myra_singleselect"):
+                for o in c.get("options"):
+                    if o.get("id") == v:
+                        return o.get("text")
+                raise Exception("Could not extract value from singleselect")
+            else:
+                return c.get("label")
     v = appResponse.get("current_canvas", {}).get("stored_data", {}).get(componentId)
     if v:
-        return v
+        if isinstance(v, string_types):
+            return v
+        elif isinstance(v, dict):
+            if "workflowid" in v:
+                return v["workflowid"]
     raise Exception("could not extract user input as text from request.")
 
 
@@ -192,13 +209,41 @@ def getTextCanvas(text):
     )
     return imlib.makeResponse(c)
 
+def getLiveCanvas():
+    c = imlib.LiveCanvas(
+        #content_url = "https://myra-dev.ngrok.io/v2/intercom/sampleapp")
+        content_url = "https://myra-dev.ngrok.io/v2/intercom/startinit")
+    return imlib.makeResponse(c)
+
+def getStartInitCanvas():
+    c = imlib.Canvas(
+        content = imlib.Content(
+            components = [
+                imlib.TextComponent(
+                    id="bot_text_msg",
+                    text="Click on the button below to ask a question.",
+                    style="header",
+                    align="left"
+                ),
+                imlib.ButtonComponent(
+                    id="button-start",
+                    label="Ask a question",
+                    style="primary",
+                    action=imlib.SubmitAction()
+                )
+            ]
+        )
+    )
+    return imlib.makeResponse(c)
+
+
 def getSampleAppCanvas():
     c = imlib.Canvas(
         content = imlib.Content(
             components = [
                 imlib.InputComponent(
                     id="user_question",  # This exact text is important for now.
-                    label="Whats your question?",
+                    label="Whats your questionasdf,asjflsak fjlaskfn alsdfkn?",
                     placeholder="I can't configure my dns ...",
                     value="",
                     action=imlib.SubmitAction()
