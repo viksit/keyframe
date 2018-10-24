@@ -7,6 +7,7 @@ import collections
 import logging
 import codecs
 import json
+from bs4 import BeautifulSoup
 
 from . import messages
 from . import fb
@@ -411,6 +412,7 @@ class ChannelClientIntercomMsg(ChannelClientReturnResponse):
                     t = rElem.text
                     if rElem.textList:
                         t = ' '.join(e.strip() for e in rElem.textList)
+                    t = BeautifulSoup(t, "html.parser").text
                     c = intercom_messenger.getTextComponent(
                         text=t, id=f"text_response_{eId}")
                     self._addC(self.responses, c)
@@ -421,6 +423,7 @@ class ChannelClientIntercomMsg(ChannelClientReturnResponse):
                     t = rElem.text
                     if rElem.textList:
                         t = ' '.join(e.strip() for e in rElem.textList)
+                    t = BeautifulSoup(t, "html.parser").text
                     c = intercom_messenger.getTextInputComponent(
                         label=t, id=f"text_slotfill_{eId}")
                     self._addC(self.responses, c)
@@ -429,6 +432,7 @@ class ChannelClientIntercomMsg(ChannelClientReturnResponse):
                     t = rElem.text
                     if rElem.textList:
                         t = ' '.join(e.strip() for e in rElem.textList)
+                    t = BeautifulSoup(t, "html.parser").text
                     if t:
                         c = intercom_messenger.getTextComponent(
                             t, id=f"options_slotfill_{eId}")
@@ -457,12 +461,16 @@ class ChannelClientIntercomMsg(ChannelClientReturnResponse):
                                 snippet = ""
                             else:
                                 snippet = snippet[0]
+                            snippet = BeautifulSoup(snippet, "html.parser").text
                             aList.append({"url":sr.get("url"), "title":sr.get("title"),
                                           "type":"kb", "snippet":snippet})
                         elif sr.get("doctype") == "workflow":
+                            snippet = sr.get("body")
+                            if snippet:
+                                snippet = BeautifulSoup(snippet, "html.parser").text
                             aList.append(
                                 {"type":"workflow", "title":sr.get("title") + " [wf]",
-                                 "workflowid":sr.get("workflowid"), "snippet":sr.get("body")})
+                                 "workflowid":sr.get("workflowid"), "snippet":snippet})
                         else:
                             raise Exception("Unknown doctype: %s" % (sr.get("doctype"),))
                     r = intercom_messenger.getListComponent(aList)
