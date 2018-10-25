@@ -91,3 +91,11 @@ def getUUID():
 def timestampUid():
     return "%i_%s" % (round(time.time()*1000), random.randint(0,1000))
 
+# Pretty-print (kind of) a dict.
+def pretty(d, indent=0):
+   for key, value in d.items():
+      print('\t' * indent + str(key))
+      if isinstance(value, dict):
+         pretty(value, indent+1)
+      else:
+         print('\t' * (indent+1) + str(value))

@@ -53,6 +53,9 @@ SubmitAction.__new__.__defaults__ = ("submit",)
 URLAction = namedtuple("URLAction", Action._fields + ("url",))
 URLAction.__new__.__defaults__ = ("url", None)
 
+SheetsAction = namedtuple("SheetsAction", Action._fields + ("url",))
+SheetsAction.__new__.__defaults__ = ("sheet", None)
+
 Component = namedtuple("Component", ("type,"))
 
 DividerComponent = namedtuple("DividerComponent", Component._fields)

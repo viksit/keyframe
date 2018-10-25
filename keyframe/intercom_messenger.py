@@ -18,7 +18,7 @@ import traceback
 import base64
 import logging
 from six.moves import range
-
+import urllib
 
 #import pymyra.api.inference_proxy_client as inference_proxy_client
 #import pymyra.api.inference_proxy_api as inference_proxy_api
@@ -62,6 +62,52 @@ https://myra-dev.ngrok.io/v2/intercom/initialize
 SUBMIT SHEET URL
 https://myra-dev.ngrok.io/v2/intercom/submit_sheet
 
+"""
+
+WIDGET_WEBPAGE = """
+<html>
+    <head>
+        <script src="//cdn-%(realm)s.myralabs.com/widget/v3/widget.dashboard.js"></script>
+    </head>
+    <body>
+        <script>
+         window.MyraConciergeSettings = {
+             container: 'concierge-widget',
+             accountId: '%(account_id)s',
+             agentId: '%(agent_id)s',
+             realm: '%(realm)s',
+             widgetVersion: '%(widget_version)s',
+             firstLoad: true,
+             customProps: {"testing-key1":"testing-value1"},  // it seems from empirical testing that this is important for the good and proper functioning of the widget.
+             position: 'myra-right',
+             popupByDefault: true
+         };
+        </script>
+        <script>
+         (function() {
+             var w = window;
+             var mcs = w.MyraConciergeSettings;
+             var d = document;
+             function l() {
+                 var s = d.createElement('script');
+                 s.type = 'text/javascript';
+                 s.src = '//cdn-%(realm)s.myralabs.com/widget/v3/widget.dashboard.js';
+                 s.onload = function() {
+                     window.MyraConcierge('init', window.MyraConciergeSettings);
+                 };
+                 var x = d.getElementsByTagName('script')[0];
+                 x.parentNode.insertBefore(s, x);
+             }
+             if (w.attachEvent) {
+                 w.attachEvent('onload', l);
+             } else {
+                 w.addEventListener('load', l, false);
+             }
+             l();
+         })();
+        </script>
+    </body>
+</html>
 """
 
 def _pprint(data):
@@ -173,6 +219,8 @@ def getInputFromAppRequest(appResponse):
     if v and (not componentId or not componentId.startswith("myra_singleselect")):
         return v
     canvasComponents = appResponse.get("current_canvas", {}).get("content", {}).get("components")
+    if not canvasComponents:
+        return "[topic=default]"
     for c in canvasComponents:
         if componentId == c.get("id"):
             if componentId.startswith("myra_singleselect"):
@@ -209,27 +257,43 @@ def getTextCanvas(text):
     )
     return imlib.makeResponse(c)
 
-def getLiveCanvas():
+def getLiveCanvas(requestUrl):
+    parts = urllib.parse.urlparse(requestUrl)
+    initUrl = urllib.parse.urlunparse(
+        #(parts[0], parts[1], "/v2/intercom/startinit", "", "", "")
+        ("https", parts[1], "/v2/intercom/startinit", "", "", "")
+    )
     c = imlib.LiveCanvas(
-        #content_url = "https://myra-dev.ngrok.io/v2/intercom/sampleapp")
-        content_url = "https://myra-dev.ngrok.io/v2/intercom/startinit")
+        content_url = initUrl
+    )
+
     return imlib.makeResponse(c)
 
-def getStartInitCanvas():
+def getStartInitCanvas(action1=None, action2=None, widgetUrl=None):
+    if not action1:
+        action1 = imlib.SubmitAction()
+    if not action2 and widgetUrl:
+        action2 = imlib.SheetsAction(url=widgetUrl)
     c = imlib.Canvas(
         content = imlib.Content(
             components = [
                 imlib.TextComponent(
                     id="bot_text_msg",
-                    text="Click on the button below to ask a question.",
+                    text="Click on the buttons below to ask a question.",
                     style="header",
                     align="left"
                 ),
                 imlib.ButtonComponent(
-                    id="button-start",
-                    label="Ask a question",
+                    id="button-app",
+                    label="Ask a question 1",
                     style="primary",
-                    action=imlib.SubmitAction()
+                    action=action1
+                ),
+                imlib.ButtonComponent(
+                    id="button-widget",
+                    label="Ask a question 2",
+                    style="primary",
+                    action=action2
                 )
             ]
         )

@@ -15,6 +15,7 @@ from flask import Flask, request, Response, send_from_directory
 from flask import Flask, current_app, jsonify, make_response
 from flask_cors import CORS, cross_origin
 import datetime
+import urllib
 
 print("[%s] STEP 10" % (time.time(),), file=sys.stderr)
 
@@ -63,7 +64,8 @@ from keyframe.genericbot import generic_bot
 from keyframe.genericbot import generic_bot_api
 from keyframe.genericbot import generic_cmdline
 
-import keyframe.intercom_messenger as im_utils
+#import keyframe.intercom_messenger as im_utils
+from keyframe import imlib
 from keyframe.intercom_messenger import _pprint
 
 
@@ -130,6 +132,29 @@ def log_test():
 def static_from_root():
     log.info("REQUEST /robots.txt")
     return send_from_directory(app.static_folder, request.path[1:])
+
+@app.route('/widget_page', methods=["GET", "POST"])
+def widget_page():
+    log.info("REQUEST /widget_page (%s, %s)", request.method, request.url)
+    #_pprint(request.json)
+    widgetPage = intercom_messenger.WIDGET_WEBPAGE.strip()
+    #widgetPage = open("%s/conf_widget_page.html" % (app.static_folder,)).read()
+    appId = request.args.get("app_id")
+    if not appId:
+        return Response("Could not get app_id"), 500
+    agentDeploymentMeta = getIntercomAgentDeploymentMeta(appId)
+    d = agentDeploymentMeta.get("concierge_meta")
+    d["realm"] = cfg.REALM
+    d["widget_version"] = "v2"
+    widgetPage = widgetPage % d
+    return widgetPage
+
+# For local testing in case of some problem with /widget_page
+@app.route('/widget_page_local', methods=["GET", "POST"])
+def widget_page_local():
+    log.info("REQUEST /widget_page_local (%s, %s)", request.method, request.url)
+    _pprint(request.json)
+    return send_from_directory(app.static_folder, "widget_page.html")
 
 @app.route("/version", methods=["GET"])
 def version():
@@ -705,6 +730,15 @@ def ping():
 
 #### ------- Intercom messenger app ----------------
 
+def getIntercomAgentDeploymentMeta(appId):
+    # agent_id: "ca006972df904823925d122383b4be54" => nishant-intercom-m-20180904-1 / nishant+dev@myralabs.com
+    #agentDeploymentMeta = {"connected": True, "access_token": "", "concierge_meta":{"account_id":"3rxCO9rydbBIf3DOMb9lFh", "agent_id": "ca006972df904823925d122383b4be54"}, "app_id": "cp6b0zl8"}
+    # agent_id: "2b91938a2b544322b63792c4024e12ae" (wpengine_v3-dev-20181018) / demo+dev@myralabs.com
+    #agentDeploymentMeta = {"connected": True, "access_token": "", "concierge_meta":{"account_id":"bd80e4cbc57f47178ef323b87fd4823d", "agent_id":"2b91938a2b544322b63792c4024e12ae"}, "app_id": "iv6ijpl5"}
+    # agent_id: "3c1b9fd4341c4be09a8e8a0172cff06a" (nishant-intercom-app-search-1) / nishant+dev@myralabs.com
+    agentDeploymentMeta = {"connected": True, "access_token": "", "concierge_meta":{"account_id":"3rxCO9rydbBIf3DOMb9lFh", "agent_id":"3c1b9fd4341c4be09a8e8a0172cff06a"}, "app_id": "iv6ijpl5"}
+    return agentDeploymentMeta
+
 @app.route("/v2/intercom/configure", methods=['GET', 'POST'])
 def v2_intercom_configure():
     log.info("## configure ##")
@@ -719,7 +753,7 @@ def v2_intercom_configure():
             "results": r
         })
     else:
-        canvas = im_utils.getConfigureCanvas()
+        canvas = intercom_messenger.getConfigureCanvas()
         res = json.dumps(canvas)
     assert res is not None
     return Response(res), 200
@@ -727,7 +761,7 @@ def v2_intercom_configure():
 @app.route("/v2/intercom/sampleapp", methods=['GET', 'POST'])
 def sampleapp():
     log.info("sampleapp called")
-    canvas = im_utils.getSampleAppCanvas()
+    canvas = intercom_messenger.getSampleAppCanvas()
     log.info("canvas (%s): %s", type(canvas), canvas)
     c2 = canvas.get("canvas")
     #c2 = canvas.content
@@ -738,7 +772,20 @@ def sampleapp():
 @app.route("/v2/intercom/startinit", methods=['GET', 'POST'])
 def startinit():
     log.info("startinit called")
-    canvas = im_utils.getStartInitCanvas()
+    log.info(request.json)
+    #contentUrl = request.json.get("canvas", {}).get("content_url")
+    #if not contentUrl:
+    #    raise Exception("Did not get expected canvas input.")
+    requestUrl = request.url
+    appId = request.json.get("app_id")
+    if not appId:
+        raise Exception("Did not find app_id")
+    parts = urllib.parse.urlparse(requestUrl)
+    widgetPageUrl = urllib.parse.urlunparse(
+        #(parts[0], parts[1], f"/widget_page?app_id={appId}", "", "", "")
+        ("https", parts[1], f"/widget_page?app_id={appId}", "", "", "")
+    )
+    canvas = intercom_messenger.getStartInitCanvas(widgetUrl=widgetPageUrl)
     log.info("canvas (%s): %s", type(canvas), canvas)
     c2 = canvas.get("canvas")
     res = json.dumps(c2)
@@ -763,12 +810,7 @@ def doIntercomMsg():
     # For now, just hardcode.
     #agentDeploymentMeta = ads.getJsonSpec(app_id, "intercom_messenger")
     #log.info("agentDeploymentMeta: %s", agentDeploymentMeta)
-    # agent_id: "ca006972df904823925d122383b4be54" => nishant-intercom-m-20180904-1 / nishant+dev@myralabs.com
-    #agentDeploymentMeta = {"connected": True, "access_token": "", "concierge_meta":{"account_id":"3rxCO9rydbBIf3DOMb9lFh", "agent_id": "ca006972df904823925d122383b4be54"}, "app_id": "cp6b0zl8"}
-    # agent_id: "2b91938a2b544322b63792c4024e12ae" (wpengine_v3-dev-20181018) / demo+dev@myralabs.com
-    #agentDeploymentMeta = {"connected": True, "access_token": "", "concierge_meta":{"account_id":"bd80e4cbc57f47178ef323b87fd4823d", "agent_id":"2b91938a2b544322b63792c4024e12ae"}, "app_id": "iv6ijpl5"}
-    # agent_id: "3c1b9fd4341c4be09a8e8a0172cff06a" (nishant-intercom-app-search-1) / nishant+dev@myralabs.com
-    agentDeploymentMeta = {"connected": True, "access_token": "", "concierge_meta":{"account_id":"3rxCO9rydbBIf3DOMb9lFh", "agent_id":"3c1b9fd4341c4be09a8e8a0172cff06a"}, "app_id": "iv6ijpl5"}
+    agentDeploymentMeta = getIntercomAgentDeploymentMeta(app_id)
     if not agentDeploymentMeta:
         log.warn("No agent for app_id: %s. Dropping this event.", app_id)
         return Response(json.dumps({"msg":"bad app_id"})), 500
@@ -776,9 +818,9 @@ def doIntercomMsg():
     resp = _intercom_msg_agent_handler(agentDeploymentMeta, request.json, app_id)
     log.info("resp: %s", resp)
     #if (component_id == "button-back"):
-    #canvas = im_utils.getSampleAppCanvas()
+    #canvas = intercom_messenger.getSampleAppCanvas()
     #else:
-    #    canvas = im_utils.getSearchResultsCanvas()
+    #    canvas = intercom_messenger.getSearchResultsCanvas()
     #res = json.dumps(canvas)
     res = json.dumps(resp)
     log.info("-- response --")
@@ -820,8 +862,10 @@ def v2_intercom_initialize():
     """
     log.info("## initialize ##")
     _pprint(request.json)
-    c = im_utils.getLiveCanvas()
-    #c = im_utils.getSampleAppCanvas()
+    #keyframe.utils.pretty(request.__dict__)
+    log.info("URL: %s", request.url)
+    c = intercom_messenger.getLiveCanvas(request.url)
+    #c = intercom_messenger.getSampleAppCanvas()
     res = json.dumps(c)
     log.info("INITIALIZE returning: %s", res)
     return Response(res), 200

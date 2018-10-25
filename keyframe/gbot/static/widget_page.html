@@ -8,20 +8,9 @@
         <script>
          window.MyraConciergeSettings = {
              container: 'concierge-widget',
-             
-             // prod agent for convflow demo
-             accountId: '3rxCO9rydbBIf3DOMb9lFh',  // nishant+dev@myralabs.com  
-             //accountId: 'bd80e4cbc57f47178ef323b87fd4823d',  // demo+dev@myralabs.com
-             //agentId: '8d5c4d5d319647e19d3d41d97a4069de',
-             //agentId: '10d2e63e2888481286de037258cb0bc9',  // digitalocean-dev-1-20180815
-             // agentId: 'c6f3611f06c949b7a22bbe188d1a805b',  // wpengine_v3-dev-3 (nishant+dev)
-             agentId: '3c1b9fd4341c4be09a8e8a0172cff06a',  // nishant-intercom-app-search-1
-             // agentId: 'default',
-             // agentId: '98a43a145a6b4164bdd81f0065d21a60',  // wpengine-demo
+             accountId: '3rxCO9rydbBIf3DOMb9lFh',
+             agentId: '3c1b9fd4341c4be09a8e8a0172cff06a',
              realm: 'dev',
-             //accountId: '7BbmKJgxsMKRuAcBjNA1Zo',
-             //agentId: '259f09c9603a4743bcbbd22cc7f9dc42', 
-             //realm: 'dev',
              widgetVersion: 'v2',
              firstLoad: true,
              customProps: {"testing-key1":"testing-value1"},
@@ -37,10 +26,6 @@
              function l() {
                  var s = d.createElement('script');
                  s.type = 'text/javascript';
-                 //s.async = true;
-                 //s.src = '//ml-static-dev.s3-website-us-west-2.amazonaws.com/widget/v3/widget.wpengine.js';
-                 //s.src = '//ml-static-dev.s3-website-us-west-2.amazonaws.com/widget/v3/widget.c1234.js';
-                 //s.src = '//ml-static-dev.s3-website-us-west-2.amazonaws.com/widget/v3/widget.dashboard.js';
                  s.src = '//cdn-dev.myralabs.com/widget/v3/widget.dashboard.js';
                  s.onload = function() {
                      window.MyraConcierge('init', window.MyraConciergeSettings);
