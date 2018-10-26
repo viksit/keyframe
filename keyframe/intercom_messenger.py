@@ -285,13 +285,13 @@ def getStartInitCanvas(action1=None, action2=None, widgetUrl=None):
                 ),
                 imlib.ButtonComponent(
                     id="button-app",
-                    label="Ask a question 1",
+                    label="Use the native app to ask a question",
                     style="primary",
                     action=action1
                 ),
                 imlib.ButtonComponent(
                     id="button-widget",
-                    label="Ask a question 2",
+                    label="Use the inapp widget to ask a question",
                     style="primary",
                     action=action2
                 )
@@ -317,15 +317,34 @@ def getSampleAppCanvas():
     )
     return imlib.makeResponse(c)
 
-def getConfigureCanvas():
+def getConfigureCanvas(msg):
     c = imlib.Canvas(
         content=imlib.Content(
             components=[
+                imlib.TextComponent(
+                    id="myra_config_msg",
+                    text=msg,
+                    style="header",
+                    align="left"
+                ),
                 imlib.InputComponent(
-                    id="user_myra_config",
-                    label="Enter your myra configuration ID",
-                    placeholder="something ID",
-                    value="",
+                    id="account_id",
+                    label="Myra Account Id",
+                    placeholder="Account Id",
+                    value=""
+                    #action=imlib.SubmitAction()
+                ),
+                imlib.InputComponent(
+                    id="account_secret",
+                    label="Myra Account Secret",
+                    placeholder="Account Secret",
+                    value=""
+                    #action=imlib.SubmitAction()
+                ),
+                imlib.ButtonComponent(
+                    id="button_config_submit",
+                    label="Submit",
+                    style="primary",
                     action=imlib.SubmitAction()
                 )
             ]

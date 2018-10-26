@@ -83,6 +83,10 @@ class Config(object):
 
     DB_CONN_STRING = "dbname='myra_db_dev' user='myraadmin' host='myra-db-dev.cihwyaszqq2o.us-west-2.rds.amazonaws.com' password='RZ4KvefI3f9e'"
 
+    INTERCOM_SIGNUP_MSG = """
+Thanks for installing Myra. If you have an account with us, please enter your credentials here. If not, please contact sales@myralabs.com for an account / go to myralabs.com/signup (https://myralabs.com/signup) to create a new one.
+    """
+    
 class DevConfig(Config):
     pass
 

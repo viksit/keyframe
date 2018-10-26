@@ -729,6 +729,27 @@ def ping():
 
 
 #### ------- Intercom messenger app ----------------
+def getIntercomAgentDeploymentMeta(appId):
+    ads = bot_stores.AgentDeploymentStore(kvStore=getKVStore())
+    m = ads.getJsonSpec(appId, "intercom_msg_map")
+    # TODO: now get the actual meta
+    if agentDeploymentMeta:
+        log.info("got agentDeploymentMeta from intercom_msg: %s", agentDeploymentMeta)
+    else:
+        agentDeploymentMeta = ads.getJsonSpec(appId, "intercom")
+        log.warn("got agentDeploymentMeta from intercom: %s", agentDeploymentMeta)
+    return agentDeploymentMeta
+
+def putIntercomAppIdAccountIdMap(appId, accountId, accountSecret):
+    ads = bot_stores.AgentDeploymentStore(kvStore=getKVStore())
+    # Below is the same format as the json for "intercom" to help transition testing.
+    jsonSpec = {"concierge_meta":
+                {"app_id":appId,
+                 "account_id":accountId,
+                 "account_secret":accountSecret}}
+    ads.putJsonSpec(appId, "intercom_msg_map", jsonSpec)
+
+
 
 def getIntercomAgentDeploymentMeta(appId):
     # agent_id: "ca006972df904823925d122383b4be54" => nishant-intercom-m-20180904-1 / nishant+dev@myralabs.com
@@ -736,9 +757,25 @@ def getIntercomAgentDeploymentMeta(appId):
     # agent_id: "2b91938a2b544322b63792c4024e12ae" (wpengine_v3-dev-20181018) / demo+dev@myralabs.com
     #agentDeploymentMeta = {"connected": True, "access_token": "", "concierge_meta":{"account_id":"bd80e4cbc57f47178ef323b87fd4823d", "agent_id":"2b91938a2b544322b63792c4024e12ae"}, "app_id": "iv6ijpl5"}
     # agent_id: "3c1b9fd4341c4be09a8e8a0172cff06a" (nishant-intercom-app-search-1) / nishant+dev@myralabs.com
-    agentDeploymentMeta = {"connected": True, "access_token": "", "concierge_meta":{"account_id":"3rxCO9rydbBIf3DOMb9lFh", "agent_id":"3c1b9fd4341c4be09a8e8a0172cff06a"}, "app_id": "iv6ijpl5"}
+    agentDeploymentMeta = {"connected": True, "access_token": "",
+                           "concierge_meta":{"account_id":"3rxCO9rydbBIf3DOMb9lFh",
+                                             "agent_id":"3c1b9fd4341c4be09a8e8a0172cff06a"},
+                           "app_id": "iv6ijpl5"}
     return agentDeploymentMeta
 
+def checkIntercomMsgConfigure(accountId, accountSecret):
+    """Return tuple of string and http status code to return.
+    """
+    # TODO: check validity and store to AgentDeploymentStore.
+    ads = bot_stores.AgentDeploymentStore(kvStore=getKVStore())
+    adm = ads.getJsonSpec(accountId, "intercom_msg")
+    if not (adm and adm.get("concierge_meta", {}).get("account_id") == accountId and adm.get("concierge_meta", {}).get("account_secret") == accountSecret):
+        log.warn("accountId: %s, accountSecret: %s. BUT adm: %s", accountId, accountSecret, adm)
+        return ("Must have valid Myra account_id and account_secret and have an agent deployed for Intercom Msg", 500)
+    return ("ok", 200)
+
+# TODO: The config is checked against the effects of this api call to create a default agent for intercom_msg.
+# curl -v "http://localhost:7091/api/internal/activate_agent_on_channel?agent_id=3c1b9fd4341c4be09a8e8a0172cff06a&channel=intercom_msg&user_id=3rxCO9rydbBIf3DOMb9lFh"
 @app.route("/v2/intercom/configure", methods=['GET', 'POST'])
 def v2_intercom_configure():
     log.info("## configure ##")
@@ -748,12 +785,21 @@ def v2_intercom_configure():
         log.info("here", request.json.get("input_values"))
         # This is the second configure call
         # Send back a result to deploy this application
-        r = request.json.get("input_values")
-        res = json.dumps({
-            "results": r
-        })
+        appId = request.json.get("app_id")
+        assert appId, "Nothing can happen without app_id"
+        iv = request.json.get("input_values")
+        accountId = iv.get("account_id")
+        accountSecret = iv.get("account_secret")
+        if not accountId or accountSecret:
+            return Response("Must specify account_id and account_secret"), 500
+        r = checkIntercomMsgConfigure(accountId, accountSecret)
+        if r[1] != 200:
+            return Response(r[0]), r[1]
+        # Things check out. Now add app_id -> user_id mapping.
+        putIntercomAppIdAccountIdMap(appId, accountId, accountSecret)
+        res = json.dumps({"status":"ok"})
     else:
-        canvas = intercom_messenger.getConfigureCanvas()
+        canvas = intercom_messenger.getConfigureCanvas(cfg.INTERCOM_SIGNUP_MSG)
         res = json.dumps(canvas)
     assert res is not None
     return Response(res), 200
