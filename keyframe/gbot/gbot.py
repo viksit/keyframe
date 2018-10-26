@@ -804,10 +804,12 @@ def v2_intercom_configure():
         iv = request.json.get("input_values")
         accountId = iv.get("account_id")
         accountSecret = iv.get("account_secret")
-        if not accountId or accountSecret:
+        if not (accountId and accountSecret):
+            log.warn("Must specify both account_id and account_secret")
             return Response("Must specify account_id and account_secret"), 500
         r = checkIntercomMsgConfigure(accountId, accountSecret)
         if r[1] != 200:
+            log.warn("check failed. (%s)", r)
             return Response(r[0]), r[1]
         # Things check out. Now add app_id -> user_id mapping.
         putIntercomAppIdAccountIdMap(appId, accountId, accountSecret)
