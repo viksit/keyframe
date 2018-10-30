@@ -334,13 +334,13 @@ def getConfigureCanvas(msg):
                     value=""
                     #action=imlib.SubmitAction()
                 ),
-                imlib.InputComponent(
-                    id="account_secret",
-                    label="Myra Account Secret",
-                    placeholder="Account Secret",
-                    value=""
-                    #action=imlib.SubmitAction()
-                ),
+                # imlib.InputComponent(
+                #     id="account_secret",
+                #     label="Myra Account Secret",
+                #     placeholder="Account Secret",
+                #     value=""
+                #     #action=imlib.SubmitAction()
+                # ),
                 imlib.ButtonComponent(
                     id="button_config_submit",
                     label="Submit",

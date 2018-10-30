@@ -145,7 +145,7 @@ def widget_page():
     agentDeploymentMeta = getIntercomAgentDeploymentMeta(appId)
     d = agentDeploymentMeta.get("concierge_meta")
     d["realm"] = cfg.REALM
-    d["widget_version"] = "v2"
+    #d["widget_version"] = "v3  # Now widget_version is in d from agentDeploymentMeta
     widgetPage = widgetPage % d
     return widgetPage
 
@@ -775,7 +775,7 @@ def getIntercomAgentDeploymentMetaTest(appId):
                            "app_id": "iv6ijpl5"}
     return agentDeploymentMeta
 
-def checkIntercomMsgConfigure(accountId, accountSecret, agentDeploymentMeta=None):
+def checkIntercomMsgConfigure(accountId, accountSecret=None, agentDeploymentMeta=None):
     """Return tuple of string and http status code to return.
     """
     # TODO: check validity and store to AgentDeploymentStore.
@@ -783,7 +783,10 @@ def checkIntercomMsgConfigure(accountId, accountSecret, agentDeploymentMeta=None
     if not adm:
         ads = bot_stores.AgentDeploymentStore(kvStore=getKVStore())
         adm = ads.getJsonSpec(accountId, "intercom_msg")
-    if not (adm and adm.get("concierge_meta", {}).get("account_id") == accountId and adm.get("concierge_meta", {}).get("account_secret") == accountSecret):
+    if not (adm
+            and adm.get("concierge_meta", {}).get("account_id") == accountId
+            #and adm.get("concierge_meta", {}).get("account_secret") == accountSecret
+            and True):
         log.warn("accountId: %s, accountSecret: %s. BUT adm: %s", accountId, accountSecret, adm)
         return ("Must have valid Myra account_id and account_secret and have an agent deployed for Intercom Msg", 500)
     return ("ok", 200)
@@ -804,16 +807,19 @@ def v2_intercom_configure():
         iv = request.json.get("input_values")
         accountId = iv.get("account_id")
         accountSecret = iv.get("account_secret")
-        if not (accountId and accountSecret):
-            log.warn("Must specify both account_id and account_secret")
-            return Response("Must specify account_id and account_secret"), 500
+        # if not (accountId and accountSecret):
+        #     log.warn("Must specify both account_id and account_secret")
+        #     return Response("Must specify account_id and account_secret"), 500
         r = checkIntercomMsgConfigure(accountId, accountSecret)
         if r[1] != 200:
             log.warn("check failed. (%s)", r)
-            return Response(r[0]), r[1]
-        # Things check out. Now add app_id -> user_id mapping.
-        putIntercomAppIdAccountIdMap(appId, accountId, accountSecret)
-        res = json.dumps({"results": request.json.get("input_values")})
+            canvas = intercom_messenger.getConfigureCanvas(
+                msg="Your credentials could not be validated. Please make sure your account_id is correct and your account is active.")
+            res = json.dumps(canvas)
+        else:
+            # Things check out. Now add app_id -> user_id mapping.
+            putIntercomAppIdAccountIdMap(appId, accountId, accountSecret)
+            res = json.dumps({"results": request.json.get("input_values")})
     else:
         canvas = intercom_messenger.getConfigureCanvas(cfg.INTERCOM_SIGNUP_MSG)
         res = json.dumps(canvas)
