@@ -945,6 +945,19 @@ def v2_intercom_submit_sheet():
     res = json.dumps({})
     return Response(res), 200
 
+@app.route("/v2/intercom/debug", methods=['GET'])
+def intercom_debug():
+    appId = request.args.get("app_id")
+    if not appId:
+        return Response("Could not get app_id"), 500
+    appIdAccountIdMap = getIntercomAppIdAccountIdMap(appId)
+    agentDeploymentMeta = getIntercomAgentDeploymentMeta(appId)
+    ret = {
+        "appIdAccountIdMap": appIdAccountIdMap,
+        "agentDeploymentMeta": agentDeploymentMeta
+        }
+    return jsonify(ret)
+
 ########### ---- end intercom configuration ------ #############3
 
 
