@@ -1,24 +1,50 @@
 # Keyframe
 
+## Intercom messenger integration
 
+Intercom app webhooks are set up on intercom. They are:
+/v2/intercom/configure:
+Called when user is adding the app to their intercom widget.
+We configure our intercom integration by asking for the account_id and adding the mapping
+from the intercom_app_id to the account_id.
+Currently we check for the account_id having an agent for Intercom already configured. If an agent is not configured, all intercom webhook calls by the app will fail.
 
-## Intercom messenger app for keyframe
+/v2/intercom/initialize: 
+Called when a new user is to be shown the app. It seems to be cached so if this webhook
+is changed, it may not have much effect. To get around this, we send back a 'LiveCanvas',
+which is essentially a url that gets called every time (like initialize should have been...).
+Note that we have to send back a LiveCanvas, *not* the contents of the endpoint below directly. (They will be cached and so we will not be able to change them.)
+Currently we send back /v2/intercom/startinit, so effectively
+/v2/intercom/initialize -> /v2/intercom/startinit.
 
-./start_kf.sh to start local keyframe
-./start_ngrok.sh to start ngrok tunnels
+/v2/intercom/startinit:
+Sends back 2 buttons.
+Button1: A submit that starts the native app. (/v2/intercom/submit)
+Button2: A 'SheetsAction' which points to /widget_page which is a html page with our widget,
+set to open at the start. By using the app_id, we get the IntercomAgentDeploymentMeta dict,
+and then substitute in the page the accountId and agentId and our widget then start up.
+
+/v2/intercom/submit:
+Gets called for the native app, and we parse out the input and feed it in as a call to
+/run_agent2. Not used for the non-native iframe widget.
+
+## Testing intercom app integration
+
+./start.sh to start local keyframe
+./start_ngrok.sh to start ngrok tunnels that are set up as webhooks in intercom app.
 
 Go to myra-widget.
 npm start
 
-localhost:8080/intercom.html
+localhost:8080/intercom_msg.html
 
 use the sample integration there.
 
-## On Intercom web site
+### On Intercom web site
 Login
 Click on 'App Store' (the icon with 3 squares and a +).
 There should be a link to 'build your own app' at the top. Click it.
-That should open up this link: https://app.intercom.com/a/apps/vlvh6qvv/developer-hub
+That should open up this link: https://app.intercom.com/a/apps/<app-id>/developer-hub
 (In case going to this link directly does not work..)
 
 
