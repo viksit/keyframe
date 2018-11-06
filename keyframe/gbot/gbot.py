@@ -826,6 +826,8 @@ def v2_intercom_configure():
     assert res is not None
     return Response(res), 200
 
+# Used for testing intercom integration by having a bunch of buttons that test
+# different functionalities of intercom apps.
 @app.route("/v2/intercom/sampleapp", methods=['GET', 'POST'])
 def sampleapp():
     log.info("sampleapp called")
