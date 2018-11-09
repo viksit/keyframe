@@ -62,7 +62,10 @@ class GenericSlot(keyframe.slot_fill.Slot):
         if type(self.promptMsg) == list:
             m = self.promptMsg[random.randint(0, len(self.promptMsg) - 1)]
         ed = self._entitiesDict(botState)
-        log.debug("ed: %s", ed)
+        # TODO(nishant): This is a temporary fix for the userMessages break!
+        ed['userMessages'] = {}
+        log.info("m: %s", m)
+        log.info("ed: %s", ed)
         responseMsg = Template(m).render(ed)
         return responseMsg
 
