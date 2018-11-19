@@ -5,6 +5,8 @@ set -o pipefail
 set -o xtrace
 set -o errexit
 
+REALM=${REALM:-"dev"}
+
 pushd ~/work/keyframe
 #source keyframevenv/bin/activate
 set -o nounset
@@ -20,6 +22,6 @@ echo "${KEYFRAME_VERSION}" > keyframe_version.txt
 # ImportError: bad magic number in 'pymyra.api.client'
 # Try to clean things out before the deploy.
 find . -name "*.pyc" -exec rm {} ';'
-zappa update dev  # This does return a non-zero exit code if deploy fails.
+zappa update ${REALM}  # This does return a non-zero exit code if deploy fails.
 
 popd
