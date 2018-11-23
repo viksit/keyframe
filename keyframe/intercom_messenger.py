@@ -317,7 +317,7 @@ def getSampleAppCanvas():
     )
     return imlib.makeResponse(c)
 
-def getConfigureCanvas(msg):
+def getConfigureCanvasOld1(msg):
     c = imlib.Canvas(
         content=imlib.Content(
             components=[
@@ -344,6 +344,53 @@ def getConfigureCanvas(msg):
                 imlib.ButtonComponent(
                     id="button_config_submit",
                     label="Submit",
+                    style="primary",
+                    action=imlib.SubmitAction()
+                )
+            ]
+        ))
+    return imlib.makeResponse(c)
+
+
+def getNoInstallCanvas():
+    c = imlib.Canvas(
+        content=imlib.Content(
+            components=[
+                imlib.TextComponent(
+                    id="myra_config_msg",
+                    text="Your Myra account does not exist or is not active. Please have an active Myra account and then try again.",
+                    style="header",
+                    align="left"
+                ),
+                imlib.ButtonComponent(
+                    id="button_install_cancel",
+                    label="OK",
+                    style="primary",
+                    action=imlib.SubmitAction()
+                )
+            ]
+        ))
+    return imlib.makeResponse(c)
+
+def getInstallOkCancelCanvas(msg):
+    c = imlib.Canvas(
+        content=imlib.Content(
+            components=[
+                imlib.TextComponent(
+                    id="myra_config_msg",
+                    text="Your Myra account is ready to deploy. Confirm?",
+                    style="header",
+                    align="left"
+                ),
+                imlib.ButtonComponent(
+                    id="button_install_ok",
+                    label="OK",
+                    style="primary",
+                    action=imlib.SubmitAction()
+                ),
+                imlib.ButtonComponent(
+                    id="button_install_cancel",
+                    label="Cancel",
                     style="primary",
                     action=imlib.SubmitAction()
                 )

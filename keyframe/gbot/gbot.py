@@ -729,7 +729,13 @@ def ping():
 
 
 #### ------- Intercom messenger app ----------------
-def getIntercomAgentDeploymentMeta(appId, doCheck=True):
+
+def getIntercomAgentDeploymentMeta(appId):
+    ads = bot_stores.AgentDeploymentStore(kvStore=getKVStore())
+    agentDeploymentMeta = ads.getJsonSpec(appId, "intercom_msg")
+    return agentDeploymentMeta
+
+def getIntercomAgentDeploymentMetaX(appId, doCheck=True):
     appIdAccountIdMap = getIntercomAppIdAccountIdMap(appId)
     log.info("got appIdAccountIdMap from intercom_msg: %s", appIdAccountIdMap)
     if not appIdAccountIdMap:
@@ -737,7 +743,7 @@ def getIntercomAgentDeploymentMeta(appId, doCheck=True):
         return None
     accountId = appIdAccountIdMap.get("concierge_meta", {}).get("account_id")
     accountSecret = appIdAccountIdMap.get("concierge_meta", {}).get("account_secret")
-    
+
     ads = bot_stores.AgentDeploymentStore(kvStore=getKVStore())
     agentDeploymentMeta = ads.getJsonSpec(accountId, "intercom_msg")
     if doCheck:
@@ -795,6 +801,33 @@ def checkIntercomMsgConfigure(accountId, accountSecret=None, agentDeploymentMeta
 # curl -v "http://localhost:7091/api/internal/activate_agent_on_channel?agent_id=3c1b9fd4341c4be09a8e8a0172cff06a&channel=intercom_msg&user_id=3rxCO9rydbBIf3DOMb9lFh"
 @app.route("/v2/intercom/configure", methods=['GET', 'POST'])
 def v2_intercom_configure():
+    log.info("v2_intercom_configure: %s", request.json)
+    res = None
+    if request.json.get("component_id") == "button_install_ok":
+        # This is the install 'OK'
+        res = json.dumps({"results": {"option1":"value1"}})
+    elif request.json.get("component_id") == "button_install_cancel":
+        return Response(), 500
+    else:
+        # This is the first configure call.
+        appId = request.json.get("app_id")
+        adm = getIntercomAgentDeploymentMeta(appId)
+        log.info("IntercomAgentDeploymentMeta: %s", adm)
+        if (not adm
+            or not adm.get("concierge_meta", {}).get("agent_id")):
+            canvas = intercom_messenger.getNoInstallCanvas()
+                #msg="Make sure you have an active Myra account and a default agent.")
+            res = json.dumps(canvas)
+        else:
+            # Configuration is complete
+            canvas = intercom_messenger.getInstallOkCancelCanvas("")
+            res = json.dumps(canvas)
+            #res = json.dumps({"results": {"status":"ok"}})
+    log.info("returning response: %s", res)
+    return Response(res), 200
+
+
+def v2_intercom_configure_old():
     log.info("## configure ##")
     res = None
     _pprint(request.json)
@@ -901,7 +934,7 @@ def doIntercomMsg():
     #_tmp1 = intercom_messenger.getSampleAppCanvas()
     #res = json.dumps(_tmp1)
     #log.info("res: %s", res)
-    
+
     requestEndTime = time.time()
     log.info("REQUEST TIME: %s", requestEndTime - requestStartTime)
     return Response(res), 200
