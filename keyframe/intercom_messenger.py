@@ -67,7 +67,7 @@ https://myra-dev.ngrok.io/v2/intercom/submit_sheet
 WIDGET_WEBPAGE = """
 <html>
     <head>
-        <script src="//cdn-%(realm)s.myralabs.com/widget/v3/widget.dashboard.js"></script>
+        <script src="//cdn-%(realm)s.myralabs.com/widget/v3/widget.selfserve.js"></script>
     </head>
     <body>
         <script>
@@ -91,7 +91,7 @@ WIDGET_WEBPAGE = """
              function l() {
                  var s = d.createElement('script');
                  s.type = 'text/javascript';
-                 s.src = '//cdn-%(realm)s.myralabs.com/widget/v3/widget.dashboard.js';
+                 s.src = '//cdn-%(realm)s.myralabs.com/widget/v3/widget.selfserve.js';
                  s.onload = function() {
                      window.MyraConcierge('init', window.MyraConciergeSettings);
                  };

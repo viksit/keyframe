@@ -144,8 +144,9 @@ def widget_page():
         return Response("Could not get app_id"), 500
     agentDeploymentMeta = getIntercomAgentDeploymentMeta(appId)
     d = agentDeploymentMeta.get("concierge_meta")
+    if "widget_version" not in d:
+        d["widget_version"] = "v3"
     d["realm"] = cfg.REALM
-    #d["widget_version"] = "v3  # Now widget_version is in d from agentDeploymentMeta
     widgetPage = widgetPage % d
     return widgetPage
 
