@@ -70,6 +70,7 @@ WIDGET_WEBPAGE = """
         <script src="//cdn-%(realm)s.myralabs.com/widget/v3/widget.selfserve.js"></script>
     </head>
     <body>
+        <button id="hiddenctabutton" type="submit" style="display:none;"/>
         <script>
          window.MyraConciergeSettings = {
              container: 'concierge-widget',
@@ -80,6 +81,7 @@ WIDGET_WEBPAGE = """
              firstLoad: true,
              customProps: {"testing-key1":"testing-value1"},  // it seems from empirical testing that this is important for the good and proper functioning of the widget.
              position: 'myra-right',
+             ctaElement: '#hiddenctabutton',
              popupByDefault: true
          };
         </script>
