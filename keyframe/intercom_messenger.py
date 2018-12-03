@@ -319,7 +319,7 @@ def getSampleAppCanvas():
     )
     return imlib.makeResponse(c)
 
-def getConfigureCanvasOld1(msg):
+def getConfigureCanvas(msg):
     c = imlib.Canvas(
         content=imlib.Content(
             components=[

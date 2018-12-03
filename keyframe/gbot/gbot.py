@@ -736,7 +736,10 @@ def getIntercomAgentDeploymentMeta(appId):
     agentDeploymentMeta = ads.getJsonSpec(appId, "intercom_msg")
     return agentDeploymentMeta
 
-def getIntercomAgentDeploymentMetaX(appId, doCheck=True):
+# This version used an intermediate map to map appid -> accountid, and then
+# got the agent json. After we switched to oauth, we go directly from
+# appid -> agent json because the appid is configured in the dashboard via oauth.
+def getIntercomAgentDeploymentMetaUsingMap(appId, doCheck=True):
     appIdAccountIdMap = getIntercomAppIdAccountIdMap(appId)
     log.info("got appIdAccountIdMap from intercom_msg: %s", appIdAccountIdMap)
     if not appIdAccountIdMap:
@@ -828,7 +831,10 @@ def v2_intercom_configure():
     return Response(res), 200
 
 
-def v2_intercom_configure_old():
+# This version asked the Intercom user for the Myra account_id and account_secret.
+# Now we are using oauth to connect this user / app to the Myra account.
+# This was attached to the /v2/intercom/configure route before (I think).
+def v2_intercom_configure_acctid_secret_version():
     log.info("## configure ##")
     res = None
     _pprint(request.json)
