@@ -141,17 +141,18 @@ class CanonicalResponse(object):
 class ResponseMeta(object):
     def __init__(self, apiResult=None, newTopic=None, topicId=None,
                  actionObjectInstanceId=None, searchAPIResult=None,
-                 zendeskTicketUrl=None):
+                 zendeskTicketUrl=None, tags=None):
         self.apiResult = apiResult
         self.newTopic = newTopic
         self.topicId = topicId
         self.actionObjectInstanceId = actionObjectInstanceId
         self.searchAPIResult = searchAPIResult
         self.zendeskTicketUrl = zendeskTicketUrl
+        self.tags = tags
 
     def __repr__(self):
-        return "ResponseMeta(apiResult=%s, newTopic=%s, topicId=%s, actionObjectInstanceId=%s, searchAPIResult=%s, zendeskTicketUrl=%s)" % (
-            self.apiResult, self.newTopic, self.topicId, self.actionObjectInstanceId, self.searchAPIResult, self.zendeskTicketUrl)
+        return "ResponseMeta(apiResult=%s, newTopic=%s, topicId=%s, actionObjectInstanceId=%s, searchAPIResult=%s, zendeskTicketUrl=%s, tags=%s)" % (
+            self.apiResult, self.newTopic, self.topicId, self.actionObjectInstanceId, self.searchAPIResult, self.zendeskTicketUrl, self.tags)
 
     def toJSON(self):
         d = None
@@ -172,7 +173,8 @@ class ResponseMeta(object):
                 "topicId":self.topicId,
                 "actionObjectInstanceId":self.actionObjectInstanceId,
                 "searchAPIResult":self.searchAPIResult,
-                "zendeskTicketUrl":self.zendeskTicketUrl}
+                "zendeskTicketUrl":self.zendeskTicketUrl,
+                "tags":self.tags}
 
 class ResponseElement(object):
     # These are to tell the client the type of response

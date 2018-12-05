@@ -107,6 +107,7 @@ class ActionObject(object):
         slotObjects = []
         for slotClass in slotClasses:
             sc = slotClass()
+            log.debug("creating sc: %s", sc)
             sc.entity = getattr(sc, "entity")
             sc.required = getattr(sc, "required")
             sc.parseOriginal = getattr(sc, "parseOriginal")
@@ -178,6 +179,8 @@ class ActionObject(object):
             slotObject.validated = slotData.get("validated")
             slotObject.state = slotData.get("state")
             slotObject.numTries = slotData.get("numTries")
+            slotObject.tags = slotData.get("tags")
+            log.debug("slotObject.tags assigned with %s", slotObject.tags)
 
     def resetSlots(self):
         for slotObject in self.slotObjects:
@@ -231,7 +234,7 @@ class ActionObject(object):
         # Each action object should have the following things stored
         # Slotobjects
         serializedSlotObjects = [i.toJSONObject() for i in self.slotObjects]
-        
+
         return {
             "actionObjectClassName": self.__class__.__name__,
             #"origIntentStr": self.originalIntentStr,
@@ -251,4 +254,3 @@ class ActionObject(object):
     #             intentStr=self.originalIntentStr,
     #             actionObjectInstanceId=self.instanceId))
     #     self.channelClient.sendResponse(cr)
-

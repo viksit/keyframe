@@ -77,7 +77,8 @@ class GenericSlot(keyframe.slot_fill.Slot):
             apiResult=self.apiResult,
             newTopic=self.newTopic,
             searchAPIResult=searchAPIResult,
-            zendeskTicketUrl=zendeskTicketUrl)
+            zendeskTicketUrl=zendeskTicketUrl,
+            tags=self.tags)
         if contentType == "text":
             cr = keyframe.messages.createTextResponse(
                 canonicalMsg,
@@ -98,7 +99,7 @@ class GenericSlot(keyframe.slot_fill.Slot):
             else:
                 cr = keyframe.messages.createSearchResponse(
                     canonicalMsg=canonicalMsg, searchResults=searchResults,
-                    responseType=responseType, 
+                    responseType=responseType,
                     responseMeta=responseMeta, botStateUid=botStateUid,
                     text=text)
         else:
@@ -159,7 +160,8 @@ class GenericTransferSlot(GenericSlot):
             responseMeta=keyframe.messages.ResponseMeta(
                 apiResult=self.apiResult,
                 newTopic=self.newTopic,
-                topicId=self.topicId),
+                topicId=self.topicId,
+                tags=self.tags),
             botStateUid=botState.getUid(),
             inputExpected=False)
         channelClient.sendResponse(cr)
@@ -223,7 +225,7 @@ class GenericIntentModelSlot(GenericSlot):
             return "__unknown__"
         if apiResult and apiResult.intent and apiResult.intent.label:
             return apiResult.intent.label
-    
+
         log.debug("Calling intent model")
         urlParams = {}
         # We now can't pass the whole canonicalMsg because we need to look at past slots.
@@ -275,7 +277,8 @@ class GenericInfoSlot(GenericSlot):
                 responseMeta=keyframe.messages.ResponseMeta(
                     apiResult=self.apiResult,
                     newTopic=self.newTopic,
-                    topicId=self.topicId),
+                    topicId=self.topicId,
+                    tags=self.tags),
                 botStateUid=botState.getUid(),
                 inputExpected=False)
             channelClient.sendResponse(cr)
@@ -371,7 +374,7 @@ class GenericActionSlot(GenericSlot):
             if self.canonicalId:
                 botState.addToSessionSearchApiResults(
                     self.canonicalId, searchAPIResult)
-                
+
         elif actionType == "transfer_cnv":
             if isinstance(channelClient, channel_client.ChannelClientIntercom):
                 assigneeId = channelClient.supportAdminId

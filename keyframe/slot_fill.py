@@ -86,7 +86,8 @@ class Slot(object):
             "entityName":self.entityName,
             "slotType":self.slotType,
             "useSlotsForParse":self.useSlotsForParse,
-            "customExpr":self.customExpr
+            "customExpr":self.customExpr,
+            "tags":self.tags
         }
 
     def fromJSONObject(self, j):
@@ -106,6 +107,7 @@ class Slot(object):
         self.slotType = j.get("slotType")
         self.useSlotsForParse = j.get("useSlotsForParse", [])
         self.customExpr = j.get("customExpr")
+        self.tags = j.get("tags")
 
     def init(self, **kwargs):
         self.channelClient = kwargs.get("channelClient")
@@ -358,7 +360,8 @@ class Slot(object):
                 responseMeta=messages.ResponseMeta(
                     apiResult=self.apiResult,
                     newTopic=self.newTopic,
-                    topicId=self.topicId),
+                    topicId=self.topicId,
+                    tags=self.tags),
                 displayType=self.displayType,
                 botStateUid=botStateUid)
         elif self.entityType == "ATTACHMENTS":
@@ -369,7 +372,8 @@ class Slot(object):
                 responseMeta=messages.ResponseMeta(
                     apiResult=self.apiResult,
                     newTopic=self.newTopic,
-                    topicId=self.topicId),
+                    topicId=self.topicId,
+                    tags=self.tags),
                 botStateUid=botStateUid)
         else:
             cr = messages.createTextResponse(
@@ -379,7 +383,8 @@ class Slot(object):
                 responseMeta=messages.ResponseMeta(
                     apiResult=self.apiResult,
                     newTopic=self.newTopic,
-                    topicId=self.topicId),
+                    topicId=self.topicId,
+                    tags=self.tags),
                 botStateUid=botStateUid,
                 inputExpected=True)
         channelClient.sendResponse(cr)
