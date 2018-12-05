@@ -133,8 +133,8 @@ def static_from_root():
     log.info("REQUEST /robots.txt")
     return send_from_directory(app.static_folder, request.path[1:])
 
-@app.route('/widget_page', methods=["GET", "POST"])
-def widget_page():
+@app.route('/widget_page_welcome', methods=["GET", "POST"])
+def widget_page_welcome():
     log.info("REQUEST /widget_page (%s, %s)", request.method, request.url)
     #_pprint(request.json)
     widgetPage = intercom_messenger.WIDGET_WEBPAGE.strip()
@@ -148,6 +148,41 @@ def widget_page():
         d["widget_version"] = "v3"
     d["realm"] = cfg.REALM
     widgetPage = widgetPage % d
+    return widgetPage
+
+@app.route('/widget_page', methods=["GET", "POST"])
+def widget_page():
+    log.info("REQUEST /widget_page (%s, %s)", request.method, request.url)
+    appId = request.args.get("app_id")
+    if not appId:
+        return Response("Could not get app_id"), 500
+    #print_request_details()
+    #print("REQUEST.JSON: %s" % (request.json,))
+    intercomDataStr = request.form.get('intercom_data')
+    #print("request.form.intercom_data: %s", intercomDataStr)
+    widget_webpage = None
+    userQuestion = None
+    if intercomDataStr:
+        intercomData = json.loads(intercomDataStr)
+        log.info("Got intercomData (%s): %s", type(intercomData), intercomData)
+        userQuestion =  intercom_messenger.getInputFromAppRequestSingleText(
+            appResponse=intercomData, textInputId="user_question")
+    if not userQuestion:
+        widget_webpage = intercom_messenger.WIDGET_WEBPAGE_WELCOME
+    else:
+        widget_webpage = intercom_messenger.WIDGET_WEBPAGE_SEARCH
+
+    widgetPage = widget_webpage.strip()
+    agentDeploymentMeta = getIntercomAgentDeploymentMeta(appId)
+    d = agentDeploymentMeta.get("concierge_meta")
+    if "widget_version" not in d:
+        d["widget_version"] = "v3"
+    d["realm"] = cfg.REALM
+    if userQuestion:
+        d["user_question"] = userQuestion
+    widgetPage = widgetPage % d
+    #log.info("WIDGET PAGE:")
+    #print(widgetPage)
     return widgetPage
 
 # For local testing in case of some problem with /widget_page
@@ -904,9 +939,9 @@ def startinit():
 
 @app.route("/v2/intercom/submit", methods=['GET', 'POST'])
 def v2_intercom_submit():
-    return doIntercomMsg()
+    return doIntercomMsgNativeApp()
 
-def doIntercomMsg():
+def doIntercomMsgNativeApp():
     requestStartTime = time.time()
     log.info("## submit ##")
     intercomEvent = request.json
@@ -946,9 +981,6 @@ def doIntercomMsg():
     log.info("REQUEST TIME: %s", requestEndTime - requestStartTime)
     return Response(res), 200
 
-
-def v2_intercom_initializefisdks():
-    return doIntercomMsg()
 
 @app.route("/v2/intercom/initialize", methods=['GET', 'POST'])
 def v2_intercom_initialize():
@@ -1002,6 +1034,16 @@ def intercom_debug():
 
 ########### ---- end intercom configuration ------ #############3
 
+def print_request_details(**kwargs):
+    print("DICT: %s" % (request.__dict__,))
+    print("\nDATA (%s): %s" % (type(request.data), request.data,))
+    print("\n\nFORM (%s): %s" % (type(request.url), request.form,))
+    print("\n\nrequest.url: %s" % (request.url,))
+    print("\n\n\nrequest.medhod: %s" % (request.method,))
+    if request.json:
+        print("\n\nrequest.json: (%s) %s" % (
+            type(request.json), request.json))
+    print("kwargs: %s" % (kwargs,))
 
 
 if __name__ == "__main__":

@@ -64,10 +64,61 @@ https://myra-dev.ngrok.io/v2/intercom/submit_sheet
 
 """
 
-WIDGET_WEBPAGE = """
+# Move below to files.
+WIDGET_WEBPAGE_SEARCH = """
 <html>
     <head>
-        <script src="//cdn-%(realm)s.myralabs.com/widget/v3/widget.selfserve.js"></script>
+        <script src="https://js.intercomcdn.com/messenger-sheet-library.latest.js"></script>
+    </head>
+    <body>
+        <button id="hiddenctabutton" type="submit" style="display:none;"/>
+        <input type="text" value="%(user_question)s" id="userquestion">
+        <script>
+         window.MyraConciergeSettings = {
+             container: 'concierge-widget',
+             accountId: '%(account_id)s',
+             agentId: '%(agent_id)s',
+             realm: '%(realm)s',
+             widgetVersion: '%(widget_version)s',
+             firstLoad: true,
+             customProps: {"testing-key1":"testing-value1"},  // it seems from empirical testing that this is important for the good and proper functioning of the widget.
+             position: 'myra-right',
+             ctaElement: '#hiddenctabutton',
+             firstMessageElement: '#userquestion',
+             popupByDefault: true
+         };
+        </script>
+        <script>
+         (function() {
+             var w = window;
+             var mcs = w.MyraConciergeSettings;
+             var d = document;
+             function l() {
+                 var s = d.createElement('script');
+                 s.type = 'text/javascript';
+                 s.src = '//cdn-%(realm)s.myralabs.com/widget/v3/widget.selfserve.js';
+                 s.onload = function() {
+                     window.MyraConcierge('init', window.MyraConciergeSettings);
+                 };
+                 var x = d.getElementsByTagName('script')[0];
+                 x.parentNode.insertBefore(s, x);
+             }
+             if (w.attachEvent) {
+                 w.attachEvent('onload', l);
+             } else {
+                 w.addEventListener('load', l, false);
+             }
+             l();
+         })();
+        </script>
+    </body>
+</html>
+"""
+
+WIDGET_WEBPAGE_WELCOME = """
+<html>
+    <head>
+        <script src="https://js.intercomcdn.com/messenger-sheet-library.latest.js"></script>
     </head>
     <body>
         <button id="hiddenctabutton" type="submit" style="display:none;"/>
@@ -111,6 +162,7 @@ WIDGET_WEBPAGE = """
     </body>
 </html>
 """
+
 
 def _pprint(data):
     log.info(json.dumps(data, indent=2))
@@ -211,6 +263,12 @@ def getListComponent(listItems):
     log.debug(ret)
     return {"component":ret, "stored_data":d}
 
+def getInputFromAppRequestSingleText(appResponse, textInputId):
+    d = appResponse.get("input_values")
+    if not d:
+        return None
+    return d.get(textInputId)
+
 def getInputFromAppRequest(appResponse):
     """Extract the text input from the response.
     """
@@ -271,7 +329,7 @@ def getLiveCanvas(requestUrl):
 
     return imlib.makeResponse(c)
 
-def getStartInitCanvas(action1=None, action2=None, widgetUrl=None):
+def getStartInitCanvasWithOptions(action1=None, action2=None, widgetUrl=None):
     if not action1:
         action1 = imlib.SubmitAction()
     if not action2 and widgetUrl:
@@ -296,6 +354,36 @@ def getStartInitCanvas(action1=None, action2=None, widgetUrl=None):
                     label="Use the inapp widget to ask a question",
                     style="primary",
                     action=action2
+                )
+            ]
+        )
+    )
+    return imlib.makeResponse(c)
+
+def getStartInitCanvas(widgetUrl):
+    action = imlib.SheetsAction(url=widgetUrl)
+    c = imlib.Canvas(
+        content = imlib.Content(
+            components = [
+                imlib.TextComponent(
+                    id="bot_text_msg",
+                    text=("I am a virtual assistant. I can help answer your questions faster."
+                          " What is your question?"),
+                    style="header",
+                    align="left"
+                ),
+                imlib.InputComponent(
+                    id="user_question",
+                    label="Question",
+                    placeholder="",
+                    value=""
+                    #action=imlib.SubmitAction()
+                ),
+                imlib.ButtonComponent(
+                    id="button-widget",
+                    label="Submit",
+                    style="primary",
+                    action=action
                 )
             ]
         )
