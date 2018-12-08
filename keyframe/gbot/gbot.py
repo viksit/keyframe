@@ -676,6 +676,25 @@ def _run_agent_intercom():
 
 ## End intercom code
 
+def _fetchAgentJsonSpec(appId):
+    agentDeploymentMeta = getIntercomAgentDeploymentMeta(appId)
+    if not agentDeploymentMeta:
+        return None
+    accountId = agentDeploymentMeta.get("concierge_meta", {}).get("account_id")
+    agentId = agentDeploymentMeta.get("concierge_meta", {}).get("agent_id")
+    if not (accountId or agentId):
+        log.warn("Did not find required information from agentDeploymentMeta: %s", agentDeploymentMeta)
+        return None
+
+    GenericBotHTTPAPI.fetchBotJsonSpec(
+        accountId=accountId,
+        agentId=agentId
+    )
+    configJson = GenericBotHTTPAPI.configJson
+    log.debug("returning json spec: %s", configJson)
+    return configJson
+
+
 def _intercom_msg_agent_handler(agentDeploymentMeta, intercomEvent, appId):
     log.info("agentDeploymentMeta: %s, appId: %s", agentDeploymentMeta, appId)
     accountId = agentDeploymentMeta.get("concierge_meta", {}).get("account_id")
@@ -925,12 +944,24 @@ def startinit():
     appId = request.json.get("app_id")
     if not appId:
         raise Exception("Did not find app_id")
+    configJson = _fetchAgentJsonSpec(appId)
+    if not configJson:
+        raise Exception("could not find agent for appid %s" % (appId,))
+
+    _tmp = configJson.get("config_json", {}).get("params", {}).get("user_messages")
+    userMsg = None
+    if _tmp:
+        for e in _tmp:
+            if e.get("key") == "welcomeMessage":  # "intercom-frontpage-msg":
+                userMsg = e.get("value")
+                log.info("got intercom frontpage msg: %s", userMsg)
     parts = urllib.parse.urlparse(requestUrl)
     widgetPageUrl = urllib.parse.urlunparse(
         #(parts[0], parts[1], f"/widget_page?app_id={appId}", "", "", "")
         ("https", parts[1], f"/widget_page?app_id={appId}", "", "", "")
     )
-    canvas = intercom_messenger.getStartInitCanvas(widgetUrl=widgetPageUrl)
+    canvas = intercom_messenger.getStartInitCanvas(
+        widgetUrl=widgetPageUrl, userMsg=userMsg)
     log.info("canvas (%s): %s", type(canvas), canvas)
     c2 = canvas.get("canvas")
     res = json.dumps(c2)

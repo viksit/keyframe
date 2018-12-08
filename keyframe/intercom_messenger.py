@@ -360,15 +360,17 @@ def getStartInitCanvasWithOptions(action1=None, action2=None, widgetUrl=None):
     )
     return imlib.makeResponse(c)
 
-def getStartInitCanvas(widgetUrl):
+def getStartInitCanvas(widgetUrl, userMsg=None):
+    if not userMsg:
+        userMsg = ("I am a virtual assistant. I can help answer your questions faster."
+                   " What is your question?")
     action = imlib.SheetsAction(url=widgetUrl)
     c = imlib.Canvas(
         content = imlib.Content(
             components = [
                 imlib.TextComponent(
                     id="bot_text_msg",
-                    text=("I am a virtual assistant. I can help answer your questions faster."
-                          " What is your question?"),
+                    text=userMsg,
                     style="header",
                     align="left"
                 ),
