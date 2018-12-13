@@ -431,12 +431,13 @@ class BaseBot(object):
             newTopic = None
 
             # check for [topic=xxxx]
-            x = self.topic_re.match(canonicalMsg.text.lower())
             xt = False
+            x = self.transfer_topic_re.match(canonicalMsg.text.lower())
+            if x:
+                xt = True
             if not x:
-                x = self.transfer_topic_re.match(canonicalMsg.text.lower())
-                if x:
-                    xt = True
+                x = self.topic_re.match(canonicalMsg.text.lower())
+
             if x:
                 tmp1 = x.groups()[0].lower()
                 if tmp1 == "default":
@@ -461,7 +462,15 @@ class BaseBot(object):
                         #self._addCustomPropsToSession(
                         #    canonicalMsg.customProps, botState)
                         newSession = True
-                canonicalMsg.text = canonicalMsg.text.replace(x.group(), "")
+                canonicalMsg.text = canonicalMsg.text.lower().replace(x.group(), "")
+                if xt:
+                    # In some cases we may see '[topic=default] [transfer-topic=xxx]'
+                    # We look for the [transfer-topic=..] first, but now remove [topic=..]
+                    x2 = self.topic_re.match(canonicalMsg.text.lower())
+                    if x2:
+                        canonicalMsg.text = canonicalMsg.text.lower().replace(
+                            x2.group(), "")
+                log.info("final canonicalMsg.text: %s", canonicalMsg.text)
 
             if not topicId:
                 if transferTopicInfo:
@@ -486,7 +495,7 @@ class BaseBot(object):
                         currentTime = time.time()
                         log.info("lastWriteTime: %s, currentTime: %s",
                                   lastWriteTime, currentTime)
-                        if lastWriteTime and lastWriteTime > currentTime - self.config.BOTSTATE_TTL_SECONDS: 
+                        if lastWriteTime and lastWriteTime > currentTime - self.config.BOTSTATE_TTL_SECONDS:
                             topicId = actionStateJson.get("origTopicId")
                         else:
                             log.info("SESSION TIMED OUT")
@@ -586,4 +595,3 @@ class BaseBot(object):
             self, canonicalMsg, botState, userProfile, requestState):
         # TODO(now)
         raise NotImplementedError()
-
