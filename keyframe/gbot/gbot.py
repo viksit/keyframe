@@ -184,7 +184,9 @@ def widget_page():
     d = agentDeploymentMeta.get("concierge_meta")
     if "widget_version" not in d:
         d["widget_version"] = "v3"
+    # Set INTERCOM_WIDGET_REALM to local to test with local keyframe.
     d["realm"] = cfg.REALM
+    d["keyframe_realm"] = os.getenv("INTERCOM_WIDGET_REALM", cfg.REALM)
     if userQuestion:
         d["user_question"] = userQuestion
     widgetPage = widgetPage % d
@@ -375,6 +377,9 @@ class GenericBotHTTPAPI(generic_bot_api.GenericBotAPI):
 @app.route("/run_agent2", methods=["POST"])
 @wrap_exceptions
 def run_agent2():
+    #print("RUN_AGENT2 CALLED.")
+    #print_request_details()
+    log.info("request url: %s", request.url)
     r, text = _run_agent()
     r2 = {
         "text": text,

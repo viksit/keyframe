@@ -432,11 +432,17 @@ class BaseBot(object):
 
             # check for [topic=xxxx]
             xt = False
-            x = self.transfer_topic_re.match(canonicalMsg.text.lower())
+            x = self.transfer_topic_re.search(canonicalMsg.text.lower())
             if x:
+                log.info("found transfer topic")
                 xt = True
             if not x:
-                x = self.topic_re.match(canonicalMsg.text.lower())
+                # Sometimes there may be '[topic=default] [topic=xxxx]'  (intercom app)
+                # take the last one.
+                _tmp = self.topic_re.finditer(canonicalMsg.text.lower())
+                _tmp = [e for e in _tmp]
+                if _tmp:
+                    x = _tmp[-1]
 
             if x:
                 tmp1 = x.groups()[0].lower()
@@ -463,13 +469,10 @@ class BaseBot(object):
                         #    canonicalMsg.customProps, botState)
                         newSession = True
                 canonicalMsg.text = canonicalMsg.text.lower().replace(x.group(), "")
-                if xt:
-                    # In some cases we may see '[topic=default] [transfer-topic=xxx]'
-                    # We look for the [transfer-topic=..] first, but now remove [topic=..]
-                    x2 = self.topic_re.match(canonicalMsg.text.lower())
-                    if x2:
-                        canonicalMsg.text = canonicalMsg.text.lower().replace(
-                            x2.group(), "")
+                # Get rid of all [topic=xxx] from canonicalMsg.text
+                _tmp = self.topic_re.finditer(canonicalMsg.text)
+                for e in _tmp:
+                    canonicalMsg.text = canonicalMsg.text.lower().replace(e.group(), "")
                 log.info("final canonicalMsg.text: %s", canonicalMsg.text)
 
             if not topicId:

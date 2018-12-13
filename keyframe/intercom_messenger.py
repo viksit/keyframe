@@ -78,7 +78,7 @@ WIDGET_WEBPAGE_SEARCH = """
              container: 'concierge-widget',
              accountId: '%(account_id)s',
              agentId: '%(agent_id)s',
-             realm: '%(realm)s',
+             realm: '%(keyframe_realm)s',
              widgetVersion: '%(widget_version)s',
              firstLoad: true,
              customProps: {"testing-key1":"testing-value1"},  // it seems from empirical testing that this is important for the good and proper functioning of the widget.
@@ -127,7 +127,7 @@ WIDGET_WEBPAGE_WELCOME = """
              container: 'concierge-widget',
              accountId: '%(account_id)s',
              agentId: '%(agent_id)s',
-             realm: '%(realm)s',
+             realm: '%(keyframe_realm)s',
              widgetVersion: '%(widget_version)s',
              firstLoad: true,
              customProps: {"testing-key1":"testing-value1"},  // it seems from empirical testing that this is important for the good and proper functioning of the widget.
