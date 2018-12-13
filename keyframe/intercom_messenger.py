@@ -269,6 +269,31 @@ def getInputFromAppRequestSingleText(appResponse, textInputId):
         return None
     return d.get(textInputId)
 
+def getInputFromAppRequestForWidgetPage(appResponse, pinConfig):
+    """Get input from the form submit for the widget.
+    """
+    log.info("getInputFromAppRequestForwidgetpage(%s)", locals())
+    componentId = appResponse.get("component_id")
+    if componentId == "button-widget":
+        d = appResponse.get("input_values")
+        if not d:
+            return None
+        return d.get("user_question")
+    elif componentId.startswith("button-pin-workflow"):
+        # This is a pinned item.
+        try:
+            i = int(componentId.split("-")[-1])
+            pinItem = pinConfig[i]
+            p = pinItem.get("payload")
+            log.info("returning input: %s", p)
+            return p
+        except:
+            log.exception("could not get selected pinned item")
+            raise
+
+    raise Exception("unrecognized componentId: %s" % (componentId,))
+
+
 def getInputFromAppRequest(appResponse):
     """Extract the text input from the response.
     """
@@ -390,6 +415,53 @@ def getStartInitCanvas(widgetUrl, userMsg=None):
             ]
         )
     )
+    return imlib.makeResponse(c)
+
+def getStartInitCanvasWithPinnedItems(widgetUrl, pinnedItems, userMsg=None):
+    if not userMsg:
+        userMsg = ("I am a virtual assistant. I can help answer your questions faster."
+                   " Click if your question is below or ask me by typing in the textbox.")
+    action = imlib.SheetsAction(url=widgetUrl)
+    components = [
+        imlib.TextComponent(
+            id="bot_text_msg",
+            text=userMsg,
+            style="header",
+            align="left"
+        )]
+
+    for i, pi in enumerate(pinnedItems):
+        if pi.get("type") in ("document"):
+            log.info("drop pinned item type: %s", pi.get("type"))
+            continue
+        components.append(
+            imlib.ButtonComponent(
+                id="button-pin-%s-%i" % (pi.get("type"), i),
+                label=pi.get("label"),
+                style="primary",
+                action=action
+            )
+        )
+
+    components.extend([
+        imlib.InputComponent(
+            id="user_question",
+            label="Question",
+            placeholder="",
+            value=""
+            #action=imlib.SubmitAction()
+        ),
+        imlib.ButtonComponent(
+            id="button-widget",
+            label="Submit",
+            style="primary",
+            action=action
+        )
+    ])
+    c = imlib.Canvas(
+        content = imlib.Content(components = components),
+        stored_data = {"stored_data_key1": "stored_data_value1"})
+
     return imlib.makeResponse(c)
 
 

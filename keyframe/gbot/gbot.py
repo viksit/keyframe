@@ -156,6 +156,11 @@ def widget_page():
     appId = request.args.get("app_id")
     if not appId:
         return Response("Could not get app_id"), 500
+    configJson = _fetchAgentJsonSpec(appId)
+    if not configJson:
+        raise Exception("could not find agent for appid %s" % (appId,))
+    pinConfig = configJson.get("config_json", {}).get("params", {}).get("pin_json", [])
+    log.info("pinConfig: %s", pinConfig)
     #print_request_details()
     #print("REQUEST.JSON: %s" % (request.json,))
     intercomDataStr = request.form.get('intercom_data')
@@ -165,8 +170,10 @@ def widget_page():
     if intercomDataStr:
         intercomData = json.loads(intercomDataStr)
         log.info("Got intercomData (%s): %s", type(intercomData), intercomData)
-        userQuestion =  intercom_messenger.getInputFromAppRequestSingleText(
-            appResponse=intercomData, textInputId="user_question")
+        userQuestion = intercom_messenger.getInputFromAppRequestForWidgetPage(
+            appResponse=intercomData, pinConfig=pinConfig)
+        #userQuestion =  intercom_messenger.getInputFromAppRequestSingleText(
+        #    appResponse=intercomData, textInputId="user_question")
     if not userQuestion:
         widget_webpage = intercom_messenger.WIDGET_WEBPAGE_WELCOME
     else:
@@ -181,8 +188,8 @@ def widget_page():
     if userQuestion:
         d["user_question"] = userQuestion
     widgetPage = widgetPage % d
-    #log.info("WIDGET PAGE:")
-    #print(widgetPage)
+    log.info("WIDGET PAGE:")
+    print(widgetPage)
     return widgetPage
 
 # For local testing in case of some problem with /widget_page
@@ -960,8 +967,15 @@ def startinit():
         #(parts[0], parts[1], f"/widget_page?app_id={appId}", "", "", "")
         ("https", parts[1], f"/widget_page?app_id={appId}", "", "", "")
     )
-    canvas = intercom_messenger.getStartInitCanvas(
-        widgetUrl=widgetPageUrl, userMsg=userMsg)
+    pinConfig = configJson.get("config_json", {}).get("params", {}).get("pin_json", [])
+    log.info("pinConfig: %s", pinConfig)
+    canvas = None
+    if pinConfig:
+        canvas = intercom_messenger.getStartInitCanvasWithPinnedItems(
+            widgetUrl=widgetPageUrl, pinnedItems=pinConfig, userMsg=userMsg)
+    else:
+        canvas = intercom_messenger.getStartInitCanvas(
+            widgetUrl=widgetPageUrl, userMsg=userMsg)
     log.info("canvas (%s): %s", type(canvas), canvas)
     c2 = canvas.get("canvas")
     res = json.dumps(c2)
