@@ -187,6 +187,7 @@ def widget_page():
     # Set INTERCOM_WIDGET_REALM to local to test with local keyframe.
     d["realm"] = cfg.REALM
     d["keyframe_realm"] = os.getenv("INTERCOM_WIDGET_REALM", cfg.REALM)
+    d["title"] = "Myra Help Desk"  # TODO(nishant): Get from agent.
     if userQuestion:
         d["user_question"] = userQuestion
     widgetPage = widgetPage % d
@@ -890,8 +891,10 @@ def v2_intercom_configure():
             res = json.dumps(canvas)
         else:
             # Configuration is complete
-            canvas = intercom_messenger.getInstallOkCancelCanvas("")
-            res = json.dumps(canvas)
+            res = json.dumps({"results": {"option1":"value1"}})
+            # Don't send the "installokcancel" - just install it.
+            #canvas = intercom_messenger.getInstallOkCancelCanvas("")
+            #res = json.dumps(canvas)
             #res = json.dumps({"results": {"status":"ok"}})
     log.info("returning response: %s", res)
     return Response(res), 200

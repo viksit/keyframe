@@ -68,6 +68,7 @@ https://myra-dev.ngrok.io/v2/intercom/submit_sheet
 WIDGET_WEBPAGE_SEARCH = """
 <html>
     <head>
+        <title>%(title)s</title>
         <script src="https://js.intercomcdn.com/messenger-sheet-library.latest.js"></script>
     </head>
     <body>
@@ -118,6 +119,7 @@ WIDGET_WEBPAGE_SEARCH = """
 WIDGET_WEBPAGE_WELCOME = """
 <html>
     <head>
+        <title>%(title)s</title>
         <script src="https://js.intercomcdn.com/messenger-sheet-library.latest.js"></script>
     </head>
     <body>
