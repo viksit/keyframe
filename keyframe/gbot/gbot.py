@@ -187,7 +187,8 @@ def widget_page():
     # Set INTERCOM_WIDGET_REALM to local to test with local keyframe.
     d["realm"] = cfg.REALM
     d["keyframe_realm"] = os.getenv("INTERCOM_WIDGET_REALM", cfg.REALM)
-    d["title"] = "Myra Help Desk"  # TODO(nishant): Get from agent.
+    d["title"] = _getValueFromAgentUserMessages(
+        "intercomMessengerAppTitle", configJson, "Myra Help Desk")
     if userQuestion:
         d["user_question"] = userQuestion
     widgetPage = widgetPage % d
@@ -948,6 +949,15 @@ def sampleapp():
     log.info("SAMPLEAPP returning: %s", res)
     return Response(res), 200
 
+def _getValueFromAgentUserMessages(key, configJson, defaultValue=None):
+    _tmp = configJson.get("config_json", {}).get("params", {}).get("user_messages")
+    userMsg = None
+    if _tmp:
+        for e in _tmp:
+            if e.get("key") == key:
+                return e.get("value")
+    return defaultValue
+
 @app.route("/v2/intercom/startinit", methods=['GET', 'POST'])
 def startinit():
     log.info("startinit called")
@@ -963,13 +973,9 @@ def startinit():
     if not configJson:
         raise Exception("could not find agent for appid %s" % (appId,))
 
-    _tmp = configJson.get("config_json", {}).get("params", {}).get("user_messages")
-    userMsg = None
-    if _tmp:
-        for e in _tmp:
-            if e.get("key") == "welcomeMessage":  # "intercom-frontpage-msg":
-                userMsg = e.get("value")
-                log.info("got intercom frontpage msg: %s", userMsg)
+    userMsg = _getValueFromAgentUserMessages(
+        "intercomMessengerHomeScreenWelcomeMessage", configJson)
+    log.info("got intercom frontpage msg: %s", userMsg)
     parts = urllib.parse.urlparse(requestUrl)
     widgetPageUrl = urllib.parse.urlunparse(
         #(parts[0], parts[1], f"/widget_page?app_id={appId}", "", "", "")
