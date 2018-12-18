@@ -2,6 +2,11 @@
 
 ## Intercom messenger integration
 
+#### Configurable options (from agent):
+intercomMessengerAppTitle: Title of the intercom widget<br>
+intercomMessengerHomeScreenWelcomeMessage: Welcome message on the intercom home screen.
+
+#### Technical info:
 Intercom app webhooks are set up on intercom. They are:
 /v2/intercom/configure:
 Called when user is adding the app to their intercom widget.
