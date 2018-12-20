@@ -329,6 +329,8 @@ class GenericBotHTTPAPI(generic_bot_api.GenericBotAPI):
                 js = bms.getJsonSpec(accountId, agentId)
                 # In case agentId is not specified (or is 'default'), important
                 # to set the actual agentId of the agent for the rest of keyframe.
+                if not js:
+                    raise Exception("Could not find agent spec for accountId %s, agentId %s" % (accountId, agentId))
                 agentId = js.get("config_json", {}).get("agent_id")
 
                 GenericBotHTTPAPI.agentId = agentId
