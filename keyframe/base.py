@@ -5,6 +5,8 @@ import json
 import re
 import copy
 import time
+import requests
+import requests.exceptions
 
 from . import messages
 from . import slot_fill
@@ -345,6 +347,30 @@ class BaseBot(object):
             userProfile, requestState, self.api, self.channelClient,
             apiResult=apiResult, newIntent=newIntent, config=config)
 
+    @classmethod
+    def _modelWarmUp(cls, modelId, config, timout=0.1):
+        # Note that anything less than 0.1 seems to result in different exceptions
+        # from the requests module.
+        log.info("_modelWarmUp(%s)", locals())
+        requestUrl = config.MYRA_SEARCH_SERVER
+        # hack.
+        if requestUrl.startswith("localhost"):
+            requestUrl = "http://%s" % (requestUrl,)
+        else:
+            requestUrl = "https://%s" % (requestUrl,)
+        requestUrl += "/%s?q=model%%20warmup&model_id=%s" % (
+            config.MYRA_SEARCH_ENDPOINT, modelId)
+        log.info("requestUrl: %s", requestUrl)
+        try:
+            requests.get(requestUrl, timeout=0.1)
+        except requests.exceptions.ReadTimeout as rt:
+            log.info("got expected readtimeout in model warming")
+        except:
+            log.exception("Got unexpected exception in model warming")
+            # Lets swallow this one so that everything doesn't break because
+            # there is a problem with calling inference proxy. Agents should not
+            # break because of problems with inference_proxy (even if they have model_ids)
+
     def _handleBotCmd(self, canonicalMsg, botState, userProfile, requestState):
         log.debug("_handleBotCmd called")
         msg = canonicalMsg.text.lower()
@@ -377,6 +403,12 @@ class BaseBot(object):
             )
             log.debug("botstate post: %s", botState)
             respText = "bot state has been cleared"
+
+            # Not sure where the best place to warm a model is. This will do.
+            nvsmIndex = self.specJson.get("params", {}).get("nvsm_index_for_workflows")
+            if nvsmIndex:
+                self._modelWarmUp(nvsmIndex, self.config)
+
 
         self.createAndSendTextResponse(
             canonicalMsg,
