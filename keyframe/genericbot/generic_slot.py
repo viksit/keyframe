@@ -486,15 +486,24 @@ class GenericActionSlot(GenericSlot):
             requestAuthTuple = tuple(requestAuth.split(":"))
             assert len(requestAuthTuple) == 2, "requestAuth must be a string with format username:password. (%s)" % (requestAuth,)
 
-        if requestBodyJsonObject:
+        requestHeaders = webhook.get("api_request_headers")
+        if requestHeaders:
+            requestHeaders = json.loads(requestHeaders)
+        apiRequestType = webhook.get("api_request_type", "GET")
+        if apiRequestType == "POST":  # "requestBodyJsonObject":
             log.info("making POST request: url: %s, json: %s, auth: %s",
                       templatedURL, requestBodyJsonObject, requestAuthTuple)
             response = requests.post(
-                templatedURL, json=requestBodyJsonObject, auth=requestAuthTuple, timeout=timeoutSeconds)
+                templatedURL, json=requestBodyJsonObject,
+                headers=requestHeaders,
+                auth=requestAuthTuple, timeout=timeoutSeconds)
         else:
             log.info("making GET request: url: %s, auth: %s",
                      templatedURL, requestAuthTuple)
-            response = requests.get(templatedURL, auth=requestAuthTuple, timeout=timeoutSeconds)
+            response = requests.get(
+                templatedURL,
+                headers=requestHeaders,
+                auth=requestAuthTuple, timeout=timeoutSeconds)
         if response.status_code not in (200, 201, 202):
             log.exception("webhook call failed. status_code: %s", response.status_code)
             raise Exception("webhook call failed. status_code: %s" % (response.status_code,))
