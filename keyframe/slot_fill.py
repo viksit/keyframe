@@ -115,7 +115,7 @@ class Slot(object):
 
     def _entitiesDict(self, botState):
         _t = botState.getSessionTranscript()
-        #log.debug("sessionTranscript: %s", _t)
+        log.info("sessionTranscript: %s", _t)
         tl = []
         for d in _t:
             if d.get("prompt"):
