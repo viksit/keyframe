@@ -345,13 +345,16 @@ class GenericActionSlot(GenericSlot):
                 self.actionSpec.get("webhook"), botState)
             text = _d.get("text")
             searchAPIResult = _d.get("api_response")
+            _slotData = text
+            if not text:
+                _slotData = searchAPIResult
             botState.addToSessionData(
-                self.name, _d.get("text"), self.entityType)
+                self.name, _slotData, self.entityType)
             if self.canonicalId:
                 botState.addToSessionData(
-                    self.canonicalId, _d.get("text"), self.entityType)
+                    self.canonicalId, _slotData, self.entityType)
             botState.addToSessionUtterances(
-                self.name, None, _d.get("text"), self.entityType)
+                self.name, None, _slotData, self.entityType)
         elif actionType == "search":
             searchWebhook = copy.deepcopy(self.actionSpec.get("webhook"))
             searchUrl = self._addSearchDefaults(searchWebhook.get("api_url"))
