@@ -345,16 +345,21 @@ class GenericActionSlot(GenericSlot):
                 self.actionSpec.get("webhook"), botState)
             text = _d.get("text")
             searchAPIResult = _d.get("api_response")
-            _slotData = text
-            if not text:
-                _slotData = searchAPIResult
             botState.addToSessionData(
-                self.name, _slotData, self.entityType)
+                self.name, _d.get("text"), self.entityType)
             if self.canonicalId:
                 botState.addToSessionData(
-                    self.canonicalId, _slotData, self.entityType)
+                    self.canonicalId, _d.get("text"), self.entityType)
             botState.addToSessionUtterances(
-                self.name, None, _slotData, self.entityType)
+                self.name, None, _d.get("text"), self.entityType)
+            if _d.get("api_response"):
+                log.debug("adding to session webhook results: %s", _d.get("api_response"))
+                botState.addToSessionWebhookResults(
+                    self.name, _d.get("api_response"))
+                if self.canonicalId:
+                    botState.addToSessionWebhookResults(
+                        self.canonicalId, _d.get("api_response"))
+
         elif actionType == "search":
             searchWebhook = copy.deepcopy(self.actionSpec.get("webhook"))
             searchUrl = self._addSearchDefaults(searchWebhook.get("api_url"))
@@ -434,7 +439,8 @@ class GenericActionSlot(GenericSlot):
         responseJsonObj = self.fetchWebhook(webhook, botState)
         # We've called the webhook with params, now take response
         # And make it available to the text response
-        r = webhook.get("response_text", {})
+        r = webhook.get("response_text", "")
+        log.info("RESPONSE TEXT: %s", r)
         textResponseTemplate = Template(r)
         _ed = self._entitiesDict(botState)
         _ed["response"] = responseJsonObj

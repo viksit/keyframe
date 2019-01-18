@@ -115,7 +115,7 @@ class Slot(object):
 
     def _entitiesDict(self, botState):
         _t = botState.getSessionTranscript()
-        log.info("sessionTranscript: %s", _t)
+        log.debug("sessionTranscript: %s", _t)
         tl = []
         for d in _t:
             if d.get("prompt"):
@@ -133,7 +133,8 @@ class Slot(object):
         return {"entities":botState.getSessionData(),
                 "utterances":botState.getSessionUtterances(),
                 "transcript":transcript,
-                "searchapiresults":botState.getSessionSearchApiResults()}
+                "searchapiresults":botState.getSessionSearchApiResults(),
+                "webhook":botState.getSessionWebhookResults()}
 
     def addCustomFieldsToSession(self, botState):
         if self.customFields:
