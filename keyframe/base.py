@@ -422,9 +422,10 @@ class BaseBot(object):
         if not customProps:
             return
         for (k,v) in six.iteritems(customProps):
-            log.debug("addToSessionData(%s, %s)", k, v)
-            botState.addToSessionData(k, v)
-            botState.addToSessionData("custom_props.%s" % (k,), v)
+            #botState.addToSessionData(k, v)  # No
+            # Session data is only for entities (nodes). customProps will be available
+            # as customprops as a separate dict (see Slot._entitiesDict.
+            botState.addToSessionData("custom_props_%s" % (k,), v)
 
 
     topic_re = re.compile("\[topic=([^\]]+)\]")

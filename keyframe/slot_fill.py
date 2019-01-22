@@ -130,11 +130,16 @@ class Slot(object):
         #transcript = "\n".join(
         #    "%s => %s" % (k,v) for (k,v) in botState.getSessionUtterancesOrdered())
         #log.debug("transcript: %s", transcript)
+        # We want custom_properties to be accessible in jinja2 templates in the same
+        # way as entities etc.
+        customPropsDict = dict([(k.replace("custom_props_", "", 1), v) for (k,v) in botState.getSessionData().items() if k.startswith("custom_props_")])
+
         return {"entities":botState.getSessionData(),
                 "utterances":botState.getSessionUtterances(),
                 "transcript":transcript,
                 "searchapiresults":botState.getSessionSearchApiResults(),
-                "webhook":botState.getSessionWebhookResults()}
+                "webhook":botState.getSessionWebhookResults(),
+                "customprops":customPropsDict}
 
     def addCustomFieldsToSession(self, botState):
         if self.customFields:
