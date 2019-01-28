@@ -405,9 +405,13 @@ class BaseBot(object):
             respText = "bot state has been cleared"
 
             # Not sure where the best place to warm a model is. This will do.
-            nvsmIndex = self.specJson.get("params", {}).get("nvsm_index_for_workflows")
-            if nvsmIndex:
-                self._modelWarmUp(nvsmIndex, self.config)
+            #nvsmIndex = self.specJson.get("params", {}).get("nvsm_index_for_workflows")
+            # Above does not work if specJson has params set to None.
+            _params = self.specJson.get("params")
+            if _params:
+                nvsmIndex = _params.get("nvsm_index_for_workflows")
+                if nvsmIndex:
+                    self._modelWarmUp(nvsmIndex, self.config)
 
 
         self.createAndSendTextResponse(
