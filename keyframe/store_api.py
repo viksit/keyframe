@@ -13,6 +13,7 @@ import boto.dynamodb
 from boto.dynamodb.exceptions import DynamoDBKeyNotFoundError
 
 import keyframe.config
+import keyframe.compress
 
 log = logging.getLogger(__name__)
 # To debug, just set the level for this module.
