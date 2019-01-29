@@ -50,6 +50,7 @@ def get_kv_store(kvstype=None, config=None):
     else:
         raise Exception("unknown kvstore: %s", kvstype)
 
+
 class KVStoreError(Exception):
     pass
 
@@ -199,13 +200,33 @@ class LocalFileKVStore(KVStore):
             os.remove(p)
 
 class DynamoKVStore(KVStore):
-    def __init__(self, dbconn, db_table):
+    # Current DynamoDB value size limit is 400KB.
+    MAX_SIZE = 389120  # 380 KB = 1024 * 380 bytes
+    def __init__(self, dbconn, db_table, compression="gzip", compression_size=MAX_SIZE):
         self.dbconn = dbconn
         self.kvstore = dbconn.get_table(db_table)
+        self.compression = compression
+        # If compression is None, do not compress no matter the size.
+        if self.compression and self.compression != "gzip":
+            raise NotImplementedError(
+                "Compression type %s is not implemented" % (compression,))
+        self.compression_size = compression_size
 
     def put(self, key, value, expiry_time=None):
         log.debug("DynamoKVStore.put(%s)", locals())
+        value_size = sys.getsizeof(value)
+        compression = None
+        if self.compression and value_size > self.compression_size:
+            log.info("value_size (%s) > %s: going to compress", value_size, self.compression_size)
+            _v = keyframe.compress.compress_str(value, self.compression)
+            value = boto.dynamodb.types.Binary(_v)
+            compression = self.compression
+        if sys.getsizeof(value) > self.MAX_SIZE:
+            log.warn("Attempting to put data with size %s (> %s) into dynamodb",
+                     sys.getsizeof(value), self.MAX_SIZE)
         attrs = {"kv_key":key, "kv_value":value}
+        if compression:
+            attrs["compression"] = compression
         if expiry_time:
             attrs["expiry_time"] = expiry_time
         i = self.kvstore.new_item(
@@ -217,7 +238,11 @@ class DynamoKVStore(KVStore):
         try:
             i = self.kvstore.get_item(
                 hash_key=key)
-            return i["kv_value"]  # Must be there, or there is something wrong
+            value = i["kv_value"]  # Must be there, or there is something wrong
+            if i.get("compression"):
+                log.info("got compressed data. going to uncompress.")
+                value = keyframe.compress.uncompress_str(value, i.get("compression"))
+            return value
         except DynamoDBKeyNotFoundError as de:
             return None
 
