@@ -25,13 +25,15 @@ TYPE_INMEMORY = "type-inmemory"
 
 DEFAULT_KV_STORE_TYPE = os.getenv("KEYFRAME_KV_STORE_TYPE", TYPE_DYNAMODB)
 
-def get_kv_store(kvstype=None, config=None):
+def get_kv_store(kvstype=None, config=None, compressionType=None):
     if not kvstype:
         #kvstype = TYPE_LOCALFILE
         kvstype = DEFAULT_KV_STORE_TYPE
     if not config:
         config = keyframe.config.getConfig()
     if kvstype == TYPE_S3:
+        if compressionType:
+            raise NotImplementedError("compressionType not implemented for S3")
         conn = S3Connection(
             aws_access_key_id=config.AWS_ACCESS_KEY_ID,
             aws_secret_access_key=config.AWS_SECRET_ACCESS_KEY)
@@ -44,8 +46,12 @@ def get_kv_store(kvstype=None, config=None):
             aws_secret_access_key=config.AWS_SECRET_ACCESS_KEY)
         return DynamoKVStore(dbconn, config.KV_STORE_DYNAMODB_TABLE)
     elif kvstype == TYPE_LOCALFILE:
+        if compressionType:
+            raise NotImplementedError("compressionType not implemented for LocalFile")
         return LocalFileKVStore()
     elif kvstype == TYPE_INMEMORY:
+        if compressionType:
+            raise NotImplementedError("compressionType not implemented for InMemory")
         return InMemoryKVStore()
     else:
         raise Exception("unknown kvstore: %s", kvstype)
@@ -199,12 +205,16 @@ class LocalFileKVStore(KVStore):
             os.remove(p)
 
 class DynamoKVStore(KVStore):
-    def __init__(self, dbconn, db_table):
+    def __init__(self, dbconn, db_table, compression_type=None):
         self.dbconn = dbconn
         self.kvstore = dbconn.get_table(db_table)
+        self.compression_type = compression_type
 
     def put(self, key, value, expiry_time=None):
         log.debug("DynamoKVStore.put(%s)", locals())
+        if self.compression_type:
+            value = self._compress(
+                compression_type=compression_type, value=value)
         attrs = {"kv_key":key, "kv_value":value}
         if expiry_time:
             attrs["expiry_time"] = expiry_time
@@ -212,12 +222,15 @@ class DynamoKVStore(KVStore):
             hash_key=key, attrs=attrs)
         i.put()
 
+    # TODO(nishant): Hmmm this won't work because compression has to be based on a key.
     def get(self, key):
         log.debug("DynamoKVStore.get(%s)", locals())
         try:
             i = self.kvstore.get_item(
                 hash_key=key)
-            return i["kv_value"]  # Must be there, or there is something wrong
+            v = i["kv_value"]  # Must be there, or there is something wrong
+            if self._compression_type
+            return v
         except DynamoDBKeyNotFoundError as de:
             return None
 
