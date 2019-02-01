@@ -358,8 +358,8 @@ class BaseBot(object):
             requestUrl = "http://%s" % (requestUrl,)
         else:
             requestUrl = "https://%s" % (requestUrl,)
-        requestUrl += "/%s?q=model%%20warmup&model_id=%s" % (
-            config.MYRA_SEARCH_ENDPOINT, modelId)
+        requestUrl += "/%s?q=model%%20warmup%%20%s&model_id=%s" % (
+            config.MYRA_SEARCH_ENDPOINT, time.time(), modelId)
         log.info("requestUrl: %s", requestUrl)
         try:
             requests.get(requestUrl, timeout=0.1)
