@@ -120,6 +120,21 @@ app.config['DEBUG'] = True
 
 print("[%s] STEP 50" % (time.time(),), file=sys.stderr)
 
+@app.route('/healthcheck')
+def healthcheck():
+    print("healthcheck called")
+    h = os.getenv("HEALTHCHECK_RESPONSE", "ok")
+    return Response(h), 200
+
+@app.route('/appdebug')
+def app_debug():
+    print_request_details()
+    action = request.args.get("action")
+    if action == "get_headers":
+        return jsonify(dict(request.headers))
+    r = {"myregionid":os.getenv("REGION_ID")}
+    return jsonify(r)
+
 @app.route('/logtest')
 def log_test():
     log.info("This is an info log")
@@ -1100,7 +1115,8 @@ def print_request_details(**kwargs):
     print("\nDATA (%s): %s" % (type(request.data), request.data,))
     print("\n\nFORM (%s): %s" % (type(request.url), request.form,))
     print("\n\nrequest.url: %s" % (request.url,))
-    print("\n\n\nrequest.medhod: %s" % (request.method,))
+    print("\n\n\nrequest.method: %s" % (request.method,))
+    print("\n\n\n\nrequest.headers: %s" % (request.headers,))
     if request.json:
         print("\n\nrequest.json: (%s) %s" % (
             type(request.json), request.json))

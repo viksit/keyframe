@@ -9,6 +9,32 @@
     },
     "keep_warm": true,
   },
+  "devuseast1": {
+    "s3_bucket": "ml-lambda-dev-east1",
+    "app_function": "keyframe.gbot.gbot.app",
+    "project_name": "keyframe",
+    "environment_variables": {
+      "REALM":"dev",
+      "KVSTORE_CACHE_SECONDS":"0",
+      "REGION_ID":"us-east-1"
+    },
+    "keep_warm": true,
+    "profile_name": "myraeast",
+    "aws_region": "us-east-1",
+  },
+  "devuswest2": {
+    "s3_bucket": "ml-lambda-dev-1",
+    "app_function": "keyframe.gbot.gbot.app",
+    "project_name": "keyframe",
+    "environment_variables": {
+      "REALM":"dev",
+      "KVSTORE_CACHE_SECONDS":"0",
+      "REGION_ID":"us-west-2"
+    },
+    "keep_warm": true,
+    "profile_name": "myrawest",
+    "aws_region": "us-west-2",
+  },
   "prod": {
     "s3_bucket": "ml-lambda-prod-1",
     "app_function": "keyframe.gbot.gbot.app",
@@ -19,14 +45,48 @@
     },
     "keep_warm": true,
   },
-  "test2": {
-    "s3_bucket": "ml-lambda-test-1",
+  "produseast1": {
+    "s3_bucket": "ml-lambda-prod-east1",
     "app_function": "keyframe.gbot.gbot.app",
-    "project_name": "keyframe_nishant_test",
+    "project_name": "keyframe",
+    "environment_variables": {
+      "REALM":"prod",
+      "KVSTORE_CACHE_SECONDS":"0",
+      "REGION_ID":"us-east-1"
+    },
+    "keep_warm": true,
+    "profile_name": "myraeast",
+    "aws_region": "us-east-1",
+  },
+  "produswest2": {
+    "s3_bucket": "ml-lambda-prod-1",
+    "app_function": "keyframe.gbot.gbot.app",
+    "project_name": "keyframe",
+    "environment_variables": {
+      "REALM":"prod",
+      "KVSTORE_CACHE_SECONDS":"0",
+      "REGION_ID":"us-west-2"
+    },
+    "keep_warm": true,
+    "profile_name": "myrawest",
+    "aws_region": "us-west-2",
+  },
+  "regionaltest": {
+    "s3_bucket": "myra-lambda-test-1",
+    "app_function": "keyframe.gbot.gbot.app",
+    "project_name": "keyframe",
     "environment_variables": {
       "REALM":"dev",
-      "KVSTORE_CACHE_SECONDS":"0"
+      "KVSTORE_CACHE_SECONDS":"0",
+      "REGION_ID":"west"
     },
+    "context_header_mappings": {
+      "ApiId": "apiId",
+      "ApiPath": "path",
+      "ApiResourcePath": "resourcePath",
+      "InvokedFunctionARN": "invoked_function_arn",
+    },
+    "keep_warm": false,
   },
   "testpy3": {
     "s3_bucket": "ml-lambda-test-1",
