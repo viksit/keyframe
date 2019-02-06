@@ -95,7 +95,6 @@ def createTicket(jsonObject):
     jsonObject: (object) dict as jsonObjectFormatExample
     Returns: {"ticket":{"url":URL}}
     """
-    log.error("XXXXXXXXXX XXXXXXXXXXXX")
     log.info("jsonObject: %s", jsonObject)
     j = jsonObject
     # Must have the fields to create a client. Only thing to do would be
