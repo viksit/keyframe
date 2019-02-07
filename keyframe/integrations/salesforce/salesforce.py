@@ -19,17 +19,22 @@ class SalesforceError(Exception):
 
 
 class SalesforceClient(object):
-    def __init__(self, username, password, orgId, securityToken, instance):
+    def __init__(self, username, password, orgId, securityToken, instance, domain=None):
         self.username = username
         self.password = password
         self.orgId = orgId
         self.securityToken = securityToken
         self.instance = instance
+        self.domain = domain
+        # Temporary until UI supports domain flag being passed in.
+        if username == "myraapiuser@carta.com":
+            self.domain = "test"
         self.sf = Salesforce(
             password=self.password,
             username=self.username,
             organizationId=self.orgId,
-            security_token=self.securityToken)
+            security_token=self.securityToken,
+            domain=self.domain)
 
     def getContact(self, email):
         """
@@ -61,6 +66,7 @@ class SalesforceClient(object):
         """
         log.info("createTicket(%s)", locals())
         contact = self.getContact(requesterEmail)
+        log.info("contact: %s", contact)
         if not contact:
             contact = self.createContact(
                 requesterEmail, requesterLastName, requesterFirstName)
@@ -104,7 +110,9 @@ def createTicket(jsonObject):
         password=j["password"],
         orgId=j["org_id"],
         securityToken=j["security_token"],
-        instance=j["instance"])
+        instance=j.get("instance"),
+        domain=j.get("domain"))
+    log.info("SFC: %s", s)
     if not j.get("subject") or not j.get("body") or not j.get("requester_email"):
         raise SalesforceError("No subject or body or requester_email")
     (firstName, lastName) = _nameParts(j.get("requester_name"))
