@@ -402,7 +402,7 @@ def run_agent2():
     r, text = _run_agent()
     r2 = {
         "text": text,
-        "message": "Agent responsded successfully",
+        "message": "Agent responded successfully",
         "result": r
     }
     resp = jsonify(r2)

@@ -1,3 +1,4 @@
+bs4
 aniso8601
 awscli
 base58

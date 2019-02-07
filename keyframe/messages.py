@@ -201,6 +201,7 @@ class ResponseElement(object):
     DISPLAY_TYPE_TEXT = "text"
     DISPLAY_TYPE_DROPDOWN = "dropdown"
     DISPLAY_TYPE_BUTTON_LIST = "buttonlist"
+    DISPLAY_TYPE_TEXTAREA = "textarea"
 
     MSG_BREAK_TAG = "<msgbr>"
 
@@ -336,7 +337,8 @@ def createAttachmentsResponse(canonicalMsg, text, responseType=None,
 
 def createTextResponse(canonicalMsg, text, responseType=None,
                        responseMeta=None, botStateUid=None,
-                       inputExpected=False):
+                       inputExpected=False, 
+                       displayType=ResponseElement.DISPLAY_TYPE_TEXT):
     log.debug("createTextResponse(%s)", locals())
     textList = None
     textType = "single"
@@ -352,6 +354,7 @@ def createTextResponse(canonicalMsg, text, responseType=None,
         textType=textType,
         responseType=responseType,
         responseMeta=responseMeta,
+        displayType=displayType,
         inputExpected=inputExpected)
     return CanonicalResponse(
         channel=canonicalMsg.channel,

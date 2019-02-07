@@ -392,6 +392,7 @@ class Slot(object):
                     topicId=self.topicId,
                     tags=self.tags),
                 botStateUid=botStateUid,
+                displayType=self.displayType,
                 inputExpected=True)
         channelClient.sendResponse(cr)
         return cr
