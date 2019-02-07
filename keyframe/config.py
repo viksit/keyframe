@@ -1,5 +1,5 @@
 from __future__ import absolute_import
-import os
+import os, sys
 import logging
 import distutils
 import distutils.util
@@ -44,9 +44,6 @@ class Config(object):
     KINESIS_STREAM_PREFIX = os.getenv("KINESIS_STREAM_PREFIX","kf-events-dev")
     KINESIS_STREAM_NAME = os.getenv("KINESIS_STREAM_NAME", "kf-events-dev")
 
-    DYNAMODB_AWS_REGION = "us-west-2"
-    KV_STORE_S3_BUCKET = "ml-dev"
-
     KF_EVENTS_S3_BUCKET = os.getenv("KF_EVENTS_S3_BUCKET", "ml-logs-dev")
 
     # This is IAM user dyndb-dev
@@ -57,9 +54,9 @@ class Config(object):
     #AWS_SECRET_ACCESS_KEY = "SsZeHAURdq6Ub0QkbQ8M9ut1Z5u6dQxG+vML+hKA"
 
     # Dynamodb access for kvstore/keyframe
-    DYNAMODB_AWS_REGION = "us-west-2"
+    DYNAMODB_AWS_REGION = os.getenv("REGION_ID", "us-west-2")
     KV_STORE_S3_BUCKET = "ml-dev"
-    KV_STORE_DYNAMODB_TABLE = "client_bots_kvstore_dev"
+    KV_STORE_DYNAMODB_TABLE = "client_bots_global_kvstore_dev"
 
     SLACK_BOT_ID = "U3KC79GGH"
     SLACK_VERIFICATION_TOKEN = "Avr8oGeFjTX2PJdJ1NKurE6V"
@@ -112,7 +109,7 @@ class ProdConfig(Config):
     # This is IAM user dyndb-prod
     AWS_ACCESS_KEY_ID = "AKIAJACRM3ORXT3E6HVA"
     AWS_SECRET_ACCESS_KEY = "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"
-    KV_STORE_DYNAMODB_TABLE = "client_bots_kvstore_prod"
+    KV_STORE_DYNAMODB_TABLE = "client_bots_global_kvstore_prod"
 
     KINESIS_STREAM_PREFIX = os.getenv("KINESIS_STREAM_PREFIX","kf-events-prod")
     KINESIS_STREAM_NAME = "kf-events-prod"

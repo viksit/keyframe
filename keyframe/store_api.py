@@ -39,8 +39,10 @@ def get_kv_store(kvstype=None, config=None):
         b = conn.get_bucket(config.KV_STORE_S3_BUCKET)
         return S3KVStore(b)
     elif kvstype == TYPE_DYNAMODB:
+        region = config.DYNAMODB_AWS_REGION
+        log.info("Connecting to dynamodb region: %s", region)
         dbconn = boto.dynamodb.connect_to_region(
-            config.DYNAMODB_AWS_REGION,
+            region,
             aws_access_key_id=config.AWS_ACCESS_KEY_ID,
             aws_secret_access_key=config.AWS_SECRET_ACCESS_KEY)
         return DynamoKVStore(dbconn, config.KV_STORE_DYNAMODB_TABLE)

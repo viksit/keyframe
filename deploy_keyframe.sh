@@ -22,6 +22,7 @@ echo "${KEYFRAME_VERSION}" > keyframe_version.txt
 # ImportError: bad magic number in 'pymyra.api.client'
 # Try to clean things out before the deploy.
 find . -name "*.pyc" -exec rm {} ';'
-zappa update ${REALM}  # This does return a non-zero exit code if deploy fails.
+zappa update ${REALM}uswest2
+zappa update ${REALM}useast1
 
 popd
