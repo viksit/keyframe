@@ -380,6 +380,7 @@ class Slot(object):
                     newTopic=self.newTopic,
                     topicId=self.topicId,
                     tags=self.tags),
+                displayType=self.displayType,
                 botStateUid=botStateUid)
         else:
             cr = messages.createTextResponse(

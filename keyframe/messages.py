@@ -321,12 +321,13 @@ def createOptionsResponse(canonicalMsg, text, optionsList, responseType=None,
 
 
 def createAttachmentsResponse(canonicalMsg, text, responseType=None,
-                              responseMeta=None, botStateUid=None):
+                              responseMeta=None, displayType=None, botStateUid=None):
     responseElement = ResponseElement(
         type=ResponseElement.TYPE_ATTACHMENTS,
         text=text,
         responseType=responseType,
         responseMeta=responseMeta,
+        displayType=displayType,
         inputExpected=True)
     return CanonicalResponse(
         channel=canonicalMsg.channel,
@@ -337,7 +338,7 @@ def createAttachmentsResponse(canonicalMsg, text, responseType=None,
 
 def createTextResponse(canonicalMsg, text, responseType=None,
                        responseMeta=None, botStateUid=None,
-                       inputExpected=False, 
+                       inputExpected=False,
                        displayType=ResponseElement.DISPLAY_TYPE_TEXT):
     log.debug("createTextResponse(%s)", locals())
     textList = None
