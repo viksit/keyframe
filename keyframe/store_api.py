@@ -45,7 +45,9 @@ def get_kv_store(kvstype=None, config=None):
             region,
             aws_access_key_id=config.AWS_ACCESS_KEY_ID,
             aws_secret_access_key=config.AWS_SECRET_ACCESS_KEY)
-        return DynamoKVStore(dbconn, config.KV_STORE_DYNAMODB_TABLE)
+        t = config.KV_STORE_DYNAMODB_TABLE
+        log.info("dynamodb table: %s", t)
+        return DynamoKVStore(dbconn, t)
     elif kvstype == TYPE_LOCALFILE:
         return LocalFileKVStore()
     elif kvstype == TYPE_INMEMORY:
