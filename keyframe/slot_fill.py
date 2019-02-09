@@ -306,7 +306,11 @@ class Slot(object):
                     # TODO(viksit/nishant): add a nice way to control this.
                     log.warn("Incorrect value (%s) entered for slot %s.", fillResult, self.name)
                     log.debug("maxTries: %s, numTries: %s", self.maxTries, self.numTries)
-                    if self.maxTries and self.maxTries < self.numTries:
+                    if self.maxTries is None \
+                       or not self.maxTries \
+                       or self.maxTries == 0 \
+                       or self.maxTries < self.numTries:
+                    # if self.maxTries and self.maxTries < self.numTries:
                         self.filled = True
                         self.state = Slot.SLOT_STATE_FILLED
                         return {"status":self.filled}
