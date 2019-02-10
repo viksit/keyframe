@@ -44,10 +44,15 @@ class Config(object):
     KINESIS_STREAM_PREFIX = os.getenv("KINESIS_STREAM_PREFIX","kf-events-dev")
     KINESIS_STREAM_NAME = os.getenv("KINESIS_STREAM_NAME", "kf-events-dev")
 
+    AWS_S3_REGION = "us-west-2"
     DYNAMODB_AWS_REGION = "us-west-2"
     KV_STORE_S3_BUCKET = "ml-dev"
 
     KF_EVENTS_S3_BUCKET = os.getenv("KF_EVENTS_S3_BUCKET", "ml-logs-dev")
+
+    AWS_S3_PUBLIC_UPLOAD_ACCESS_KEY_ID = "AKIAI7EIN2LNVZSF6CKA"
+    AWS_S3_PUBLIC_UPLOAD_SECRET_ACCESS_KEY = "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"
+    AWS_S3_PUBLIC_UPLOAD_BUCKET = "ml-public-upload-dev"
 
     # This is IAM user dyndb-dev
     AWS_ACCESS_KEY_ID = "AKIAJXSES3NWHCU7TNIQ"
@@ -118,6 +123,10 @@ class ProdConfig(Config):
     KINESIS_STREAM_NAME = "kf-events-prod"
 
     KF_EVENTS_S3_BUCKET = "ml-logs-prod"
+
+    AWS_S3_PUBLIC_UPLOAD_ACCESS_KEY_ID = "AKIAJBSHFRRWUL6DHWGA"
+    AWS_S3_PUBLIC_UPLOAD_SECRET_ACCESS_KEY = "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"
+    AWS_S3_PUBLIC_UPLOAD_BUCKET = "ml-public-upload-prod"
 
     DB_CONN_STRING = "dbname='myra_db_prod' user='myraadmin' host='myra-db-main.cihwyaszqq2o.us-west-2.rds.amazonaws.com' password='RZ4KvefI3f9e'"
 

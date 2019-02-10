@@ -19,6 +19,9 @@ import urllib
 
 print("[%s] STEP 10" % (time.time(),), file=sys.stderr)
 
+import boto
+import mimetypes
+
 from functools import wraps
 import yaml
 import json
@@ -134,6 +137,32 @@ def app_debug():
         return jsonify(dict(request.headers))
     r = {"myregionid":os.getenv("REGION_ID")}
     return jsonify(r)
+
+publicUploadConn = None
+def getPublicUploadConn():
+    global publicUploadConn
+    publicUploadConn = boto.s3.connect_to_region(
+        cfg.AWS_S3_REGION,
+        aws_access_key_id=cfg.AWS_S3_PUBLIC_UPLOAD_ACCESS_KEY_ID,
+        aws_secret_access_key=cfg.AWS_S3_PUBLIC_UPLOAD_SECRET_ACCESS_KEY
+    )
+    return publicUploadConn
+
+@app.route("/api/internal/sign_s3_upload", methods = ["GET"])
+@cross_origin(supports_credentials=True)
+@wrap_exceptions
+def sign_s3_upload():
+    bucketName = cfg.AWS_S3_PUBLIC_UPLOAD_BUCKET
+    objectName = request.args.get("objectName")
+    contentType = mimetypes.guess_type(objectName)[0]
+    signedUrl = getPublicUploadConn().generate_url(
+        300,
+        "PUT",
+        bucketName,
+        objectName,
+        headers = {"Content-Type": contentType, "x-amz-acl":"public-read"}
+    )
+    return jsonify({"signedUrl": signedUrl})
 
 @app.route('/logtest')
 def log_test():

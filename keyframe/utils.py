@@ -99,3 +99,24 @@ def pretty(d, indent=0):
          pretty(value, indent+1)
       else:
          print('\t' * (indent+1) + str(value))
+
+def urlToFD2(url, sizeLimitBytes=None, chunkSize=100000):
+    f = tempfile.TemporaryFile()
+    r = requests.get(url, stream=True)
+    if not r.status_code in (200, 201):
+        raise Exception("could not get url. status_code: %s" % (r.status_code,))
+    for chunk in r.iter_content(chunk_size=chunkSize):
+        f.write(chunk)
+        log.debug("got chunk (%s)", f.tell())
+    f.seek(0)
+    return (f, r.headers.get("Content-Type"))
+
+def urlToFD(url, sizeLimitBytes=None, chunkSize=100000):
+    f = tempfile.TemporaryFile()
+    r = requests.get(url)
+    if not r.status_code in (200, 201):
+        raise Exception("could not get url. status_code: %s" % (r.status_code,))
+    f.write(r.content)
+    f.seek(0)
+    return (f, r.headers.get("Content-Type"))
+
