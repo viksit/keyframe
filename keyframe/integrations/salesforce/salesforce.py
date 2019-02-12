@@ -104,15 +104,37 @@ class SalesforceClient(object):
         body: the attachment itself as a filelike object that can be read as a binary blob.
         ticketId: the id of a ticket to which this attachment should be associated.
         """
-        b = base64.b64encode(body.read())
-        d = {
-            "ParentId":ticketId,
-            "Name":name,
-            "body": str(b)
+        log.info("_createAttachment(name=%s, ticketId=%s, body=...", name, ticketId)
+        # TODO: get this from the salesforce instance
+        url = 'https://%s/services/data/v38.0/sobjects/Attachment/' % (self.instance,)
+        entdoc = {
+            'ParentId': ticketId,
+            'Name': name
         }
-        a = self.sf.Attachment.create(d)
-        return a
+        entdocjson = json.dumps(entdoc)
 
+        mimeType = "application/octet-stream"  # the default if we can't be more specific
+        ext = name.strip().rsplit(".", 1)
+        if len(ext) == 2:
+            if ext[1] in ("png", "jpeg", "gif", "bmp", "webp"):
+                mimeType = "image/%s" % (ext[1],)
+        files = {
+            'Body': (name, body, mimeType),
+            'entity_document': (None, entdocjson, "application/json")
+        }
+
+        headers = {'Authorization': 'Bearer %s' % self.sf.session_id }
+        response = requests.post(
+            url = url,
+            headers = headers,
+            files = files
+        )
+
+        if response.status_code not in (200, 201) or not response.json().get("success"):
+            log.error(response.text)
+            raise Exception("Could not upload attachment")
+
+        return response.json().get("id")
 
 def _nameParts(name):
     # TODO: improve this.
@@ -165,10 +187,11 @@ def _extractUrlNameFromUrls(urls):
     # Returns: [('http://foo.com/bar/baz.pdf','baz.pdf'), ('http://foo.com/bar/rab.pdf','rab.pdf')]
     attachments = []
     for u in urls.strip().split(','):
-        u2 = urllib.parse.urlparse(u)
-        ext = os.path.splitext(u2.path)[1]
-        u3 = u2.path.rsplit("__", 1)
-        name = "attachment.%s" % (ext,)
+        u2 = urllib.parse.urlparse(u)  # http://foo.com/bar/baz.pd -> path: /bar/baz.pd 
+        #ext = os.path.splitext(u2.path)[1]  # ext = .pd
+        name = os.path.split(u2.path)[1]  # name = baz.pd
+        # Urls from the widget upload need the '__' split.
+        u3 = name.rsplit("__", 1)
         if len(u3) == 2:
             name = six.moves.urllib.parse.unquote_plus(u3[1])
         attachments.append((u, name))
