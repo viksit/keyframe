@@ -120,3 +120,8 @@ def urlToFD(url, sizeLimitBytes=None, chunkSize=100000):
     f.seek(0)
     return (f, r.headers.get("Content-Type"))
 
+def getContentType(f):
+    x = os.path.splitext(f)
+    if x[1] in ("png", "jpeg", "gif", "bmp", "webp"):
+        return "image/%s" % (x[1],)
+    return "application/octet-stream"

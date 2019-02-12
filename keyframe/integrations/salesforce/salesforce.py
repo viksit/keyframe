@@ -23,6 +23,12 @@ class SalesforceError(Exception):
     pass
 
 
+def createSalesforceClient(js):
+    return SalesforceClient(
+        username=js.get("username"), password=js.get("password"),
+        orgId=js.get("org_id"), securityToken=js.get("security_token"),
+        instance=js.get("instance"), domain=js.get("domain"))
+
 class SalesforceClient(object):
     def __init__(self, username, password, orgId, securityToken, instance, domain=None):
         self.username = username
@@ -98,27 +104,33 @@ class SalesforceClient(object):
         case = self.sf.Case.get_by_custom_id('id', c.get("id"))
         return case
 
-    def _createAttachment(self, name, body, ticketId):
+    def createAttachment(self, name, uri, parentId):
+        fd = None
+        if uri.startswith("http"):
+            (fd, contentType) = keyframe.utils.urlToFD(
+                url=uri, sizeLimitBytes=None)
+        else:
+            if os.path.exists(uri):
+                fd = open(uri, "rb")
+        return self._createAttachment(name, fd, parentId)
+
+    def _createAttachment(self, name, body, parentId):
         """
         Params
         name: (str) name of the attachment (i.e. screenshot.png)
         body: the attachment itself as a filelike object that can be read as a binary blob.
-        ticketId: the id of a ticket to which this attachment should be associated.
+        parentId: eg: the id of a ticket to which this attachment should be associated.
         """
-        log.info("_createAttachment(name=%s, ticketId=%s, body=...", name, ticketId)
+        log.info("_createAttachment(name=%s, parentId=%s, body=...", name, parentId)
         # TODO: get this from the salesforce instance
         url = 'https://%s/services/data/v38.0/sobjects/Attachment/' % (self.instance,)
         entdoc = {
-            'ParentId': ticketId,
+            'ParentId': parentId,
             'Name': name
         }
         entdocjson = json.dumps(entdoc)
 
-        mimeType = "application/octet-stream"  # the default if we can't be more specific
-        ext = name.strip().rsplit(".", 1)
-        if len(ext) == 2:
-            if ext[1] in ("png", "jpeg", "gif", "bmp", "webp"):
-                mimeType = "image/%s" % (ext[1],)
+        mimeType = keyframe.utils.getContentType(name)
         files = {
             'Body': (name, body, mimeType),
             'entity_document': (None, entdocjson, "application/json")
@@ -154,13 +166,7 @@ def createTicket(jsonObject):
     j = jsonObject
     # Must have the fields to create a client. Only thing to do would be
     # to check and throw back a specific exception.
-    s = SalesforceClient(
-        username=j["username"],
-        password=j["password"],
-        orgId=j["org_id"],
-        securityToken=j["security_token"],
-        instance=j["instance"],
-        domain=j.get("domain"))
+    s = createSalesforceClient(j)
     if not j.get("subject") or not j.get("body") or not j.get("requester_email"):
         raise SalesforceError("No subject or body or requester_email")
     (firstName, lastName) = _nameParts(j.get("requester_name"))
