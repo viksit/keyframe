@@ -89,7 +89,6 @@ class SalesforceClient(object):
                  "Description":body,
                  "Status":"New",
                  "Subject":subject,
-                 #"AssetId":"00Pf400000C4Bi8EAF"
         }
         log.info("caseD: %s", caseD)
         c = self.sf.Case.create(caseD)
