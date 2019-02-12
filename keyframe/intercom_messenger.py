@@ -86,7 +86,8 @@ WIDGET_WEBPAGE_SEARCH = """
              position: 'myra-right',
              ctaElement: '#hiddenctabutton',
              firstMessageElement: '#userquestion',
-             popupByDefault: true
+             popupByDefault: true,
+             showHeader: false,
          };
         </script>
         <script>
@@ -135,7 +136,8 @@ WIDGET_WEBPAGE_WELCOME = """
              customProps: {"testing-key1":"testing-value1"},  // it seems from empirical testing that this is important for the good and proper functioning of the widget.
              position: 'myra-right',
              ctaElement: '#hiddenctabutton',
-             popupByDefault: true
+             popupByDefault: true,
+             showHeader: false,
          };
         </script>
         <script>
