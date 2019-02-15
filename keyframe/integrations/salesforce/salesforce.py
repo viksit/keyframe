@@ -122,8 +122,35 @@ class SalesforceClient(object):
         parentId: eg: the id of a ticket to which this attachment should be associated.
         """
         log.info("_createAttachment(name=%s, parentId=%s, body=...", name, parentId)
+        entdoc = {
+            'ParentId': parentId,
+            'Name': name
+        }
+        entdocjson = json.dumps(entdoc)
+
+        mimeType = keyframe.utils.getContentType(name)
+        files = {
+            'Body': (name, body, mimeType),
+            'entity_document': (None, entdocjson, "application/json")
+        }
+
+        r = self.sf.Attachment.create(
+            data=None, headers={'Content-Type':''},
+            files=files)
+
+        return r.get('id')
+
+    def _createAttachment2(self, name, body, parentId):
+        """
+        Params
+        name: (str) name of the attachment (i.e. screenshot.png)
+        body: the attachment itself as a filelike object that can be read as a binary blob.
+        parentId: eg: the id of a ticket to which this attachment should be associated.
+        """
+        log.info("_createAttachment(name=%s, parentId=%s, body=...", name, parentId)
         # TODO: get this from the salesforce instance
         url = 'https://%s/services/data/v38.0/sobjects/Attachment/' % (self.instance,)
+        #url = "http://localhost:8082/json"
         entdoc = {
             'ParentId': parentId,
             'Name': name
