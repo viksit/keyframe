@@ -53,6 +53,7 @@ class SalesforceClient(object):
                 'Email', email)
             return c
         except SalesforceResourceNotFound as srne:
+            log.exception("Contact with email (%s) not found", email)
             return None
 
     def createContact(self, email, lastname, firstname):
@@ -101,7 +102,8 @@ class SalesforceClient(object):
         log.info("caseD: %s", caseD)
         c = self.sf.Case.create(caseD)
         log.info("c: %s", c)
-        case = self.sf.Case.get_by_custom_id('id', c.get("id"))
+        #case = self.sf.Case.get_by_custom_id('Id', c.get("id"))
+        case = self.sf.Case.get(c.get("id"))
         return case
 
     def createAttachment(self, name, uri, parentId):
