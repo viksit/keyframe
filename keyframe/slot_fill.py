@@ -257,7 +257,7 @@ class Slot(object):
                         self.name,
                         canonicalMsg.text, self.prompt(botState), self.entityType)
                     if self.canonicalId:
-                        log.info("ADDING canonicalId %s = %s to session utterances",
+                        log.debug("ADDING canonicalId %s = %s to session utterances",
                                  self.canonicalId, canonicalMsg.text)
                         botState.addToSessionUtterances(
                             self.canonicalId, canonicalMsg.text,
@@ -300,7 +300,7 @@ class Slot(object):
                     self.name,
                     canonicalMsg.text, self.prompt(botState), self.entityType)
                 if self.canonicalId:
-                    log.info("ADDING2 canonicalId %s = %s to session utterances",
+                    log.debug("ADDING2 canonicalId %s = %s to session utterances",
                              self.canonicalId, canonicalMsg.text)
                     botState.addToSessionUtterances(
                         self.canonicalId, canonicalMsg.text,
@@ -353,7 +353,7 @@ class Slot(object):
                     self.name,
                     canonicalMsg.text, self.prompt(botState), self.entityType)
                 if self.canonicalId:
-                    log.info("ADDING2 canonicalId %s = %s to session utterances",
+                    log.debug("ADDING2 canonicalId %s = %s to session utterances",
                              self.canonicalId, canonicalMsg.text)
                     botState.addToSessionUtterances(
                         self.canonicalId,

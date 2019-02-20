@@ -617,12 +617,12 @@ class GenericActionSlot(GenericSlot):
             zc.update(self.contactChannelsConfig["salesforce"])
 
         _ed = self._entitiesDict(botState)
-        log.info("_ED: %s", _ed)
+        #log.info("_ED: %s", _ed)
         for (k,v) in six.iteritems(salesforceConfig.get("request")):
             log.info("k: %s, v: %s", k, v)
             if v:
                 zc[k] = Template(v).render(_ed)
-                log.info("AFTER RENDERING, zc[k] value is: %s", zc[k])
+                #log.info("AFTER RENDERING, zc[k] value is: %s", zc[k])
         log.info("calling salesforce.createTicket")
         zr = salesforce.createTicket(zc)
         log.info("zr: %s", zr)
