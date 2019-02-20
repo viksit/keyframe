@@ -119,13 +119,14 @@ class BotState(object):
         self._sessionData[k] = v
         self._sessionDataType[k] = type
 
-    def addToSessionUtterances(self, k, v, p, type=None):
+    def addToSessionUtterances(self, k, v, p, type=None, addToTranscript=True):
         #log.debug("existing SessionUtterancesOrdered: %s", self._sessionUtterancesOrdered)
         #log.debug("addToSessionUtterances(%s)", locals())
         self._sessionUtterances[k] = v
         self._sessionUtterancesPrompt[k] = p
         self._sessionUtterancesType[k] = type
-        self._sessionUtterancesOrdered.append((k, v))
+        if addToTranscript:
+            self._sessionUtterancesOrdered.append((k, v))
 
     def addToSessionApiResults(self, k, v):
         self._sessionApiResults[k] = v

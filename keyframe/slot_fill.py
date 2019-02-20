@@ -256,6 +256,13 @@ class Slot(object):
                     botState.addToSessionUtterances(
                         self.name,
                         canonicalMsg.text, self.prompt(botState), self.entityType)
+                    if self.canonicalId:
+                        log.info("ADDING canonicalId %s = %s to session utterances",
+                                 self.canonicalId, canonicalMsg.text)
+                        botState.addToSessionUtterances(
+                            self.canonicalId, canonicalMsg.text,
+                            self.prompt(botState), self.entityType,
+                            addToTranscript=False)
                     botState.addToSessionApiResults(
                         self.name, fillApiResult)
                     self.filled = True
@@ -292,6 +299,13 @@ class Slot(object):
                 botState.addToSessionUtterances(
                     self.name,
                     canonicalMsg.text, self.prompt(botState), self.entityType)
+                if self.canonicalId:
+                    log.info("ADDING2 canonicalId %s = %s to session utterances",
+                             self.canonicalId, canonicalMsg.text)
+                    botState.addToSessionUtterances(
+                        self.canonicalId, canonicalMsg.text,
+                        self.prompt(botState), self.entityType,
+                        addToTranscript=False)
                 botState.addToSessionApiResults(
                     self.name,
                     self.apiResult)
@@ -338,6 +352,14 @@ class Slot(object):
                 botState.addToSessionUtterances(
                     self.name,
                     canonicalMsg.text, self.prompt(botState), self.entityType)
+                if self.canonicalId:
+                    log.info("ADDING2 canonicalId %s = %s to session utterances",
+                             self.canonicalId, canonicalMsg.text)
+                    botState.addToSessionUtterances(
+                        self.canonicalId,
+                        canonicalMsg.text, self.prompt(botState), self.entityType,
+                        addToTranscript=False)
+
                 botState.addToSessionApiResults(
                     self.name,
                     self.apiResult)
