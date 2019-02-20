@@ -71,13 +71,13 @@ class GenericSlot(keyframe.slot_fill.Slot):
 
     def respond(self, contentType,
                 text, canonicalMsg, responseType=None, botStateUid=None,
-                searchAPIResult=None, zendeskTicketUrl=None):
+                searchAPIResult=None, ticketUrl=None):
         log.debug("GenericSlot.respond(%s)", locals())
         responseMeta=keyframe.messages.ResponseMeta(
             apiResult=self.apiResult,
             newTopic=self.newTopic,
             searchAPIResult=searchAPIResult,
-            zendeskTicketUrl=zendeskTicketUrl,
+            ticketUrl=ticketUrl,
             tags=self.tags)
         if contentType == "text":
             cr = keyframe.messages.createTextResponse(
@@ -419,7 +419,7 @@ class GenericActionSlot(GenericSlot):
         canonicalResponse = self.respond(
             contentType,
             text, canonicalMsg, botStateUid=botState.getUid(),
-            searchAPIResult=searchAPIResult, zendeskTicketUrl=ticket_url)
+            searchAPIResult=searchAPIResult, ticketUrl=ticket_url)
         return canonicalResponse
 
     def _addSearchDefaults(self, apiUrl):

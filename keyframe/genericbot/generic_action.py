@@ -151,7 +151,7 @@ class GenericActionObject(keyframe.actions.ActionObject):
                 streamName=self.config.KINESIS_STREAM_NAME)
             if filled:
                 #responseEvent.responseType = "fill"
-                if slotObject.getActionType() == "zendesk":
+                if slotObject.getActionType() in ("zendesk", "salesforce"):
                     responseEvent.ticketFiled = True
                 # Somewhat of a hack to get the value of the filled slot
                 # in the event for event processing.
