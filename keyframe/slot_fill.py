@@ -134,12 +134,15 @@ class Slot(object):
         # way as entities etc.
         customPropsDict = dict([(k.replace("custom_props_", "", 1), v) for (k,v) in botState.getSessionData().items() if k.startswith("custom_props_")])
 
-        return {"entities":botState.getSessionData(),
+        ed = {"entities":botState.getSessionData(),
                 "utterances":botState.getSessionUtterances(),
                 "transcript":transcript,
                 "searchapiresults":botState.getSessionSearchApiResults(),
                 "webhook":botState.getSessionWebhookResults(),
-                "customprops":customPropsDict}
+                "customprops":customPropsDict,
+                "sessionprops":botState.getSessionProps()}
+        log.debug("ED: %s", ed)
+        return ed
 
     def addCustomFieldsToSession(self, botState):
         if self.customFields:

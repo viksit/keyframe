@@ -49,17 +49,27 @@ class BotState(object):
             self.uid = None
             self.previousUid = None
         self.sessionStartLastEvent = False
+        self._sessionProps = {}
 
     def _createSessionId(self, userId, ts):
         return "kf_ses_%i_%s" % (ts, random.randint(0,1000))
 
-    def startSession(self, userId, ts=None):
+    def startSession(self, userId, ts=None, sessionProps=None):
+        log.info("botState.startSession(%s)", locals())
         self.clear()
         if not ts:
             ts = round(time.time()*1000)
         self.sessionStartTime = ts
         self.sessionId = self._createSessionId(userId, ts)
         self.changed = True
+        if sessionProps:
+            self._sessionProps = sessionProps
+
+    def addSessionProps(self, d):
+        self._sessionProps.update(d)
+
+    def getSessionProps(self):
+        return self._sessionProps
 
     def getSessionId(self):
         return self.sessionId
@@ -256,7 +266,8 @@ class BotState(object):
             "session_intent":self.sessionIntent,
             "session_id":self.sessionId,
             "session_start_time":self.sessionStartTime,
-            "session_start_last_event":self.sessionStartLastEvent
+            "session_start_last_event":self.sessionStartLastEvent,
+            "session_props":self._sessionProps
         }
 
     @classmethod
@@ -295,4 +306,5 @@ class BotState(object):
         botState.sessionId = jsonObject.get("session_id")
         botState.sessionStartTime = jsonObject.get("session_start_time")
         botState.sessionStartLastEvent = jsonObject.get("session_start_last_event")
+        botState._sessionProps = jsonObject.get("session_props")
         return botState

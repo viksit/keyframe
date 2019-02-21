@@ -288,7 +288,8 @@ class BaseBot(object):
         if createNewSession:
             # There is no session. Create a new session.
             botState.clear()
-            botState.startSession(canonicalMsg.userId)
+            botState.startSession(
+                canonicalMsg.userId, sessionProps={"location_href":canonicalMsg.locationHref})
             botState.sessionStartLastEvent = True
             sessionStatus = "start"
             self.putBotState(
@@ -501,7 +502,8 @@ class BaseBot(object):
                         # Any subsequent [topic=xxx] commands will start a new session.
                     else:
                         log.info("starting new session")
-                        botState.startSession(canonicalMsg.userId)
+                        botState.startSession(
+                            canonicalMsg.userId, sessionProps={"location_href":canonicalMsg.locationHref})
                         #self._addCustomPropsToSession(
                         #    canonicalMsg.customProps, botState)
                         newSession = True
@@ -520,7 +522,8 @@ class BaseBot(object):
                     startNewSession = _d.get("startNewSession", False)
                     if startNewSession:
                         botState.clear()
-                        botState.startSession(canonicalMsg.userId)
+                        botState.startSession(
+                            canonicalMsg.userId, sessionProps={"location_href":canonicalMsg.locationHref})
                         newSession = True
                     transferTopicInfo = None
                     newTopic = True
@@ -555,7 +558,8 @@ class BaseBot(object):
                 log.debug("got START topic: %s", topicId)
                 newTopic = True
                 botState.clear()
-                botState.startSession(canonicalMsg.userId)
+                botState.startSession(
+                    canonicalMsg.userId, sessionProps={"location_href":canonicalMsg.locationHref})
                 newSession = True
 
             # Any time custom props are passed in, add them to the session.
