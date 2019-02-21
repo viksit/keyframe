@@ -125,3 +125,20 @@ def getContentType(f):
     if x[1] in ("png", "jpeg", "gif", "bmp", "webp"):
         return "image/%s" % (x[1],)
     return "application/octet-stream"
+
+
+def fOnV(d, ft, fn):
+    """
+    Apply fn to all values in d if ft(value) is true.
+    Changes d in place. Leaves all values where not ft(value) as they are.
+    For example, capitalize all string values in d. 
+      ft = lambda x: isinstance(x, str)
+      fn = lambda x: x.capitalize()
+    """
+    assert isinstance(d, dict)
+    for (k,v) in six.iteritems(d):
+        if ft(v):
+            d[k] = fn(v)
+        elif isinstance(v, dict):
+            fOnV(v, ft, fn)
+

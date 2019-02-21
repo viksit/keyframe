@@ -611,13 +611,25 @@ class GenericActionSlot(GenericSlot):
         #return resp
 
     def processSalesforce(self, botState):
-        salesforceConfig = self.actionSpec.get("salesforce")
-        zc = copy.deepcopy(salesforceConfig.get("request"))
-        if not zc.get("username") and self.contactChannelsConfig.get("salesforce"):
-            zc.update(self.contactChannelsConfig["salesforce"])
-
         _ed = self._entitiesDict(botState)
         #log.info("_ED: %s", _ed)
+
+        salesforceConfig = self.actionSpec.get("salesforce")
+        zc = copy.deepcopy(salesforceConfig.get("request"))
+        cs = self.contactChannelsConfig.get("salesforce")
+        if cs:
+            if not zc.get("username"):
+                zc.update(cs)
+            if cs.get("customfields"):
+                log.info("customfields: %s", cs.get("customfields"))
+                cf = copy.deepcopy(cs.get("customfields"))
+                keyframe.utils.fOnV(
+                    cf,
+                    lambda x: isinstance(x, str),
+                    lambda x: Template(x).render(_ed))
+                log.info("SALESFORCE Adding customfield: %s", cf)
+                zc["customfields"] = cf
+
         for (k,v) in six.iteritems(salesforceConfig.get("request")):
             log.info("k: %s, v: %s", k, v)
             if v:

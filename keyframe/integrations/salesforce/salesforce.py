@@ -27,16 +27,19 @@ def createSalesforceClient(js):
     return SalesforceClient(
         username=js.get("username"), password=js.get("password"),
         orgId=js.get("org_id"), securityToken=js.get("security_token"),
-        instance=js.get("instance"), domain=js.get("domain"))
+        instance=js.get("instance"), domain=js.get("domain"),
+        customFields=js.get("customfields"))
 
 class SalesforceClient(object):
-    def __init__(self, username, password, orgId, securityToken, instance, domain=None):
+    def __init__(self, username, password, orgId, securityToken, instance,
+                 domain=None, customFields=None):
         self.username = username
         self.password = password
         self.orgId = orgId
         self.securityToken = securityToken
         self.instance = instance
         self.domain = domain
+        self.customFields = customFields
         self.sf = Salesforce(
             password=self.password,
             username=self.username,
@@ -60,8 +63,10 @@ class SalesforceClient(object):
         """
         Creates a new contact with email and name and returns the Contact.
         """
-        d = self.sf.Contact.create(
-            {'LastName':lastname, 'FirstName':firstname, 'Email':email})
+        cd = {'LastName':lastname, 'FirstName':firstname, 'Email':email}
+        if self.customFields and "Contact" in self.customFields:
+            cd.update(self.customFields["Contact"])
+        d = self.sf.Contact.create(cd)
         c = self.sf.Contact.get_by_custom_id('Email', email)
         return c
 
@@ -99,6 +104,8 @@ class SalesforceClient(object):
                  "Status":"New",
                  "Subject":subject,
         }
+        if self.customFields and "Case" in self.customFields:
+            caseD.update(self.customFields["Case"])
         log.info("caseD: %s", caseD)
         c = self.sf.Case.create(caseD)
         log.info("c: %s", c)
@@ -164,7 +171,7 @@ def createTicket(jsonObject):
     jsonObject: (object) dict as jsonObjectFormatExample
     Returns: {"ticket":{"url":URL}}
     """
-    log.info("jsonObject: %s", jsonObject)
+    log.info("createTicket(%s)", jsonObject)
     j = jsonObject
     # Must have the fields to create a client. Only thing to do would be
     # to check and throw back a specific exception.
