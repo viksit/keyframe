@@ -39,6 +39,9 @@ class SalesforceClient(object):
         self.securityToken = securityToken
         self.instance = instance
         self.domain = domain
+        if not self.domain:
+            # an empty string does not work, set to None explicitly.
+            self.domain = None
         self.customFields = customFields
         self.sf = Salesforce(
             password=self.password,
