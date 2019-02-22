@@ -296,7 +296,7 @@ class GenericActionSlot(GenericSlot):
     def __init__(self, apiResult=None, newTopic=None,
                  topicId=None, channelClient=None, config=None,
                  searchIndex=None, agentId=None, tags=None,
-                 contactChannelsConfig=None):
+                 contactChannelsConfig={}):
         log.info("GenericActionSlot.__init__(config=%s, searchIndex=%s, agentId=%s)",
                  config, searchIndex, agentId)
         super(GenericActionSlot, self).__init__(
@@ -616,7 +616,9 @@ class GenericActionSlot(GenericSlot):
 
         salesforceConfig = self.actionSpec.get("salesforce")
         zc = copy.deepcopy(salesforceConfig.get("request"))
-        cs = self.contactChannelsConfig.get("salesforce")
+        cs = None
+        if self.contactChannelsConfig:
+            cs = self.contactChannelsConfig.get("salesforce")
         if cs:
             if not zc.get("username"):
                 zc.update(cs)
