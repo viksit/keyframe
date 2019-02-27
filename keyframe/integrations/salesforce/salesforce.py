@@ -11,6 +11,7 @@ import six
 
 from simple_salesforce import Salesforce
 from simple_salesforce import SalesforceResourceNotFound
+from simple_salesforce import SalesforceMoreThanOneRecord
 
 import keyframe.config
 import keyframe.utils
@@ -50,17 +51,42 @@ class SalesforceClient(object):
             security_token=self.securityToken,
             domain=self.domain)
 
-    def getContact(self, email):
+    def getContact(self, id=None, email=None):
         """
         Returns a Contact if exists, otherwise returns None.
         """
+        log.info("getContact(%s)", locals())
+        assert id or email, "must provide either id or email"
         try:
+            if id:
+                c = self.sf.Contact.get(id)
+                if c:
+                    return c
+                else:
+                    log.info("Could not find contact with id %s", id)
+                    return None
+            #raise Exception("debug")
             c = self.sf.Contact.get_by_custom_id(
                 'Email', email)
             return c
         except SalesforceResourceNotFound as srne:
             log.exception("Contact with email (%s) not found", email)
             return None
+        except SalesforceMoreThanOneRecord as sm:
+            log.info("More than one record found: %s", sm)
+            try:
+                _cid = sm.content[0].rsplit("/", 1)[1]
+                c = self.getContact(id=_cid)
+                log.info("got c: %s", c)
+                return c
+            except:
+                log.exception("Exception getting Contact")
+                return None
+        except Exception:
+            log.error("ERROR getting contact")
+            log.exception("Exception getting contact for email %s", email)
+            return None
+
 
     def createContact(self, email, lastname, firstname):
         """
@@ -70,6 +96,7 @@ class SalesforceClient(object):
         if self.customFields and "Contact" in self.customFields:
             cd.update(self.customFields["Contact"])
         d = self.sf.Contact.create(cd)
+        log.info("created Contact: %s", d)
         c = self.sf.Contact.get_by_custom_id('Email', email)
         return c
 
@@ -84,7 +111,7 @@ class SalesforceClient(object):
         Return ticket struct and url of the ticket.
         """
         log.info("createTicket(%s)", locals())
-        contact = self.getContact(requesterEmail)
+        contact = self.getContact(email=requesterEmail)
         if not contact:
             contact = self.createContact(
                 requesterEmail, requesterLastName, requesterFirstName)
