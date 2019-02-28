@@ -123,6 +123,21 @@ app.config['DEBUG'] = True
 
 print("[%s] STEP 50" % (time.time(),), file=sys.stderr)
 
+@app.route('/botspec', methods=['GET'])
+def botspec():
+    accountId = request.args.get("account_id")
+    agentId = request.args.get("agent_id")
+    if not (accountId and agentId):
+        return Response("agent_id and account_id required")
+    try:
+        GenericBotHTTPAPI.fetchBotJsonSpec(accountId=accountId, agentId=agentId)
+        return jsonify(GenericBotHTTPAPI.configJson)
+    except:
+        return Response(
+            "Could not find botspec for account_id: %s and agent_id: %s" % (
+                accountId, agentId))
+
+
 @app.route('/healthcheck')
 def healthcheck():
     print("healthcheck called")
