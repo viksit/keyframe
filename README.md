@@ -13,6 +13,10 @@ https://keyframe.prod.myralabs.com/botspec?account_id=7BbmKJgxsMKRuAcBjNA1Zo&age
 1551139200
 
 ~/work/keyframe $ aws logs filter-log-events --log-group-name "/aws/lambda/keyframe-prod" --start-time 1551052800000 --end-time 1551139200000 --filter-pattern "GOT EXCEPTION" > /mnt/tmp/keyframe.exceptions.20190225
+
+# Generic cmd for getting errors for yesterday (everything is UTC)
+time aws logs filter-log-events --log-group-name "/aws/lambda/keyframe-prod"  --start-time $(date --utc -d $(date --utc  --date "1 days ago" +%Y%m%d) +%s)000 --end-time $(date --utc -d $(date --utc  +%Y%m%d) +%s)000  --filter-pattern "GOT EXCEPTION"  > /data/nishant/keyframe.exceptions.$(date --utc  --date "1 days ago" +%Y%m%d)
+ 
 ```
 
 ## Intercom messenger integration
