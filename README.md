@@ -1,5 +1,20 @@
 # Keyframe
 
+## DEBUG
+
+#### Find json spec for an agent
+https://keyframe.prod.myralabs.com/botspec?account_id=7BbmKJgxsMKRuAcBjNA1Zo&agent_id=ff5d6b516c1142f09aef7c3df865987f
+
+#### Get errors from lambda logs
+```
+~/work/keyframe $ date --utc -d 20190225 +%s
+1551052800
+~/work/keyframe $ date --utc -d 20190226 +%s
+1551139200
+
+~/work/keyframe $ aws logs filter-log-events --log-group-name "/aws/lambda/keyframe-prod" --start-time 1551052800000 --end-time 1551139200000 --filter-pattern "GOT EXCEPTION" > /mnt/tmp/keyframe.exceptions.20190225
+```
+
 ## Intercom messenger integration
 
 #### Configurable options (from agent):
