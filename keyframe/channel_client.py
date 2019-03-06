@@ -256,6 +256,18 @@ class ChannelClientRESTAPI(ChannelClientReturnResponse):
             return {
                 "event_type": eventType
                 }
+        elif eventType == "pinned_user_input_click":
+            return {
+                "event_type": eventType,
+                "text": channelMsg.body.get("text")
+                }
+        elif eventType == "pinned_workflow_click":
+            return {
+                "event_type": "workflow_click",
+                "target_title": channelMsg.body.get("target_title"),
+                "target_href": channelMsg.body.get("target_href"),
+                "click_src": "pinned"
+            }
         else:
             raise Exception("Unknown eventType: %s" % (eventType,))
 

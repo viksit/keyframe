@@ -306,8 +306,7 @@ class BaseBot(object):
             sessionStatus=sessionStatus,
             eventType=e.get("event_type"),
             sessionId=botState.getSessionId(),
-            payload={"target_href":e.get("target_href"),
-                     "target_title":e.get("target_title")},
+            payload=e,
             customProps=canonicalMsg.customProps
         )
 
