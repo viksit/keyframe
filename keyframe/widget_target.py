@@ -114,6 +114,11 @@ def getContextConfig(widgetTargetConfig, url):
         contextCfg = contextualCtaLookup.get(cn)
         log.info("got contextCfg: %s", contextCfg)
         if contextCfg:
+            contextCfg["autopopup"] = False
+            if (contextCfg.get("autoPopupUrls")
+                and contextCfg.get("autoPopupUrls").count(url)):
+                log.info("autopopup=True as %s matched", url)
+                contextCfg["autopopup"] = True
             contexts.append(contextCfg)
     return {
         "enabled": True,
