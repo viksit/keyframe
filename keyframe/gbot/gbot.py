@@ -280,6 +280,7 @@ def widget_target():
     kvStore = getKVStore()
     widgetTargetConfig = keyframe.widget_target.getWidgetTargetConfig(
         kvStore, agentId)
+    #log.info("widgetTargetConfig: %s", widgetTargetConfig)
     r = keyframe.widget_target.evaluateWidgetTarget(widgetTargetConfig, url)
     if not r:
         return jsonify({
