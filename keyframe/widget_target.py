@@ -12,7 +12,7 @@ from keyframe import store_api
 # uncomment if used - see check_urlmatch
 #from urlmatch import urlmatch
 
-log = logging.getLogger("__name__")
+log = logging.getLogger(__name__)
 
 def _extractDomainAndPathFromUrl(url):
     log.debug("url: %s", url)
@@ -95,6 +95,7 @@ Example of widgetTargetConfig:
 }
 """
 def getContextConfig(widgetTargetConfig, url):
+    log.info("getContextConfig(cfg, url=%s)", url)
     cfg = widgetTargetConfig.get("contextualConfig")
     log.info("cfg: %s", cfg)
     if not cfg:
@@ -110,6 +111,14 @@ def getContextConfig(widgetTargetConfig, url):
     contexts = []
     contextualCtaLookup = cfg.get("contextualCtaLookup", {})
     log.info("contextualCtaLookup: %s", contextualCtaLookup)
+    myraUrlParam = None
+    referrerParsed = six.moves.urllib.parse.urlparse(url)
+    #log.info("referrerParsed: %s", referrerParsed)
+    if referrerParsed.query:
+        _tmp = six.moves.urllib.parse.parse_qs(referrerParsed.query)
+        if _tmp.get("mwf_ap"):
+            myraUrlParam = _tmp.get("mwf_ap")[0]
+    log.info("myraUrlParam: %s", myraUrlParam)
     for cn in contextNames:
         contextCfg = contextualCtaLookup.get(cn)
         log.info("got contextCfg: %s", contextCfg)
@@ -118,6 +127,10 @@ def getContextConfig(widgetTargetConfig, url):
             if (contextCfg.get("autoPopupUrls")
                 and contextCfg.get("autoPopupUrls").count(url)):
                 log.info("autopopup=True as %s matched", url)
+                contextCfg["autopopup"] = True
+            if (myraUrlParam
+                and contextCfg.get("popupUrlParams")
+                and contextCfg.get("popupUrlParams").count(myraUrlParam)):
                 contextCfg["autopopup"] = True
             contexts.append(contextCfg)
     return {
