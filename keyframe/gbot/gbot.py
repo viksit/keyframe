@@ -123,17 +123,48 @@ app.config['DEBUG'] = True
 
 print("[%s] STEP 50" % (time.time(),), file=sys.stderr)
 
-@app.route('/botspec', methods=['GET'])
-def botspec():
+class SpecException(Exception):
+    # SpecException should just have one mandatory argument.
+    def __init__(self, msg):
+        super(SpecException, self).__init__(msg)
+
+@app.route('/specs', methods=['GET'])
+def specs():
+    specName = request.args.get("specname")
+    if not specName:
+        return Response(
+            "Specify specname and other required parameters for specname")
+    try:
+        if specName == "botspec":
+            spec = _botspec()
+            return jsonify(spec)
+        if specName == "widgettargetconfig":
+            spec = _widgettargetconfig()
+            return jsonify(spec)
+        return Response("unknown specname: %s" % (specName,))
+    except SpecException as se:
+        return Response(se.args[0])
+
+
+def _widgettargetconfig():
+    kvStore = getKVStore()
+    agentId = request.args.get("agent_id")
+    if not agentId:
+        raise SpecException("agent_id is required")
+    wtc = keyframe.widget_target.getWidgetTargetConfig(
+                kvStore, agentId)
+    return wtc
+
+def _botspec():
     accountId = request.args.get("account_id")
     agentId = request.args.get("agent_id")
     if not (accountId and agentId):
-        return Response("agent_id and account_id required")
+        raise SpecException("agent_id and account_id required")
     try:
         GenericBotHTTPAPI.fetchBotJsonSpec(accountId=accountId, agentId=agentId)
-        return jsonify(GenericBotHTTPAPI.configJson)
+        return GenericBotHTTPAPI.configJson
     except:
-        return Response(
+        raise SpecException(
             "Could not find botspec for account_id: %s and agent_id: %s" % (
                 accountId, agentId))
 

@@ -97,7 +97,7 @@ Example of widgetTargetConfig:
 def getContextConfig(widgetTargetConfig, url):
     log.info("getContextConfig(cfg, url=%s)", url)
     cfg = widgetTargetConfig.get("contextualConfig")
-    log.info("cfg: %s", cfg)
+    #log.info("cfg: %s", cfg)
     if not cfg:
         return {"enabled": False, "contexts": []}
     if not cfg.get("enabled", False):
@@ -124,13 +124,14 @@ def getContextConfig(widgetTargetConfig, url):
         log.info("got contextCfg: %s", contextCfg)
         if contextCfg:
             contextCfg["autopopup"] = False
-            if (contextCfg.get("autoPopupUrls")
-                and contextCfg.get("autoPopupUrls").count(url)):
+            if (contextCfg.get("autoPopupNormalizedUrls")
+                and normalizedUrl in contextCfg.get("autoPopupNormalizedUrls")):
                 log.info("autopopup=True as %s matched", url)
                 contextCfg["autopopup"] = True
             if (myraUrlParam
                 and contextCfg.get("popupUrlParams")
                 and contextCfg.get("popupUrlParams").count(myraUrlParam)):
+                log.info("autopopup=True as %s matched", myraUrlParam)
                 contextCfg["autopopup"] = True
             contexts.append(contextCfg)
     return {
