@@ -3,7 +3,10 @@
 ## DEBUG
 
 #### Find json spec for an agent
-https://keyframe.prod.myralabs.com/botspec?account_id=7BbmKJgxsMKRuAcBjNA1Zo&agent_id=ff5d6b516c1142f09aef7c3df865987f
+https://keyframe.prod.myralabs.com/specs?specname=botspec&account_id=7BbmKJgxsMKRuAcBjNA1Zo&agent_id=ff5d6b516c1142f09aef7c3df865987f
+
+#### Find json spec for widget_target for an agent
+https://keyframe.prod.myralabs.com/specs?specname=widgettargetconfig&agent_id=ff5d6b516c1142f09aef7c3df865987f
 
 #### Get errors from lambda logs
 ```
