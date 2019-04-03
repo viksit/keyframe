@@ -507,6 +507,7 @@ def _run_agent(request_api=None):
     agentId = None
     if request.method == 'POST':
         requestData = request.json
+        requestData["remote_addr"] = request.remote_addr
         text = request.json.get("text")
         accountId = request.json.get("account_id", None)
         agentId = request.json.get("agent_id", None)

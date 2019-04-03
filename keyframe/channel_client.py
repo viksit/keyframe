@@ -272,6 +272,7 @@ class ChannelClientRESTAPI(ChannelClientReturnResponse):
             raise Exception("Unknown eventType: %s" % (eventType,))
 
     def extract(self, channelMsg):
+        # channelMsg.body['remote_addr'] is the ip address
         log.debug("extract(%s)", channelMsg)
         msgType = None
         if channelMsg.body.get("event_type"):
@@ -294,7 +295,8 @@ class ChannelClientRESTAPI(ChannelClientReturnResponse):
             locationHref=channelMsg.body.get("current_url"),
             userInfo=channelMsg.body.get("user_info"),
             eventInfo=self._extractEventInfo(channelMsg),
-            instanceId=instanceId
+            instanceId=instanceId,
+            remoteAddr=channelMsg.body.get("remote_addr")
         )
 
 
