@@ -120,6 +120,8 @@ class SalesforceClient(object):
         ticketUrl = "https://%s/%s" % (self.instance, ticket.get("Id"))
         if attachments:
             for (aUrl, aName) in attachments:
+                if not (aUrl or aName):
+                    continue
                 log.info("creating attachment for url: %s, name: %s", aUrl, aName)
                 (fd, contentType) = keyframe.utils.urlToFD(
                     url=aUrl, sizeLimitBytes=None)
