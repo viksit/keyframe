@@ -42,6 +42,7 @@ class Event(object):
         self.topicId = kwargs.get("topicId")
         self.topicType = kwargs.get("topicType")
         self.slotId = kwargs.get("slotId")
+        self.slotCanonicalId = kwargs.get("slotCanonicalId")
         self.slotTags = kwargs.get("slotTags")
         self.slotType = kwargs.get("slotType")
         self.actionType = kwargs.get("actionType")
@@ -73,6 +74,7 @@ class Event(object):
             "topic_id":self.topicId,
             "topic_type":self.topicType,
             "slot_id":self.slotId,
+            "slot_canonical_id":self.slotCanonicalId,
             "slot_tags":self.slotTags,
             "slot_type":self.slotType,
             "action_type":self.actionType,

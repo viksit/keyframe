@@ -113,6 +113,7 @@ class GenericActionObject(keyframe.actions.ActionObject):
                 topicType=self.getTopicType(),
                 workflowType=self.getWorkflowType(),
                 slotId=slotObject.name,
+                slotCanonicalId=slotObject.canonicalId,
                 slotTags=slotObject.tags,
                 slotType=slotObject.slotType,
                 actionType=slotObject.getActionType(),
