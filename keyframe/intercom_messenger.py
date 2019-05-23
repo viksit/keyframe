@@ -82,7 +82,7 @@ WIDGET_WEBPAGE_SEARCH = """
              realm: '%(keyframe_realm)s',
              widgetVersion: '%(widget_version)s',
              firstLoad: true,
-             customProps: {"testing-key1":"testing-value1"},  // it seems from empirical testing that this is important for the good and proper functioning of the widget.
+             customProps: {"testing-key1":"testing-value1", "intercom-user-id":"%(intercom_user_id)s"},  // it seems from empirical testing that this is important for the good and proper functioning of the widget.
              position: 'myra-right',
              ctaElement: '#hiddenctabutton',
              firstMessageElement: '#userquestion',
@@ -113,6 +113,13 @@ WIDGET_WEBPAGE_SEARCH = """
              l();
          })();
         </script>
+        <script>
+          (function() {
+             document.addEventListener('myraFrontendEvent:closeIntercomSheet', function(e) {
+              INTERCOM_MESSENGER_SHEET_LIBRARY.closeSheet()
+            });
+          })();
+        </script>
     </body>
 </html>
 """
@@ -133,7 +140,7 @@ WIDGET_WEBPAGE_WELCOME = """
              realm: '%(keyframe_realm)s',
              widgetVersion: '%(widget_version)s',
              firstLoad: true,
-             customProps: {"testing-key1":"testing-value1"},  // it seems from empirical testing that this is important for the good and proper functioning of the widget.
+             customProps: {"testing-key1":"testing-value1", "intercom-user-id":"%(intercom_user_id)s"},  // it seems from empirical testing that this is important for the good and proper functioning of the widget.
              position: 'myra-right',
              ctaElement: '#hiddenctabutton',
              popupByDefault: true,
@@ -389,7 +396,7 @@ def getStartInitCanvasWithOptions(action1=None, action2=None, widgetUrl=None):
     )
     return imlib.makeResponse(c)
 
-def getStartInitCanvas(widgetUrl, userMsg=None):
+def getStartInitCanvas(widgetUrl, userMsg=None, storedData={}):
     if not userMsg:
         userMsg = ("I am a virtual assistant. I can help answer your questions faster."
                    " What is your question?")
@@ -417,7 +424,8 @@ def getStartInitCanvas(widgetUrl, userMsg=None):
                     action=action
                 )
             ]
-        )
+        ),
+        stored_data = storedData
     )
     return imlib.makeResponse(c)
 

@@ -8,6 +8,11 @@ https://keyframe.prod.myralabs.com/specs?specname=botspec&account_id=7BbmKJgxsMK
 #### Find json spec for widget_target for an agent
 https://keyframe.prod.myralabs.com/specs?specname=widgettargetconfig&agent_id=ff5d6b516c1142f09aef7c3df865987f
 
+#### Find json spec for intercomAgentDeploymentMeta
+# TODO: this is public and gives away the security token. need to protect all these debug endpoints.
+http://localhost:5000/specs?specname=intercomAgentDeploymentMeta&appId=iv6ijpl5
+
+
 #### Get errors from lambda logs
 ```
 ~/work/keyframe $ date --utc -d 20190225 +%s

@@ -141,6 +141,12 @@ def specs():
         if specName == "widgettargetconfig":
             spec = _widgettargetconfig()
             return jsonify(spec)
+        if specName == "intercomAgentDeploymentMeta":
+            appId = request.args.get("appId")
+            if not appId:
+                return Response("must provide appId")
+            agentDeploymentMeta = getIntercomAgentDeploymentMeta(appId)
+            return jsonify(agentDeploymentMeta)
         return Response("unknown specname: %s" % (specName,))
     except SpecException as se:
         return Response(se.args[0])
@@ -225,7 +231,7 @@ def static_from_root():
 
 @app.route('/widget_page_welcome', methods=["GET", "POST"])
 def widget_page_welcome():
-    log.info("REQUEST /widget_page (%s, %s)", request.method, request.url)
+    log.info("REQUEST /widget_page_welcome (%s, %s)", request.method, request.url)
     #_pprint(request.json)
     widgetPage = intercom_messenger.WIDGET_WEBPAGE.strip()
     #widgetPage = open("%s/conf_widget_page.html" % (app.static_folder,)).read()
@@ -246,6 +252,7 @@ def widget_page():
     appId = request.args.get("app_id")
     if not appId:
         return Response("Could not get app_id"), 500
+    intercomUserId = request.args.get("iuid", "NOTSPECIFIED")
     configJson = _fetchAgentJsonSpec(appId)
     if not configJson:
         raise Exception("could not find agent for appid %s" % (appId,))
@@ -279,11 +286,12 @@ def widget_page():
     d["keyframe_realm"] = os.getenv("INTERCOM_WIDGET_REALM", cfg.REALM)
     d["title"] = _getValueFromAgentUserMessages(
         "intercomMessengerAppTitle", configJson, "Myra Help Desk")
+    d["intercom_user_id"] = intercomUserId
     if userQuestion:
         d["user_question"] = userQuestion
     widgetPage = widgetPage % d
-    log.info("WIDGET PAGE:")
-    print(widgetPage)
+    log.debug("WIDGET PAGE:")
+    log.debug(widgetPage)
     return widgetPage
 
 # For local testing in case of some problem with /widget_page
@@ -1056,6 +1064,8 @@ def _getValueFromAgentUserMessages(key, configJson, defaultValue=None):
 def startinit():
     log.info("startinit called")
     log.info(request.json)
+    intercomUserId = request.json.get('user', {}).get('id')
+    log.info('intercomUserId: %s', intercomUserId)
     #contentUrl = request.json.get("canvas", {}).get("content_url")
     #if not contentUrl:
     #    raise Exception("Did not get expected canvas input.")
@@ -1073,8 +1083,9 @@ def startinit():
     parts = urllib.parse.urlparse(requestUrl)
     widgetPageUrl = urllib.parse.urlunparse(
         #(parts[0], parts[1], f"/widget_page?app_id={appId}", "", "", "")
-        ("https", parts[1], f"/widget_page?app_id={appId}", "", "", "")
+        ("https", parts[1], "/widget_page", "", f"app_id={appId}&iuid={intercomUserId}", "")
     )
+    log.info('widgetPageUrl: %s', widgetPageUrl)
     pinConfig = configJson.get("config_json", {}).get("params", {}).get("pin_json", [])
     log.info("pinConfig: %s", pinConfig)
     canvas = None

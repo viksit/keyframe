@@ -16,6 +16,7 @@ class IntercomClient(object):
         intercom = Client(personal_access_token=self.accessToken)
         log.info("sending response to intercom API: %s, %s", text, conversationId)
         conversation = intercom.conversations.find(id=conversationId)
+        log.info("CONVERSATION: %s", conversation)
         res = intercom.conversations.reply(
             id=conversation.id,
             type=conversation.assignee.resource_type,
