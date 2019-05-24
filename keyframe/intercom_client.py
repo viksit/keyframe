@@ -29,3 +29,16 @@ class IntercomClient(object):
         intercom = Client(personal_access_token=self.accessToken)
         intercom.conversations.assign(
             id=conversationId, admin_id=adminId, assignee_id=assigneeId)
+
+    def startConversation(self, userId, messageText):
+        log.info("startConversation(%s)", locals())
+        intercom = Client(personal_access_token=self.accessToken)
+        messageData = {
+            "from": {
+                "type": "user",
+                "id": userId
+                },
+            "body": messageText
+            }
+        res = intercom.messages.create(**messageData)
+        return res

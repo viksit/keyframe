@@ -411,7 +411,16 @@ class GenericActionSlot(GenericSlot):
                     assigneeId=assigneeId,
                     adminId=adminId)
                 text = ""
-            else:
+            elif isinstance(channelClient, channel_client.ChannelClientIntercomMsg):
+                # Get the intercomUserId from canonicalMsg.customProps
+                intercomUserId = canonicalMsg.customProps.get("intercom-user-id")
+                if not intercomUserId:
+                    raise Exception("No Intercom user id")
+                intercomClient = intercom_client.IntercomClient(
+                    accessToken=self.channelClient.userAccessToken)
+                intercomClient.startConversation(
+                    userId=intercomUserId, messageText="Transferring to a human....")
+                # TODO: Do something else.
                 text = "Simulating Intercom message transfer...... beep beep beep beep....... Done."
         else:
             raise Exception("Unknown actionType (%s)" % (actionType,))
