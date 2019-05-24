@@ -128,6 +128,7 @@ class SpecException(Exception):
     def __init__(self, msg):
         super(SpecException, self).__init__(msg)
 
+
 @app.route('/specs', methods=['GET'])
 def specs():
     specName = request.args.get("specname")
@@ -141,6 +142,12 @@ def specs():
         if specName == "widgettargetconfig":
             spec = _widgettargetconfig()
             return jsonify(spec)
+        if specName == "intercomAgentDeploymentMeta":
+            appId = request.args.get("appId")
+            if not appId:
+                return Response("must provide appId")
+            agentDeploymentMeta = getIntercomAgentDeploymentMeta(appId)
+            return jsonify(agentDeploymentMeta)
         return Response("unknown specname: %s" % (specName,))
     except SpecException as se:
         return Response(se.args[0])
