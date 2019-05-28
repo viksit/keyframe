@@ -30,6 +30,8 @@ import keyframe.constants as constants
 
 import keyframe.intercom_client as intercom_client
 import keyframe.channel_client as channel_client
+import keyframe.intercom_utils as intercom_utils
+import keyframe.store_api as store_api
 
 import keyframe.integrations.zendesk.zendesk as zendesk
 import keyframe.integrations.salesforce.salesforce as salesforce
@@ -73,6 +75,7 @@ class GenericSlot(keyframe.slot_fill.Slot):
                 text, canonicalMsg, responseType=None, botStateUid=None,
                 searchAPIResult=None, ticketUrl=None):
         log.debug("GenericSlot.respond(%s)", locals())
+        log.info("respond. text: %s", text)
         responseMeta=keyframe.messages.ResponseMeta(
             apiResult=self.apiResult,
             newTopic=self.newTopic,
@@ -332,6 +335,7 @@ class GenericActionSlot(GenericSlot):
         ticket_url = None
         searchAPIResult = None
         contentType = "text"
+        log.info("actionType: %s", actionType)
         if actionType == "zendesk":
             _d = self.processZendesk(botState)
             log.debug("ZENDESK returns: %s", _d)
@@ -399,6 +403,7 @@ class GenericActionSlot(GenericSlot):
                     self.canonicalId, searchAPIResult)
 
         elif actionType == "transfer_cnv":
+            log.info("type(channelClient): %s", type(channelClient))
             if isinstance(channelClient, channel_client.ChannelClientIntercom):
                 assigneeId = channelClient.supportAdminId
                 adminId = channelClient.proxyAdminId
@@ -411,14 +416,23 @@ class GenericActionSlot(GenericSlot):
                     assigneeId=assigneeId,
                     adminId=adminId)
                 text = ""
-            elif isinstance(channelClient, channel_client.ChannelClientIntercomMsg):
+            elif (isinstance(channelClient, channel_client.ChannelClientIntercomMsg)
+                  or canonicalMsg.customProps.get("intercom-user-id")):
+                log.info("channelClient: %s", channelClient)
                 messageText="Hi I have a question that Myra could not resolve"
                 # Get the intercomUserId from canonicalMsg.customProps
                 intercomUserId = canonicalMsg.customProps.get("intercom-user-id")
+                intercomAppId = canonicalMsg.customProps.get("intercom-app-id")
+                log.info("intercomUserId: %s, intercomAppId: %s", intercomUserId, intercomAppId)
                 if not intercomUserId:
                     raise Exception("No Intercom user id")
+                m = intercom_utils.getIntercomAgentDeploymentMeta(
+                    appId=intercomAppId, kvStore=store_api.get_kv_store())
+                accessToken = m.get("accessToken")
+                if not accessToken:
+                    raise Exception("No intercom access token found")
                 intercomClient = intercom_client.IntercomClient(
-                    accessToken=self.channelClient.userAccessToken)
+                    accessToken=accessToken)
                 intercomClient.startConversation(
                     userId=intercomUserId, messageText=messageText)
                 # TODO: Do something else.

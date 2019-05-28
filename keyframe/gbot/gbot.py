@@ -49,6 +49,7 @@ from keyframe.actions import ActionObject
 from keyframe.slot_fill import Slot
 from keyframe.bot_api import BotAPI
 from keyframe import channel_client
+from keyframe import intercom_utils
 from keyframe import intercom_messenger
 
 print("[%s] STEP 35" % (time.time(),), file=sys.stderr)
@@ -145,7 +146,7 @@ def specs():
             appId = request.args.get("appId")
             if not appId:
                 return Response("must provide appId")
-            agentDeploymentMeta = getIntercomAgentDeploymentMeta(appId)
+            agentDeploymentMeta = intercom_utils.getIntercomAgentDeploymentMeta(appId, kvStore=getKVStore())
             return jsonify(agentDeploymentMeta)
         return Response("unknown specname: %s" % (specName,))
     except SpecException as se:
@@ -238,7 +239,7 @@ def widget_page_welcome():
     appId = request.args.get("app_id")
     if not appId:
         return Response("Could not get app_id"), 500
-    agentDeploymentMeta = getIntercomAgentDeploymentMeta(appId)
+    agentDeploymentMeta = intercom_utils.getIntercomAgentDeploymentMeta(appId, kvStore=getKVStore())
     d = agentDeploymentMeta.get("concierge_meta")
     if "widget_version" not in d:
         d["widget_version"] = "v3"
@@ -277,7 +278,7 @@ def widget_page():
         widget_webpage = intercom_messenger.WIDGET_WEBPAGE_SEARCH
 
     widgetPage = widget_webpage.strip()
-    agentDeploymentMeta = getIntercomAgentDeploymentMeta(appId)
+    agentDeploymentMeta = intercom_utils.getIntercomAgentDeploymentMeta(appId, kvStore=getKVStore())
     d = agentDeploymentMeta.get("concierge_meta")
     if "widget_version" not in d:
         d["widget_version"] = "v3"
@@ -287,6 +288,7 @@ def widget_page():
     d["title"] = _getValueFromAgentUserMessages(
         "intercomMessengerAppTitle", configJson, "Myra Help Desk")
     d["intercom_user_id"] = intercomUserId
+    d["intercom_app_id"] = appId
     if userQuestion:
         d["user_question"] = userQuestion
     widgetPage = widgetPage % d
@@ -793,7 +795,7 @@ def _run_agent_intercom():
 ## End intercom code
 
 def _fetchAgentJsonSpec(appId):
-    agentDeploymentMeta = getIntercomAgentDeploymentMeta(appId)
+    agentDeploymentMeta = intercom_utils.getIntercomAgentDeploymentMeta(appId, kvStore=getKVStore())
     if not agentDeploymentMeta:
         return None
     accountId = agentDeploymentMeta.get("concierge_meta", {}).get("account_id")
@@ -901,10 +903,20 @@ def ping():
 
 #### ------- Intercom messenger app ----------------
 
-def getIntercomAgentDeploymentMeta(appId):
+
+def putIntercomAppIdAccountIdMap(appId, accountId, accountSecret):
     ads = bot_stores.AgentDeploymentStore(kvStore=getKVStore())
-    agentDeploymentMeta = ads.getJsonSpec(appId, "intercom_msg")
-    return agentDeploymentMeta
+    # Below is the same format as the json for "intercom" to help transition testing.
+    jsonSpec = {"concierge_meta":
+                {"app_id":appId,
+                 "account_id":accountId,
+                 "account_secret":accountSecret}}
+    ads.putJsonSpec(appId, "intercom_msg_map", jsonSpec)
+
+def getIntercomAppIdAccountIdMap(appId):
+    ads = bot_stores.AgentDeploymentStore(kvStore=getKVStore())
+    appIdAccountIdMap = ads.getJsonSpec(appId, "intercom_msg_map")
+    return appIdAccountIdMap
 
 # This version used an intermediate map to map appid -> accountid, and then
 # got the agent json. After we switched to oauth, we go directly from
@@ -928,20 +940,6 @@ def getIntercomAgentDeploymentMetaUsingMap(appId, doCheck=True):
             log.warn("Check for Intercom config failed for appId %s", appId)
             return None
     return agentDeploymentMeta
-
-def putIntercomAppIdAccountIdMap(appId, accountId, accountSecret):
-    ads = bot_stores.AgentDeploymentStore(kvStore=getKVStore())
-    # Below is the same format as the json for "intercom" to help transition testing.
-    jsonSpec = {"concierge_meta":
-                {"app_id":appId,
-                 "account_id":accountId,
-                 "account_secret":accountSecret}}
-    ads.putJsonSpec(appId, "intercom_msg_map", jsonSpec)
-
-def getIntercomAppIdAccountIdMap(appId):
-    ads = bot_stores.AgentDeploymentStore(kvStore=getKVStore())
-    appIdAccountIdMap = ads.getJsonSpec(appId, "intercom_msg_map")
-    return appIdAccountIdMap
 
 def getIntercomAgentDeploymentMetaTest(appId):
     # agent_id: "ca006972df904823925d122383b4be54" => nishant-intercom-m-20180904-1 / nishant+dev@myralabs.com
@@ -985,7 +983,7 @@ def v2_intercom_configure():
     else:
         # This is the first configure call.
         appId = request.json.get("app_id")
-        adm = getIntercomAgentDeploymentMeta(appId)
+        adm = intercom_utils.getIntercomAgentDeploymentMeta(appId, kvStore=getKVStore())
         log.info("IntercomAgentDeploymentMeta: %s", adm)
         if (not adm
             or not adm.get("concierge_meta", {}).get("agent_id")):
@@ -1119,7 +1117,7 @@ def doIntercomMsgNativeApp():
     # For now, just hardcode.
     #agentDeploymentMeta = ads.getJsonSpec(app_id, "intercom_messenger")
     #log.info("agentDeploymentMeta: %s", agentDeploymentMeta)
-    agentDeploymentMeta = getIntercomAgentDeploymentMeta(app_id)
+    agentDeploymentMeta = intercom_utils.getIntercomAgentDeploymentMeta(app_id, kvStore=getKVStore())
     if not agentDeploymentMeta:
         log.warn("No agent for app_id: %s. Dropping this event.", app_id)
         return Response(json.dumps({"msg":"bad app_id"})), 500
@@ -1189,7 +1187,7 @@ def intercom_debug():
     if not appId:
         return Response("Could not get app_id"), 500
     appIdAccountIdMap = getIntercomAppIdAccountIdMap(appId)
-    agentDeploymentMeta = getIntercomAgentDeploymentMeta(appId)
+    agentDeploymentMeta = intercom_utils.getIntercomAgentDeploymentMeta(appId, kvStore=getKVStore())
     ret = {
         "appIdAccountIdMap": appIdAccountIdMap,
         "agentDeploymentMeta": agentDeploymentMeta

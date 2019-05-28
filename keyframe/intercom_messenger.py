@@ -82,7 +82,7 @@ WIDGET_WEBPAGE_SEARCH = """
              realm: '%(keyframe_realm)s',
              widgetVersion: '%(widget_version)s',
              firstLoad: true,
-             customProps: {"testing-key1":"testing-value1", "intercom-user-id":"%(intercom_user_id)s"},  // it seems from empirical testing that this is important for the good and proper functioning of the widget.
+             customProps: {"testing-key1":"testing-value1", "intercom-user-id":"%(intercom_user_id)s", "intercom-app-id":"%(intercom_app_id)s"},  // it seems from empirical testing that this is important for the good and proper functioning of the widget.
              position: 'myra-right',
              ctaElement: '#hiddenctabutton',
              firstMessageElement: '#userquestion',
@@ -140,7 +140,7 @@ WIDGET_WEBPAGE_WELCOME = """
              realm: '%(keyframe_realm)s',
              widgetVersion: '%(widget_version)s',
              firstLoad: true,
-             customProps: {"testing-key1":"testing-value1", "intercom-user-id":"%(intercom_user_id)s"},  // it seems from empirical testing that this is important for the good and proper functioning of the widget.
+             customProps: {"testing-key1":"testing-value1", "intercom-user-id":"%(intercom_user_id)s", "intercom-app-id":"%(intercom_app_id)s"},  // it seems from empirical testing that this is important for the good and proper functioning of the widget.
              position: 'myra-right',
              ctaElement: '#hiddenctabutton',
              popupByDefault: true,
