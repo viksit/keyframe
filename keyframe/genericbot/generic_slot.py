@@ -428,7 +428,7 @@ class GenericActionSlot(GenericSlot):
                     raise Exception("No Intercom user id")
                 m = intercom_utils.getIntercomAgentDeploymentMeta(
                     appId=intercomAppId, kvStore=store_api.get_kv_store())
-                accessToken = m.get("accessToken")
+                accessToken = m.get("access_token")
                 if not accessToken:
                     raise Exception("No intercom access token found")
                 intercomClient = intercom_client.IntercomClient(

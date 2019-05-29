@@ -9,6 +9,7 @@ log = logging.getLogger(__name__)
 class IntercomClient(object):
     def __init__(self, accessToken):
         self.accessToken = accessToken
+        log.info("IntercomClient(%s)", accessToken)
 
     def sendResponse(self, text, conversationId):
         log.info("IntercomClient.sendResponse(%s)", locals())
