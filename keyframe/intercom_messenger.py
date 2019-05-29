@@ -116,7 +116,8 @@ WIDGET_WEBPAGE_SEARCH = """
         <script>
           (function() {
              document.addEventListener('myraFrontendEvent:closeIntercomSheet', function(e) {
-              INTERCOM_MESSENGER_SHEET_LIBRARY.closeSheet()
+              console.log('closeIntercomSheet called');
+              INTERCOM_MESSENGER_SHEET_LIBRARY.closeSheet();
             });
           })();
         </script>
@@ -169,6 +170,14 @@ WIDGET_WEBPAGE_WELCOME = """
              }
              l();
          })();
+        </script>
+        <script>
+          (function() {
+             document.addEventListener('myraFrontendEvent:closeIntercomSheet', function(e) {
+              console.log('closeIntercomSheet called');
+              INTERCOM_MESSENGER_SHEET_LIBRARY.closeSheet();
+            });
+          })();
         </script>
     </body>
 </html>
